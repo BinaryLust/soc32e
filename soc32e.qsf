@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08DAF484C8GES
-set_global_assignment -name TOP_LEVEL_ENTITY BeMicro_MAX10_top
+set_global_assignment -name TOP_LEVEL_ENTITY i2cUnit
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 15.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:22:04  JANUARY 25, 2017"
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
@@ -406,6 +406,18 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/uart/rtl/uartReceiver2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/vga.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/vgaDriver.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/vgaCore.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/lineBuffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/lineFetchController.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiterFifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiterFifoMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiFifoMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiFifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiCoreWithFifos.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiWithFifos.sv
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADT7420_CT
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADT7420_INT
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADT7420_SCL
@@ -933,17 +945,4 @@ set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[3]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[2]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[1]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[0]
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/lineBuffer.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/lineFetchController.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiter.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiterFifo.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/vga/rtl/sdramArbiterFifoMemory.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiFifoMemory.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiFifo.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiCoreWithFifos.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/spi/rtl/spiWithFifos.sv
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/i2c/i2cUnit.sv
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,6 +1,6 @@
 
 
-`include "E:/My Code/systemverilog/soc32e/rtl/cpu32e2/rtl/globals.sv"
+`include "E:/My Code/on git/systemverilog/soc32e/rtl/cpu32e2/rtl/globals.sv"
 
 
 module cpu32e2(
