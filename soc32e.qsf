@@ -39,10 +39,10 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08DAF484C8GES
-set_global_assignment -name TOP_LEVEL_ENTITY i2cUnit
+set_global_assignment -name TOP_LEVEL_ENTITY BeMicro_MAX10_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 15.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:22:04  JANUARY 25, 2017"
-set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
+set_global_assignment -name LAST_QUARTUS_VERSION "17.1.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_location_assignment PIN_F5 -to AIN[0]
 set_location_assignment PIN_E4 -to AIN[1]
