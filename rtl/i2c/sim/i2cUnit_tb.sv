@@ -16,13 +16,15 @@ module i2cUnit_tb();
     logic         reset;
     logic  [1:0]  i2cCommand;
     logic  [7:0]  i2cWriteData;
+    logic         i2cWriteAck;
     logic         cycleDone;
     logic         i2cTransactionValid;
 
     // output wires
     logic  [7:0]  i2cReadData;
+    logic         i2cReadAck;
     logic         i2cBusy;
-    logic         i2cWriteAck;
+    logic         i2cWriteDataAck;
     logic         i2cReadDataValid;
 
     // inout wires
@@ -44,10 +46,12 @@ module i2cUnit_tb();
         .i2cCommand,
         .i2cWriteData,
         .i2cReadData,
+        .i2cWriteAck,
+        .i2cReadAck,
         .cycleDone,
         .i2cTransactionValid,
         .i2cBusy,
-        .i2cWriteAck,
+        .i2cWriteDataAck,
         .i2cReadDataValid,
         .i2cScl,
         .i2cSda
@@ -77,9 +81,10 @@ module i2cUnit_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer seed    = 125376;
-    integer address = 0;
-    logic   ack;
+    integer        seed    = 125376;
+    integer        address = 0;
+    logic          ack;
+    logic   [7:0]  data;
 
 
     /*********************************************************************************************************************************************************/
@@ -94,6 +99,7 @@ module i2cUnit_tb();
         reset               = 1'b0;
         i2cCommand          = 2'b00;
         i2cWriteData        = 8'b0000_0000;
+        i2cWriteAck         = 1'b1;
         i2cTransactionValid = 1'b0;
     end
 
@@ -132,7 +138,7 @@ module i2cUnit_tb();
         // reset the system
         hardwareReset();
 
-        // write some data the eeprom
+        // write data to the eeprom
         repeat(16) begin
             do begin
                 i2cStart();                     // send start
@@ -150,7 +156,32 @@ module i2cUnit_tb();
         end
 
         // wait some time
-        repeat(5000) @(posedge clk);
+        repeat(100000) @(posedge clk);
+
+        // reset address
+        address = 0;
+
+        // read the data back from the eeprom
+        repeat(16) begin
+            do begin
+                i2cStart();                     // send start
+                i2cTransmit(8'b1010_0000, ack); // send contorl byte
+            end while(ack != 1'b0);
+            
+            i2cTransmit(address, ack);          // send address
+            i2cStart();                         // send start
+            i2cTransmit(8'b1010_0001, ack);     // send contorl byte
+            i2cReceive(1'b1, data);             // transmit no ack and receive data
+            i2cStop();                          // send stop
+
+            address++;                          // inrement the address
+
+            // wait some time
+            repeat(1000) @(posedge clk);
+        end
+
+        // wait some time
+        repeat(100000) @(posedge clk);
 
         //$display("%d Errors", errorCount);
         $stop;
@@ -200,13 +231,14 @@ module i2cUnit_tb();
         wait(i2cBusy);
         i2cTransactionValid = 1'b0;
         wait(!i2cBusy);
-        ackOut              = i2cReadData[0];
+        ackOut              = i2cReadAck;
     endtask
 
 
     task i2cReceive(input logic ack, output logic [7:0] data);
         i2cCommand          = 2'b11; // receive command
-        i2cWriteData        = {7'b0, ack};
+        //i2cWriteData        = 8'b0;  // not really needed
+        i2cWriteAck         = ack;   // ack bit
         i2cTransactionValid = 1'b1;
         wait(i2cBusy);
         i2cTransactionValid = 1'b0;

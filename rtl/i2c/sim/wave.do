@@ -1,30 +1,34 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/clk
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/reset
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cCommand
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cWriteData
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cReadData
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/cycleDone
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cTransactionValid
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cBusy
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cWriteAck
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cReadDataValid
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cScl
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/i2cSda
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/state
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/nextState
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/bitCounter
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/bitCounterNext
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/bitsDone
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/dataReg
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/dataRegNext
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sclOutNext
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sclOut
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sclIn
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sdaOutNext
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sdaOut
-add wave -noupdate -expand -group i2cUnit /i2cUnit_tb/dut/sdaIn
+add wave -noupdate /i2cUnit_tb/dut/clk
+add wave -noupdate /i2cUnit_tb/dut/reset
+add wave -noupdate /i2cUnit_tb/dut/i2cCommand
+add wave -noupdate /i2cUnit_tb/dut/i2cWriteData
+add wave -noupdate /i2cUnit_tb/dut/i2cReadData
+add wave -noupdate /i2cUnit_tb/dut/i2cWriteAck
+add wave -noupdate /i2cUnit_tb/dut/i2cReadAck
+add wave -noupdate /i2cUnit_tb/dut/cycleDone
+add wave -noupdate /i2cUnit_tb/dut/i2cTransactionValid
+add wave -noupdate /i2cUnit_tb/dut/i2cBusy
+add wave -noupdate /i2cUnit_tb/dut/i2cWriteDataAck
+add wave -noupdate /i2cUnit_tb/dut/i2cReadDataValid
+add wave -noupdate /i2cUnit_tb/dut/i2cScl
+add wave -noupdate /i2cUnit_tb/dut/i2cSda
+add wave -noupdate /i2cUnit_tb/dut/state
+add wave -noupdate /i2cUnit_tb/dut/nextState
+add wave -noupdate /i2cUnit_tb/dut/bitCounter
+add wave -noupdate /i2cUnit_tb/dut/bitCounterNext
+add wave -noupdate /i2cUnit_tb/dut/bitsDone
+add wave -noupdate /i2cUnit_tb/dut/dataReg
+add wave -noupdate /i2cUnit_tb/dut/dataRegNext
+add wave -noupdate /i2cUnit_tb/dut/ackReg
+add wave -noupdate /i2cUnit_tb/dut/ackRegNext
+add wave -noupdate /i2cUnit_tb/dut/sclOutNext
+add wave -noupdate /i2cUnit_tb/dut/sclOut
+add wave -noupdate /i2cUnit_tb/dut/sclIn
+add wave -noupdate /i2cUnit_tb/dut/sdaOutNext
+add wave -noupdate /i2cUnit_tb/dut/sdaOut
+add wave -noupdate /i2cUnit_tb/dut/sdaIn
 add wave -noupdate -expand -group EEPROM /i2cUnit_tb/eeprom/A0
 add wave -noupdate -expand -group EEPROM /i2cUnit_tb/eeprom/A1
 add wave -noupdate -expand -group EEPROM /i2cUnit_tb/eeprom/A2
@@ -91,4 +95,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {265114650 ps} {304867650 ps}
+WaveRestoreZoom {10543869650 ps} {10583622650 ps}

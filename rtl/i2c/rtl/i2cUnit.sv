@@ -99,11 +99,13 @@ module i2cUnit(
     input   logic  [1:0]  i2cCommand,             // the command we want to write to the slave
     input   logic  [7:0]  i2cWriteData,           // the data we want to write to the slave
     output  logic  [7:0]  i2cReadData,            // the data that was read from the slave
+    input   logic         i2cWriteAck,            // the ack bit that we want to write to the slave after a receiving a byte
+    output  logic         i2cReadAck,             // the ack bit from the slave after transmitting a byte
 
     input   logic         cycleDone,              // this signals when a cycle is complete
     input   logic         i2cTransactionValid,    // this line tells this core when a transaction is ready to be processed
     output  logic         i2cBusy,                // this signals if the core is busy or not
-    output  logic         i2cWriteAck,            // this signals when the write data has been used
+    output  logic         i2cWriteDataAck,        // this signals when the write data has been used
     output  logic         i2cReadDataValid,       // this signals that the data on the read data lines is valid
 
     inout   logic         i2cScl,                 // i2c clock
@@ -129,7 +131,15 @@ module i2cUnit(
         TXACK1 = 5'd13,
         TXACK2 = 5'd14,
         TXACK3 = 5'd15,
-        TXACK4 = 5'd16
+        TXACK4 = 5'd16,
+        RX1    = 5'd17,
+        RX2    = 5'd18,
+        RX3    = 5'd19,
+        RX4    = 5'd20,
+        RXACK1 = 5'd21,
+        RXACK2 = 5'd22,
+        RXACK3 = 5'd23,
+        RXACK4 = 5'd24
     }   states;
 
 
@@ -140,6 +150,8 @@ module i2cUnit(
     logic          bitsDone;
     logic   [7:0]  dataReg;
     logic   [7:0]  dataRegNext;
+    logic          ackReg;
+    logic          ackRegNext;
     logic          sclOutNext;
     logic          sclOut;
     logic          sclIn;
@@ -172,6 +184,15 @@ module i2cUnit(
             dataReg <= 8'd0;
         else
             dataReg <= dataRegNext;
+    end
+
+
+    // ack register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            ackReg <= 8'd0;
+        else
+            ackReg <= ackRegNext;
     end
 
 
@@ -217,6 +238,7 @@ module i2cUnit(
     //assign sdaIn       = i2cSda;
     assign bitsDone    = (bitCounter == 3'd7);
     assign i2cReadData = dataReg;
+    assign i2cReadAck  = ackReg;
 
 
     // combinationial logic
@@ -225,10 +247,11 @@ module i2cUnit(
         nextState        = IDLE;       // go to idle
         bitCounterNext   = bitCounter; // keep old value
         dataRegNext      = dataReg;    // keep old value
+        ackRegNext       = ackReg;     // keep old value
         sclOutNext       = sclOut;     // keep old value
         sdaOutNext       = sdaOut;     // keep old value
         i2cBusy          = 1'b1;       // signal busy
-        i2cWriteAck      = 1'b0;       // signal not ack
+        i2cWriteDataAck  = 1'b0;       // signal not ack
         i2cReadDataValid = 1'b0;       // read not valid
 
 
@@ -237,10 +260,17 @@ module i2cUnit(
                 bitCounterNext = 3'd0;
                 i2cBusy        = 1'b0;
                 if(cycleDone && i2cTransactionValid) begin
-                    if(i2cCommand == 2'b10) begin
-                        dataRegNext = i2cWriteData; // set data reg to input data
-                        i2cWriteAck = 1'b1;         // signal ack
-                    end
+                    case(i2cCommand)
+                        2'b10: begin
+                            dataRegNext = i2cWriteData; // set data reg to input data
+                            i2cWriteDataAck = 1'b1;     // signal ack
+                        end
+
+                        2'b11: begin
+                            ackRegNext = i2cWriteAck;   // set ack reg to input ack
+                            i2cWriteDataAck = 1'b1;     // signal ack
+                        end
+                    endcase
                 end
 
                 // next state logic
@@ -249,7 +279,7 @@ module i2cUnit(
                         2'b00: nextState = START1; // start command
                         2'b01: nextState = STOP1;  // stop command
                         2'b10: nextState = TX1;    // transmit command
-                        2'b11: ; // receive command
+                        2'b11: nextState = RX1;    // receive command
                     endcase
                 end
             end
@@ -318,7 +348,10 @@ module i2cUnit(
             end
 
             TX2: begin // put data on line
-                if(cycleDone) sdaOutNext = dataReg[7]; // set sda to msb of data
+                if(cycleDone) begin
+                    sdaOutNext  = dataReg[7];           // set sda to msb of data
+                    dataRegNext = {dataReg[6:0], 1'b0}; // left shift data
+                end
 
                 // next state logic
                 nextState = (cycleDone) ? TX3 : TX2;
@@ -332,10 +365,7 @@ module i2cUnit(
             end
 
             TX4: begin // check for end of bits
-                if(cycleDone) begin
-                    dataRegNext    = {dataReg[6:0], 1'b0}; // left shift data
-                    bitCounterNext = bitCounter + 3'd1;    // increment bit count
-                end
+                if(cycleDone) bitCounterNext = bitCounter + 3'd1; // increment bit count
 
                 // next state logic
                 if(cycleDone) begin
@@ -361,8 +391,8 @@ module i2cUnit(
 
             TXACK3: begin // pull clock high
                 if(cycleDone) begin
-                    sclOutNext  = 1'b1;
-                    dataRegNext = {7'b0, sdaIn}; // capture ack value in lsb of data register
+                    sclOutNext = 1'b1;
+                    ackRegNext = sdaIn; // capture ack value in ack register
                 end
 
                 // next state logic
@@ -376,32 +406,66 @@ module i2cUnit(
                 nextState = (cycleDone) ? IDLE : TXACK4;
             end
 
-    //         STORE: begin // store the result to the receive register
-    //             // output logic
-    //             //cycleCounterValue      = cycleCounter + 16'b1;                  // increment cycle counter
-    //             //bitCounterValue        = 1;                                     // reset bit count
-    //             //transmitReady          = 1'b1;                                  // signal transmit ready
-    //             //receiveValid           = 1'b1;                                  // signal receive valid
-    //             //dataRegNext            = (transmitValid) ? dataRegIn : dataReg; // load new data or keep old value
+            RX1: begin // pull clock low
+                if(cycleDone) sclOutNext = 1'b0;
 
-    //             // next state logic
-    //             nextState = (transmitValid) ? OUTPUT : STOP0;
-    //         end
+                // next state logic
+                nextState = (cycleDone) ? RX2 : RX1;
+            end
 
-    //         STOP0: begin // reset clock to default state
-    //             // output logic
-    //             //sclkNext               = (cycleDone) ? clockPolarity : sclk;          // reset clock to default value at the end of the cycle
+            RX2: begin // data gets put on line by slave
+                // next state logic
+                nextState = (cycleDone) ? RX3 : RX2;
+            end
 
-    //             // next state logic
-    //             nextState = (cycleDone) ? STOP1 : STOP0;
-    //         end
+            RX3: begin // pull clock high and capture data bit
+                if(cycleDone) begin
+                    sclOutNext  = 1'b1;
+                    dataRegNext = {dataReg[6:0], sdaIn}; // shift the captured data left
+                end
 
-    //         STOP1: begin // deassert slave select and return to idle
-    //             //ssNext                 = (cycleDone) ? 1'b1 : ss;
+                // next state logic
+                nextState = (cycleDone) ? RX4 : RX3;
+            end
 
-    //             // next state logic
-    //             nextState = (cycleDone) ? IDLE : STOP1;
-    //         end
+            RX4: begin // check for end of bits
+                if(cycleDone) bitCounterNext = bitCounter + 3'd1; // increment bit count
+
+                // next state logic
+                if(cycleDone) begin
+                    nextState = (bitsDone) ? RXACK1 : RX1;
+                end else begin
+                    nextState = RX4;
+                end
+            end
+
+            RXACK1: begin // pull clock low
+                if(cycleDone) sclOutNext = 1'b0;
+
+                // next state logic
+                nextState = (cycleDone) ? RXACK2 : RXACK1;
+            end
+
+            RXACK2: begin // put the ack bit on the data line
+                if(cycleDone) sdaOutNext = ackReg;
+
+                // next state logic
+                nextState = (cycleDone) ? RXACK3 : RXACK2;
+            end
+
+            RXACK3: begin // pull clock high
+                if(cycleDone) sclOutNext  = 1'b1;
+
+                // next state logic
+                nextState = (cycleDone) ? RXACK4 : RXACK3;
+            end
+
+            RXACK4: begin // wait another cycle and return to idle state
+                if(cycleDone) i2cReadDataValid = 1'b1; // send read valid signal
+
+                // next state logic
+                nextState = (cycleDone) ? IDLE : RXACK4;
+            end
 
             //default:
         endcase
