@@ -71,15 +71,15 @@
 // to back to initial state
 
 // start sequence is
-// pull clock low  // the first 2 cycles are to ensure that the data line is high for the last 2 cycles
-// pull data high
-// pull clock high
+// pull clock low  // if data is already high we can just do nothing here, this is for repeated start only
+// pull data high  // if data is already high we can just do nothing here, this is for repeated start only
+// pull clock high // if data is already high we can just do nothing here, this is for repeated start only
 // pull data low
 
 // stop sequence is
-// pull clock low  // the first 2 cycles are to ensure that the data line is low for the last 2 cycles
-// pull data low
-// pull clock high
+// pull clock low  // if data is already low we can just do nothing here
+// pull data low   // if data is already low we can just do nothing here
+// pull clock high // if data is already low we can just do nothing here
 // pull data high
 
 // 7 bit address / 1 bit r/w register
@@ -90,6 +90,14 @@
 // need synchronizers for input signals???
 
 // have an 8 bit register that feeds directly to/from the sda tristate/input line
+
+// in normal mode clock streching can happen during any scl low cycle, but in high speed mode
+// clock streching is only allowed after the ack bit (and before the 1st bit of the next byte)
+
+// should the clock streching check happen on cycle boundaries or constantly?
+
+// it looks like clock streching can happen after a read or a write both, and even start/stop sequences...
+// we need to check that the clock has actually gone high everytime we set it high.
 
 
 module i2cUnit(
@@ -113,41 +121,24 @@ module i2cUnit(
     );
 
 
-    typedef  enum  logic  [4:0]
+    typedef  enum  logic  [3:0]
     {
-        IDLE   = 5'd0,
-        START1 = 5'd1,
-        START2 = 5'd2,
-        START3 = 5'd3,
-        START4 = 5'd4,
-        STOP1  = 5'd5,
-        STOP2  = 5'd6,
-        STOP3  = 5'd7,
-        STOP4  = 5'd8,
-        TX1    = 5'd9,
-        TX2    = 5'd10,
-        TX3    = 5'd11,
-        TX4    = 5'd12,
-        TXACK1 = 5'd13,
-        TXACK2 = 5'd14,
-        TXACK3 = 5'd15,
-        TXACK4 = 5'd16,
-        RX1    = 5'd17,
-        RX2    = 5'd18,
-        RX3    = 5'd19,
-        RX4    = 5'd20,
-        RXACK1 = 5'd21,
-        RXACK2 = 5'd22,
-        RXACK3 = 5'd23,
-        RXACK4 = 5'd24
+        IDLE   = 4'd0,
+        INIT1  = 4'd1,
+        INIT2  = 4'd2,
+        INIT3  = 4'd3,
+        INIT4  = 4'd4,
+        CYCLE1 = 4'd5,
+        CYCLE2 = 4'd6,
+        CYCLE3 = 4'd7,
+        CYCLE4 = 4'd8
     }   states;
 
 
     states         state;
     states         nextState;
-    logic   [2:0]  bitCounter;
-    logic   [2:0]  bitCounterNext;
-    logic          bitsDone;
+    logic   [3:0]  bitCounter;
+    logic   [3:0]  bitCounterNext;
     logic   [7:0]  dataReg;
     logic   [7:0]  dataRegNext;
     logic          ackReg;
@@ -172,7 +163,7 @@ module i2cUnit(
     // bit counter register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            bitCounter <= 3'd0;
+            bitCounter <= 4'd0;
         else
             bitCounter <= bitCounterNext;
     end
@@ -236,7 +227,6 @@ module i2cUnit(
     //assign sclIn       = i2cScl;
     assign i2cSda      = (sdaOut) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
     //assign sdaIn       = i2cSda;
-    assign bitsDone    = (bitCounter == 3'd7);
     assign i2cReadData = dataReg;
     assign i2cReadAck  = ackReg;
 
@@ -257,214 +247,115 @@ module i2cUnit(
 
         case(state)
             IDLE: begin // reset counters, keep clock and data line high, and keep i2cBusy low
-                bitCounterNext = 3'd0;
+                bitCounterNext = 4'd0;
                 i2cBusy        = 1'b0;
-                if(cycleDone && i2cTransactionValid) begin
+                if(!reset && i2cTransactionValid) begin
                     case(i2cCommand)
                         2'b10: begin
-                            dataRegNext = i2cWriteData; // set data reg to input data
-                            i2cWriteDataAck = 1'b1;     // signal ack
+                            dataRegNext = i2cWriteData;   // set data reg to input data
+                            i2cWriteDataAck = 1'b1;       // signal ack
                         end
 
                         2'b11: begin
-                            ackRegNext = i2cWriteAck;   // set ack reg to input ack
-                            i2cWriteDataAck = 1'b1;     // signal ack
+                            ackRegNext = i2cWriteAck;     // set ack reg to input ack
+                            i2cWriteDataAck = 1'b1;       // signal ack
                         end
                     endcase
-                end
 
                 // next state logic
-                if(cycleDone && i2cTransactionValid) begin
                     case(i2cCommand)
-                        2'b00: nextState = START1; // start command
-                        2'b01: nextState = STOP1;  // stop command
-                        2'b10: nextState = TX1;    // transmit command
-                        2'b11: nextState = RX1;    // receive command
+                        2'b00, 2'b01: nextState = INIT1;  // start/stop command
+                        2'b10, 2'b11: nextState = CYCLE1; // transmit/receive command
                     endcase
                 end
             end
 
-            START1: begin // pull clock low
+            INIT1: begin // start/stop = pull clock low
                 if(cycleDone) sclOutNext = 1'b0;
 
                 // next state logic
-                nextState = (cycleDone) ? START2 : START1;
+                nextState = (cycleDone) ? INIT2 : INIT1;
             end
 
-            START2: begin // pull data high
-                if(cycleDone) sdaOutNext = 1'b1;
-
-                // next state logic
-                nextState = (cycleDone) ? START3 : START2;
-            end
-
-            START3: begin // pull clock high
-                if(cycleDone) sclOutNext = 1'b1;
-
-                // next state logic
-                nextState = (cycleDone) ? START4 : START3;
-            end
-
-            START4: begin // pull data low
-                if(cycleDone) sdaOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? IDLE : START4;
-            end
-
-            STOP1: begin // pull clock low
-                if(cycleDone) sclOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? STOP2 : STOP1;
-            end
-
-            STOP2: begin // pull data low
-                if(cycleDone) sdaOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? STOP3 : STOP2;
-            end
-
-            STOP3: begin // pull clock high
-                if(cycleDone) sclOutNext = 1'b1;
-
-                // next state logic
-                nextState = (cycleDone) ? STOP4 : STOP3;
-            end
-
-            STOP4: begin // pull data high
-                if(cycleDone) sdaOutNext = 1'b1;
-
-                // next state logic
-                nextState = (cycleDone) ? IDLE : STOP4;
-            end
-
-            TX1: begin // pull clock low
-                if(cycleDone) sclOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? TX2 : TX1;
-            end
-
-            TX2: begin // put data on line
+            INIT2: begin // start = pull data high, stop = pull data low
                 if(cycleDone) begin
-                    sdaOutNext  = dataReg[7];           // set sda to msb of data
-                    dataRegNext = {dataReg[6:0], 1'b0}; // left shift data
+                    if(i2cCommand == 2'b00) sdaOutNext = 1'b1;
+                    if(i2cCommand == 2'b01) sdaOutNext = 1'b0;
                 end
 
                 // next state logic
-                nextState = (cycleDone) ? TX3 : TX2;
+                nextState = (cycleDone) ? INIT3 : INIT2;
             end
 
-            TX3: begin // pull clock high
+            INIT3: begin // start/stop = pull clock high
                 if(cycleDone) sclOutNext = 1'b1;
 
                 // next state logic
-                nextState = (cycleDone) ? TX4 : TX3;
+                nextState = (cycleDone) ? INIT4 : INIT3;
             end
 
-            TX4: begin // check for end of bits
-                if(cycleDone) bitCounterNext = bitCounter + 3'd1; // increment bit count
+            INIT4: begin // start = pull data low, stop = pull data high
+                if(cycleDone) begin
+                    if(i2cCommand == 2'b00) sdaOutNext = 1'b0;
+                    if(i2cCommand == 2'b01) sdaOutNext = 1'b1;
+                end
 
                 // next state logic
+                nextState = (cycleDone) ? IDLE : INIT4;
+            end
+
+            CYCLE1: begin // TX/RX = pull clock low
+                if(cycleDone) sclOutNext = 1'b0;
+
+                // next state logic
+                nextState = (cycleDone) ? CYCLE2 : CYCLE1;
+            end
+
+            CYCLE2: begin // TX = put data on line, RX = wait for data to be put on line
                 if(cycleDone) begin
-                    nextState = (bitsDone) ? TXACK1 : TX1;
+                    if(bitCounter == 4'd8) begin // ack bit
+                        if(i2cCommand == 2'b10) sdaOutNext = 1'b1;       // for tx ack bits set sda to high-z
+                        if(i2cCommand == 2'b11) sdaOutNext = ackReg;     // for rx ack bits set sda to ackReg value
+                    end else begin               // normal bits
+                        if(i2cCommand == 2'b10) sdaOutNext = dataReg[7]; // for tx bits set sda to msb of data
+                        if(i2cCommand == 2'b11) sdaOutNext = 1'b1;       // for rx bits set sda to high-z
+                    end
+                end
+
+                // next state logic
+                nextState = (cycleDone) ? CYCLE3 : CYCLE2;
+            end
+
+            CYCLE3: begin // TX/RX = pull clock high
+                if(cycleDone) sclOutNext = 1'b1;
+
+                // next state logic
+                nextState = (cycleDone) ? CYCLE4 : CYCLE3;
+            end
+
+            CYCLE4: begin // TX/RX = check that clock is acually high
+                if(cycleDone && (sclIn == 1'b1)) begin            // if the clock is high
+                    if(bitCounter == 4'd8) begin                  // ack bit
+                        i2cReadDataValid = 1'b1;                  // send read valid signal // should be pipelined i think?
+                        // set sda back to 1 here
+                        if(i2cCommand == 2'b10)
+                            ackRegNext   = sdaIn;                 // for tx capture ack value in ack register
+                        if(i2cCommand == 2'b11)
+                            sdaOutNext   = 1'b1;                  // for rx set sda to high-z
+
+                        // next state logic
+                        nextState        = IDLE;
+                    end else begin                                // normal bits
+                        bitCounterNext   = bitCounter + 4'd1;     // increment bit count
+                        dataRegNext      = {dataReg[6:0], sdaIn}; // capture data and left shift it // this works for both TX and RX
+
+                        // next state logic
+                        nextState        = CYCLE1;
+                    end
                 end else begin
-                    nextState = TX4;
+                    // next state logic
+                    nextState = CYCLE4;
                 end
-            end
-
-            TXACK1: begin // pull clock low
-                if(cycleDone) sclOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? TXACK2 : TXACK1;
-            end
-
-            TXACK2: begin // wait for the slave to put the ack bit on the data line
-                if(cycleDone) sdaOutNext = 1'b1; // set sda to high-z to let the slave put data it
-
-                // next state logic
-                nextState = (cycleDone) ? TXACK3 : TXACK2;
-            end
-
-            TXACK3: begin // pull clock high
-                if(cycleDone) begin
-                    sclOutNext = 1'b1;
-                    ackRegNext = sdaIn; // capture ack value in ack register
-                end
-
-                // next state logic
-                nextState = (cycleDone) ? TXACK4 : TXACK3;
-            end
-
-            TXACK4: begin // wait another cycle and return to idle state
-                if(cycleDone) i2cReadDataValid = 1'b1; // send read valid signal
-
-                // next state logic
-                nextState = (cycleDone) ? IDLE : TXACK4;
-            end
-
-            RX1: begin // pull clock low
-                if(cycleDone) sclOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? RX2 : RX1;
-            end
-
-            RX2: begin // data gets put on line by slave
-                // next state logic
-                nextState = (cycleDone) ? RX3 : RX2;
-            end
-
-            RX3: begin // pull clock high and capture data bit
-                if(cycleDone) begin
-                    sclOutNext  = 1'b1;
-                    dataRegNext = {dataReg[6:0], sdaIn}; // shift the captured data left
-                end
-
-                // next state logic
-                nextState = (cycleDone) ? RX4 : RX3;
-            end
-
-            RX4: begin // check for end of bits
-                if(cycleDone) bitCounterNext = bitCounter + 3'd1; // increment bit count
-
-                // next state logic
-                if(cycleDone) begin
-                    nextState = (bitsDone) ? RXACK1 : RX1;
-                end else begin
-                    nextState = RX4;
-                end
-            end
-
-            RXACK1: begin // pull clock low
-                if(cycleDone) sclOutNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? RXACK2 : RXACK1;
-            end
-
-            RXACK2: begin // put the ack bit on the data line
-                if(cycleDone) sdaOutNext = ackReg;
-
-                // next state logic
-                nextState = (cycleDone) ? RXACK3 : RXACK2;
-            end
-
-            RXACK3: begin // pull clock high
-                if(cycleDone) sclOutNext  = 1'b1;
-
-                // next state logic
-                nextState = (cycleDone) ? RXACK4 : RXACK3;
-            end
-
-            RXACK4: begin // wait another cycle and return to idle state
-                if(cycleDone) i2cReadDataValid = 1'b1; // send read valid signal
-
-                // next state logic
-                nextState = (cycleDone) ? IDLE : RXACK4;
             end
 
             //default:

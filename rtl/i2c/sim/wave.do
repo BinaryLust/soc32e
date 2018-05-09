@@ -18,7 +18,6 @@ add wave -noupdate /i2cUnit_tb/dut/state
 add wave -noupdate /i2cUnit_tb/dut/nextState
 add wave -noupdate /i2cUnit_tb/dut/bitCounter
 add wave -noupdate /i2cUnit_tb/dut/bitCounterNext
-add wave -noupdate /i2cUnit_tb/dut/bitsDone
 add wave -noupdate /i2cUnit_tb/dut/dataReg
 add wave -noupdate /i2cUnit_tb/dut/dataRegNext
 add wave -noupdate /i2cUnit_tb/dut/ackReg

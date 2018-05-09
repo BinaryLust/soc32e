@@ -81,10 +81,11 @@ module i2cUnit_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer        seed    = 125376;
-    integer        address = 0;
-    logic          ack;
-    logic   [7:0]  data;
+    integer             seed    = 125376;
+    integer             address = 0;
+    logic   [15:0][7:0] tdata;
+    logic               ack;
+    logic   [7:0]       data;
 
 
     /*********************************************************************************************************************************************************/
@@ -97,6 +98,7 @@ module i2cUnit_tb();
     // set initial values
     initial begin
         reset               = 1'b0;
+        cycleDone           = 1'b0;
         i2cCommand          = 2'b00;
         i2cWriteData        = 8'b0000_0000;
         i2cWriteAck         = 1'b1;
@@ -117,7 +119,6 @@ module i2cUnit_tb();
         //if(reset) begin
             //cycleDone = 1'b0;
         //end else begin
-
             repeat(249) @(posedge clk);
             cycleDone = 1'b1;
             @(posedge clk);
@@ -140,13 +141,15 @@ module i2cUnit_tb();
 
         // write data to the eeprom
         repeat(16) begin
+            tdata[address] = $urandom();
+
             do begin
                 i2cStart();                     // send start
                 i2cTransmit(8'b1010_0000, ack); // send contorl byte
             end while(ack != 1'b0);
 
             i2cTransmit(address, ack);          // send address
-            i2cTransmit($urandom(), ack);       // send data
+            i2cTransmit(tdata[address], ack);   // send data
             i2cStop();                          // send stop
 
             address++;                          // inrement the address
@@ -173,6 +176,8 @@ module i2cUnit_tb();
             i2cTransmit(8'b1010_0001, ack);     // send contorl byte
             i2cReceive(1'b1, data);             // transmit no ack and receive data
             i2cStop();                          // send stop
+
+            $info("For address: %h we wrote: %h and read: %h", address, tdata[address], data);
 
             address++;                          // inrement the address
 
@@ -209,18 +214,18 @@ module i2cUnit_tb();
     task i2cStart();
         i2cCommand          = 2'b00; // start command
         i2cTransactionValid = 1'b1;
-        wait(i2cBusy);
+        @(posedge cycleDone);
         i2cTransactionValid = 1'b0;
-        wait(!i2cBusy);
+        @(negedge i2cBusy);
     endtask
 
 
     task i2cStop();
         i2cCommand          = 2'b01; // stop command
         i2cTransactionValid = 1'b1;
-        wait(i2cBusy);
+        @(posedge cycleDone);
         i2cTransactionValid = 1'b0;
-        wait(!i2cBusy);
+        @(negedge i2cBusy);
     endtask
 
 
@@ -228,9 +233,9 @@ module i2cUnit_tb();
         i2cCommand          = 2'b10; // transmit command
         i2cWriteData        = data;
         i2cTransactionValid = 1'b1;
-        wait(i2cBusy);
+        @(posedge cycleDone);
         i2cTransactionValid = 1'b0;
-        wait(!i2cBusy);
+        @(negedge i2cBusy);
         ackOut              = i2cReadAck;
     endtask
 
@@ -240,9 +245,9 @@ module i2cUnit_tb();
         //i2cWriteData        = 8'b0;  // not really needed
         i2cWriteAck         = ack;   // ack bit
         i2cTransactionValid = 1'b1;
-        wait(i2cBusy);
+        @(posedge cycleDone);
         i2cTransactionValid = 1'b0;
-        wait(!i2cBusy);
+        @(negedge i2cBusy);
         data                = i2cReadData;
     endtask
 
