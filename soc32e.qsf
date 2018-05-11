@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08DAF484C8GES
-set_global_assignment -name TOP_LEVEL_ENTITY BeMicro_MAX10_top
+set_global_assignment -name TOP_LEVEL_ENTITY i2c
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 15.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:22:04  JANUARY 25, 2017"
 set_global_assignment -name LAST_QUARTUS_VERSION "17.1.0 Lite Edition"
@@ -283,6 +283,10 @@ set_global_assignment -name ENABLE_SIGNALTAP OFF
 set_global_assignment -name USE_SIGNALTAP_FILE output_files/debug.stp
 set_global_assignment -name OPTIMIZATION_MODE "HIGH PERFORMANCE EFFORT"
 set_global_assignment -name ALLOW_REGISTER_RETIMING OFF
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/i2c/rtl/i2cUnit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/i2c/rtl/i2cCore.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/i2c/rtl/i2cClockUnit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/i2c/rtl/i2c.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound/rtl/sound.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound/rtl/pwmUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound/rtl/bufferMemory.sv
@@ -321,7 +325,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/shifter/r
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/shifter/rtl/shift2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/shifter/rtl/shift1.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/multiplier/rtl/multiplier.sv
-set_global_assignment -name VERILOG_FILE rtl/cpu32e2/rtl/execute/multiplier/rtl/dspMultiplier.v
 set_global_assignment -name QIP_FILE rtl/cpu32e2/rtl/execute/multiplier/rtl/dspMultiplier.qip
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/divider2/rtl/remainderState.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu32e2/rtl/execute/divider2/rtl/divisorState.sv

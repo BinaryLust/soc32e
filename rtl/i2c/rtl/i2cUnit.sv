@@ -104,20 +104,20 @@ module i2cUnit(
     input   logic         clk,
     input   logic         reset,
 
-    input   logic  [1:0]  i2cCommand,             // the command we want to write to the slave
-    input   logic  [7:0]  i2cWriteData,           // the data we want to write to the slave
-    output  logic  [7:0]  i2cReadData,            // the data that was read from the slave
-    input   logic         i2cWriteAck,            // the ack bit that we want to write to the slave after a receiving a byte
-    output  logic         i2cReadAck,             // the ack bit from the slave after transmitting a byte
+    input   logic  [1:0]  command,        // the command we want to write to the slave
+    input   logic  [7:0]  transmitData,   // the data we want to write to the slave
+    output  logic  [7:0]  receiveData,    // the data that was read from the slave
+    input   logic         transmitAck,    // the ack bit that we want to write to the slave after a receiving a byte
+    output  logic         receiveAck,     // the ack bit from the slave after transmitting a byte
 
-    input   logic         cycleDone,              // this signals when a cycle is complete
-    input   logic         i2cTransactionValid,    // this line tells this core when a transaction is ready to be processed
-    output  logic         i2cBusy,                // this signals if the core is busy or not
-    output  logic         i2cWriteDataAck,        // this signals when the write data has been used
-    output  logic         i2cReadDataValid,       // this signals that the data on the read data lines is valid
+    input   logic         cycleDone,      // this signals when a cycle is complete
+    input   logic         transmitValid,  // this line tells this core when a command is ready to be processed
+    output  logic         transmitReady,  // this signals when the write data has been used
+    output  logic         receiveValid,   // this signals that the data on the read data lines is valid
+    output  logic         busy,           // this signals if the core is busy or not
 
-    inout   logic         i2cScl,                 // i2c clock
-    inout   logic         i2cSda                  // i2c data
+    inout   wire          scl,            // i2c clock
+    inout   wire          sda             // i2c data
     );
 
 
@@ -181,7 +181,7 @@ module i2cUnit(
     // ack register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            ackReg <= 8'd0;
+            ackReg <= 1'd0;
         else
             ackReg <= ackRegNext;
     end
@@ -192,7 +192,7 @@ module i2cUnit(
         if(reset)
             sclIn <= 1'b1; // reset to default value for the current mode
         else
-            sclIn <= i2cScl;
+            sclIn <= scl;
     end
 
 
@@ -210,7 +210,7 @@ module i2cUnit(
         if(reset)
             sdaIn <= 1'b1; // reset to default value for the current mode
         else
-            sdaIn <= i2cSda;
+            sdaIn <= sda;
     end
 
 
@@ -223,12 +223,12 @@ module i2cUnit(
     end
 
 
-    assign i2cScl      = (sclOut) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
-    //assign sclIn       = i2cScl;
-    assign i2cSda      = (sdaOut) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
-    //assign sdaIn       = i2cSda;
-    assign i2cReadData = dataReg;
-    assign i2cReadAck  = ackReg;
+    assign scl         = (sclOut) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
+    //assign sclIn          = scl;
+    assign sda         = (sdaOut) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
+    //assign sdaIn          = sda;
+    assign receiveData = dataReg;
+    assign receiveAck  = ackReg;
 
 
     // combinationial logic
@@ -240,30 +240,22 @@ module i2cUnit(
         ackRegNext       = ackReg;     // keep old value
         sclOutNext       = sclOut;     // keep old value
         sdaOutNext       = sdaOut;     // keep old value
-        i2cBusy          = 1'b1;       // signal busy
-        i2cWriteDataAck  = 1'b0;       // signal not ack
-        i2cReadDataValid = 1'b0;       // read not valid
+        busy             = 1'b1;       // signal busy
+        transmitReady    = 1'b0;       // signal not ready
+        receiveValid     = 1'b0;       // read not valid
 
 
         case(state)
-            IDLE: begin // reset counters, keep clock and data line high, and keep i2cBusy low
+            IDLE: begin // reset counters, keep clock and data line high, and keep busy low
                 bitCounterNext = 4'd0;
-                i2cBusy        = 1'b0;
-                if(!reset && i2cTransactionValid) begin
-                    case(i2cCommand)
-                        2'b10: begin
-                            dataRegNext = i2cWriteData;   // set data reg to input data
-                            i2cWriteDataAck = 1'b1;       // signal ack
-                        end
-
-                        2'b11: begin
-                            ackRegNext = i2cWriteAck;     // set ack reg to input ack
-                            i2cWriteDataAck = 1'b1;       // signal ack
-                        end
-                    endcase
+                busy        = 1'b0;
+                if(!reset && transmitValid) begin
+                    transmitReady = 1'b1;                             // signal ready
+                    if(command == 2'b10) dataRegNext = transmitData;  // set data reg to input data
+                    if(command == 2'b11) ackRegNext  = transmitAck;   // set ack reg to input ack
 
                 // next state logic
-                    case(i2cCommand)
+                    case(command)
                         2'b00, 2'b01: nextState = INIT1;  // start/stop command
                         2'b10, 2'b11: nextState = CYCLE1; // transmit/receive command
                     endcase
@@ -279,8 +271,8 @@ module i2cUnit(
 
             INIT2: begin // start = pull data high, stop = pull data low
                 if(cycleDone) begin
-                    if(i2cCommand == 2'b00) sdaOutNext = 1'b1;
-                    if(i2cCommand == 2'b01) sdaOutNext = 1'b0;
+                    if(command == 2'b00) sdaOutNext = 1'b1;
+                    if(command == 2'b01) sdaOutNext = 1'b0;
                 end
 
                 // next state logic
@@ -296,8 +288,8 @@ module i2cUnit(
 
             INIT4: begin // start = pull data low, stop = pull data high
                 if(cycleDone) begin
-                    if(i2cCommand == 2'b00) sdaOutNext = 1'b0;
-                    if(i2cCommand == 2'b01) sdaOutNext = 1'b1;
+                    if(command == 2'b00) sdaOutNext = 1'b0;
+                    if(command == 2'b01) sdaOutNext = 1'b1;
                 end
 
                 // next state logic
@@ -314,11 +306,11 @@ module i2cUnit(
             CYCLE2: begin // TX = put data on line, RX = wait for data to be put on line
                 if(cycleDone) begin
                     if(bitCounter == 4'd8) begin // ack bit
-                        if(i2cCommand == 2'b10) sdaOutNext = 1'b1;       // for tx ack bits set sda to high-z
-                        if(i2cCommand == 2'b11) sdaOutNext = ackReg;     // for rx ack bits set sda to ackReg value
+                        if(command == 2'b10) sdaOutNext = 1'b1;       // for tx ack bits set sda to high-z
+                        if(command == 2'b11) sdaOutNext = ackReg;     // for rx ack bits set sda to ackReg value
                     end else begin               // normal bits
-                        if(i2cCommand == 2'b10) sdaOutNext = dataReg[7]; // for tx bits set sda to msb of data
-                        if(i2cCommand == 2'b11) sdaOutNext = 1'b1;       // for rx bits set sda to high-z
+                        if(command == 2'b10) sdaOutNext = dataReg[7]; // for tx bits set sda to msb of data
+                        if(command == 2'b11) sdaOutNext = 1'b1;       // for rx bits set sda to high-z
                     end
                 end
 
@@ -336,11 +328,11 @@ module i2cUnit(
             CYCLE4: begin // TX/RX = check that clock is acually high
                 if(cycleDone && (sclIn == 1'b1)) begin            // if the clock is high
                     if(bitCounter == 4'd8) begin                  // ack bit
-                        i2cReadDataValid = 1'b1;                  // send read valid signal // should be pipelined i think?
+                        receiveValid = 1'b1;                      // send read valid signal // should be pipelined i think?
                         // set sda back to 1 here
-                        if(i2cCommand == 2'b10)
+                        if(command == 2'b10)
                             ackRegNext   = sdaIn;                 // for tx capture ack value in ack register
-                        if(i2cCommand == 2'b11)
+                        if(command == 2'b11)
                             sdaOutNext   = 1'b1;                  // for rx set sda to high-z
 
                         // next state logic

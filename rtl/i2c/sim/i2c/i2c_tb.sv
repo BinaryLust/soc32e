@@ -1,7 +1,7 @@
 `timescale 1ns / 100ps
 
 
-module i2cUnit_tb();
+module i2c_tb();
 
 
     /*********************************************************************************************************************************************************/
@@ -12,24 +12,20 @@ module i2cUnit_tb();
 
 
     // input wires
-    logic         clk;
-    logic         reset;
-    logic  [1:0]  i2cCommand;
-    logic  [7:0]  i2cWriteData;
-    logic         i2cWriteAck;
-    logic         cycleDone;
-    logic         i2cTransactionValid;
+    logic          clk;
+    logic          reset;
+    logic          read;
+    logic          write;
+    logic          address;
+    logic  [31:0]  dataIn;
 
     // output wires
-    logic  [7:0]  i2cReadData;
-    logic         i2cReadAck;
-    logic         i2cBusy;
-    logic         i2cWriteDataAck;
-    logic         i2cReadDataValid;
+    logic          readValid;
+    logic  [31:0]  dataOut;
 
     // inout wires
-    wire          i2cScl;
-    wire          i2cSda;
+    wire           scl;             // i2c clock
+    wire           sda;             // i2c data
 
 
     /*********************************************************************************************************************************************************/
@@ -39,22 +35,18 @@ module i2cUnit_tb();
     /*********************************************************************************************************************************************************/
 
 
-    i2cUnit
+    i2c
     dut(
         .clk,
         .reset,
-        .i2cCommand,
-        .i2cWriteData,
-        .i2cReadData,
-        .i2cWriteAck,
-        .i2cReadAck,
-        .cycleDone,
-        .i2cTransactionValid,
-        .i2cBusy,
-        .i2cWriteDataAck,
-        .i2cReadDataValid,
-        .i2cScl,
-        .i2cSda
+        .read,
+        .write,
+        .address,
+        .dataIn,
+        .readValid,
+        .dataOut,
+        .scl,             // i2c clock
+        .sda              // i2c data
     );
 
 
@@ -64,14 +56,14 @@ module i2cUnit_tb();
         .A1       (),
         .A2       (),
         .WP       (1'b0),
-        .SDA      (i2cSda),
-        .SCL      (i2cScl),
+        .SDA      (sda),
+        .SCL      (scl),
         .RESET    (reset)
     );
 
-    
-    pullup(i2cScl);
-    pullup(i2cSda);
+
+    pullup(sda);
+    pullup(scl);
 
 
     /*********************************************************************************************************************************************************/
@@ -82,10 +74,10 @@ module i2cUnit_tb();
 
 
     integer             seed    = 125376;
-    integer             address = 0;
-    logic   [15:0][7:0] tdata;
-    logic               ack;
-    logic   [7:0]       data;
+    //integer             address = 0;
+    //logic   [15:0][7:0] tdata;
+    //logic               ack;
+    //logic   [7:0]       data;
 
 
     /*********************************************************************************************************************************************************/
@@ -97,12 +89,11 @@ module i2cUnit_tb();
 
     // set initial values
     initial begin
-        reset               = 1'b0;
-        cycleDone           = 1'b0;
-        i2cCommand          = 2'b00;
-        i2cWriteData        = 8'b0000_0000;
-        i2cWriteAck         = 1'b1;
-        i2cTransactionValid = 1'b0;
+        reset          = 1'b0;
+        read           = 1'b0;
+        write          = 1'b0;
+        address        = 1'b0;
+        dataIn         = 32'd0;
     end
 
 
@@ -112,18 +103,6 @@ module i2cUnit_tb();
         clk = 1'b0;
         #5
         clk = 1'b1;
-    end
-
-
-    always begin
-        //if(reset) begin
-            //cycleDone = 1'b0;
-        //end else begin
-            repeat(249) @(posedge clk);
-            cycleDone = 1'b1;
-            @(posedge clk);
-            cycleDone = 1'b0;
-        //end
     end
 
 
@@ -139,51 +118,55 @@ module i2cUnit_tb();
         // reset the system
         hardwareReset();
 
+        writeData(1'b0, {21'd0, 2'b00, 1'b1, 8'd0});
+        writeData(1'b0, {21'd0, 2'b00, 1'b1, 8'd0});
+        writeData(1'b0, {21'd0, 2'b01, 1'b1, 8'd0});
+        writeData(1'b0, {21'd0, 2'b01, 1'b1, 8'd0});
         // write data to the eeprom
-        repeat(16) begin
-            tdata[address] = $urandom();
+        // repeat(16) begin
+        //     tdata[address] = $urandom();
 
-            do begin
-                i2cStart();                     // send start
-                i2cTransmit(8'b1010_0000, ack); // send contorl byte
-            end while(ack != 1'b0);
+        //     do begin
+        //         i2cStart();                     // send start
+        //         i2cTransmit(8'b1010_0000, ack); // send contorl byte
+        //     end while(ack != 1'b0);
 
-            i2cTransmit(address, ack);          // send address
-            i2cTransmit(tdata[address], ack);   // send data
-            i2cStop();                          // send stop
+        //     i2cTransmit(address, ack);          // send address
+        //     i2cTransmit(tdata[address], ack);   // send data
+        //     i2cStop();                          // send stop
 
-            address++;                          // inrement the address
+        //     address++;                          // inrement the address
 
-            // wait some time
-            repeat(1000) @(posedge clk);
-        end
+        //     // wait some time
+        //     repeat(1000) @(posedge clk);
+        // end
 
-        // wait some time
-        repeat(100000) @(posedge clk);
+        // // wait some time
+        // repeat(100000) @(posedge clk);
 
-        // reset address
-        address = 0;
+        // // reset address
+        // address = 0;
 
-        // read the data back from the eeprom
-        repeat(16) begin
-            do begin
-                i2cStart();                     // send start
-                i2cTransmit(8'b1010_0000, ack); // send contorl byte
-            end while(ack != 1'b0);
-            
-            i2cTransmit(address, ack);          // send address
-            i2cStart();                         // send start
-            i2cTransmit(8'b1010_0001, ack);     // send contorl byte
-            i2cReceive(1'b1, data);             // transmit no ack and receive data
-            i2cStop();                          // send stop
+        // // read the data back from the eeprom
+        // repeat(16) begin
+        //     do begin
+        //         i2cStart();                     // send start
+        //         i2cTransmit(8'b1010_0000, ack); // send contorl byte
+        //     end while(ack != 1'b0);
 
-            $info("For address: %h we wrote: %h and read: %h", address, tdata[address], data);
+        //     i2cTransmit(address, ack);          // send address
+        //     i2cStart();                         // send start
+        //     i2cTransmit(8'b1010_0001, ack);     // send contorl byte
+        //     i2cReceive(1'b1, data);             // transmit no ack and receive data
+        //     i2cStop();                          // send stop
 
-            address++;                          // inrement the address
+        //     $info("For address: %h we wrote: %h and read: %h", address, tdata[address], data);
 
-            // wait some time
-            repeat(1000) @(posedge clk);
-        end
+        //     address++;                          // inrement the address
+
+        //     // wait some time
+        //     repeat(1000) @(posedge clk);
+        // end
 
         // wait some time
         repeat(100000) @(posedge clk);
@@ -211,45 +194,65 @@ module i2cUnit_tb();
     endtask
 
 
-    task i2cStart();
-        i2cCommand          = 2'b00; // start command
-        i2cTransactionValid = 1'b1;
-        @(posedge cycleDone);
-        i2cTransactionValid = 1'b0;
-        @(negedge i2cBusy);
+    task writeData(input logic [31:0] _data, input logic _address);
+        begin
+            @(posedge clk); // wait for clk edge
+            #1 read = 1'b0; write = 1'b1; address = _address; dataIn = _data;
+            @(posedge clk); // wait for clk edge
+            #1 read = 1'b0; write = 1'b0; address = 1'b0; dataIn = 32'b0;
+        end
     endtask
 
 
-    task i2cStop();
-        i2cCommand          = 2'b01; // stop command
-        i2cTransactionValid = 1'b1;
-        @(posedge cycleDone);
-        i2cTransactionValid = 1'b0;
-        @(negedge i2cBusy);
+    task readData(input logic _address);
+        begin
+            @(posedge clk); // wait for clk edge
+            #1 read = 1'b1; write = 1'b0; address = _address;
+            @(posedge clk); // wait for clk edge
+            #1 read = 1'b0; write = 1'b0; address = 1'b0;
+        end
     endtask
 
 
-    task i2cTransmit(input logic [7:0] data, output logic ackOut);
-        i2cCommand          = 2'b10; // transmit command
-        i2cWriteData        = data;
-        i2cTransactionValid = 1'b1;
-        @(posedge cycleDone);
-        i2cTransactionValid = 1'b0;
-        @(negedge i2cBusy);
-        ackOut              = i2cReadAck;
-    endtask
+    // task i2cStart();
+    //     command             = 2'b00; // start command
+    //     transmitValid       = 1'b1;
+    //     @(posedge cycleDone);
+    //     transmitValid       = 1'b0;
+    //     @(negedge busy);
+    // endtask
 
 
-    task i2cReceive(input logic ack, output logic [7:0] data);
-        i2cCommand          = 2'b11; // receive command
-        //i2cWriteData        = 8'b0;  // not really needed
-        i2cWriteAck         = ack;   // ack bit
-        i2cTransactionValid = 1'b1;
-        @(posedge cycleDone);
-        i2cTransactionValid = 1'b0;
-        @(negedge i2cBusy);
-        data                = i2cReadData;
-    endtask
+    // task i2cStop();
+    //     command             = 2'b01; // stop command
+    //     transmitValid       = 1'b1;
+    //     @(posedge cycleDone);
+    //     transmitValid       = 1'b0;
+    //     @(negedge busy);
+    // endtask
+
+
+    // task i2cTransmit(input logic [7:0] data, output logic ackOut);
+    //     command             = 2'b10; // transmit command
+    //     transmitData        = data;
+    //     transmitValid       = 1'b1;
+    //     @(posedge cycleDone);
+    //     transmitValid       = 1'b0;
+    //     @(negedge busy);
+    //     ackOut              = receiveAck;
+    // endtask
+
+
+    // task i2cReceive(input logic ack, output logic [7:0] data);
+    //     command             = 2'b11; // receive command
+    //     //transmitData        = 8'b0;  // not really needed
+    //     transmitAck         = ack;   // ack bit
+    //     transmitValid       = 1'b1;
+    //     @(posedge cycleDone);
+    //     transmitValid       = 1'b0;
+    //     @(negedge busy);
+    //     data                = receiveData;
+    // endtask
 
 
 endmodule

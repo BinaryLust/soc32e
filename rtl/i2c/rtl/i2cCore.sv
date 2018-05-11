@@ -1,262 +1,156 @@
 
 
-// module spiCore #(
-//     parameter DATAWIDTH = 8
-//     )(
-//     input   logic                   clk,
-//     input   logic                   reset,
-
-//     input   logic  [DATAWIDTH-1:0]  transmitDataIn,     // data from the master interface
-//     input   logic  [15:0]           clocksPerCycleIn,   // data from the master interface
-//     input   logic                   clockPolarityIn,    // data from the master interface
-//     input   logic                   clockPhaseIn,       // data from the master interface
-//     input   logic                   dataDirectionIn,    // data from the master interface
-//     input   logic                   ssEnableIn,         // data from the master interface
-//     input   logic                   receiveIreIn,       // data from the master interface
-//     input   logic                   transmitIreIn,      // data from the master interface
-
-//     input   logic                   transmitDataLoadEn, // write enable from the master interface
-//     input   logic                   configLoadEn,       // write enable from the master interface
-//     input   logic                   receiveDataReadReq, // read request from the master interface
-
-//     output  logic  [DATAWIDTH-1:0]  transmitData,       // visible state to the master interface
-//     output  logic  [DATAWIDTH-1:0]  receiveData,        // visible state to the master interface
-//     output  logic                   receiveValid,       // visible state to the master interface
-//     output  logic                   transmitReady,      // visible state to the master interface
-//     output  logic  [15:0]           clocksPerCycle,     // visible state to the master interface
-//     output  logic                   clockPolarity,      // visible state to the master interface
-//     output  logic                   clockPhase,         // visible state to the master interface
-//     output  logic                   dataDirection,      // visible state to the master interface
-//     output  logic                   ssEnable,           // visible state to the master interface
-//     output  logic                   receiveIre,         // visible state to the master interface
-//     output  logic                   transmitIre,        // visible state to the master interface
-
-//     output  logic                   transmitIrq,        // interrupt request to the master
-//     output  logic                   receiveIrq,         // interrupt request to the master
-
-//     input   logic                   miso,
-//     output  logic                   mosi,
-//     output  logic                   sclk,
-//     output  logic                   ss
-//     );
+// valid is set when there is data ready to be consumed
+// ready is sent back to acknowledge that the data was actually consumed.
 
 
-//     // wires
-//     logic                   transmitReadyWire;  // from the transmitter
-//     logic                   receiveDataValid;   // from the receiver
-//     logic  [DATAWIDTH-1:0]  receiveDataWire;    // from the receiver
-//     logic                   transmitDataValid;  // to the the transmitter
+module i2cCore(
+    input   logic          clk,
+    input   logic          reset,
+
+    input   logic  [1:0]   commandIn,       // data from the master interface
+    input   logic  [7:0]   transmitDataIn,  // data from the master interface
+    input   logic          transmitAckIn,   // data from the master interface
+
+	input   logic          transmitDataLoadEn, // write enable from the master interface
+	input   logic          receiveDataReadReq, // read request from the master interface
+
+    output  logic  [7:0]   receiveData,     // visible state to the master interface
+    output  logic          receiveAck,      // visible state to the master interface
+    output  logic          receiveValid,    // visible state to the master interface
+    output  logic          transmitReady,   // visible state to the master interface
+
+    inout   wire           scl,          // i2c clock
+    inout   wire           sda           // i2c data
+    );
 
 
-//     // interrupt detection registers
-//     logic                   transmitIrePre;
-//     logic                   transmitDataValidPre;
+    // wires
+    logic         cycleDone;
+    logic         transmitReadyWire;
+    logic         receiveValidWire;
+    logic  [7:0]  receiveDataWire;
+    logic         receiveAckWire;
+    logic  [1:0]  command;
+    logic  [7:0]  transmitData;
+    logic         transmitAck;
 
 
-//     //------------------------------------------------
-//     // transmit interrupt notes
-//     // we can do a transmit interrupt anytime the transmit data is empty or
-//     // when the transmit data goes from being full to empty after sending a
-//     // byte to begin with
+    //------------------------------------------------
+    // visible registers
 
 
-//     // transmit interrupt request logic
-//     // if transmitDataValid is not valid and we detect transmitIre changing from disabled to enabled
-//     // or if transmitIre is enabled and we detect transmitDataValid changing from valid to not valid
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset) begin
-//             transmitIrq          <= 1'b0;
-//             transmitIrePre       <= 1'b0;
-//             transmitDataValidPre <= 1'b0;
-//         end else begin
-//             transmitIrq          <= (!transmitDataValid && (!transmitIrePre && transmitIre)) | (transmitIre && (transmitDataValidPre && !transmitDataValid));
-//             transmitIrePre       <= transmitIre;
-//             transmitDataValidPre <= transmitDataValid;
-//         end
-//     end
+    // command register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            command <= 0;
+        else if(transmitDataLoadEn)
+            command <= commandIn;
+        else
+            command <= command;
+     end
 
 
-//     // receive interrupt request logic
-//     // if receive interrupt request enable is set and receiveDataValid is asserted
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             receiveIrq <= 1'b0;
-//         else
-//             receiveIrq <= receiveIre & receiveDataValid;
-//     end
+    // transmit data register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            transmitData <= 8'd0;
+        else if(transmitDataLoadEn)
+            transmitData <= transmitDataIn;
+        else
+            transmitData <= transmitData;
+    end
 
 
-//     //------------------------------------------------
-//     // visible registers
+    // transmit ack bit register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            transmitAck <= 1'b1;
+        else if(transmitDataLoadEn)
+            transmitAck <= transmitAckIn;
+        else
+            transmitAck <= transmitAck;
+    end
 
 
-//     // transmitData register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             transmitData <= 0;
-//         else if(transmitDataLoadEn)
-//             transmitData <= transmitDataIn;
-//         else
-//             transmitData <= transmitData;
-//      end
+    // receive data register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            receiveData <= 8'd0;
+        else if(receiveValidWire)
+            receiveData <= receiveDataWire;
+        else
+            receiveData <= receiveData;
+    end
 
 
-//     // receiveData register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             receiveData <= 0;
-//         else if(receiveDataValid)
-//             receiveData <= receiveDataWire;
-//         else
-//             receiveData <= receiveData;
-//     end
+    // receive ack bit register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            receiveAck <= 1'b1;
+        else if(receiveValidWire)
+            receiveAck <= receiveAckWire;
+        else
+            receiveAck <= receiveAck;
+    end
 
 
-//     // receiveValid register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             receiveValid <= 1'b0; // reset valid
-//         else if(receiveDataValid)
-//             receiveValid <= 1'b1; // set valid (this gets priority if the condition below is active at the same time)
-//         else if(receiveDataReadReq)
-//             receiveValid <= 1'b0; // reset valid
-//         else
-//             receiveValid <= receiveValid;
-//     end
+    // receiveValid register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            receiveValid <= 1'b0; // reset valid
+        else if(receiveValidWire)
+            receiveValid <= 1'b1; // set valid (this gets priority if the condition below is active at the same time)
+        else if(receiveDataReadReq)
+            receiveValid <= 1'b0; // reset valid
+        else
+            receiveValid <= receiveValid;
+    end
 
 
-//     // transmitReady register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             transmitReady <= 1'b1; // set ready
-//         else if(transmitDataLoadEn)
-//             transmitReady <= 1'b0; // reset ready when writting transmitData byte (this gets priority if the condition below is active at the same time)
-//         else if(transmitDataValid && transmitReadyWire)
-//             transmitReady <= 1'b1; // set ready if data is already valid and transmitter reads the stored byte
-//         else
-//             transmitReady <= transmitReady;
-//     end
+    // transmitReady register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            transmitReady <= 1'b1; // set ready
+        else if(transmitDataLoadEn)
+            transmitReady <= 1'b0; // reset ready when writting transmitData byte (this gets priority if the condition below is active at the same time)
+        else if(transmitReadyWire) // might need to be this for some reason that i can't remember (~transmitReady && transmitReadyWire)
+            transmitReady <= 1'b1; // set ready if data is already valid and transmitter reads the stored byte
+        else
+            transmitReady <= transmitReady;
+    end
 
 
-//     // cycles per clock register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             clocksPerCycle <= 16'd500; // 100 Kbps default
-//         else if(configLoadEn)
-//             clocksPerCycle <= clocksPerCycleIn;
-//         else
-//             clocksPerCycle <= clocksPerCycle;
-//     end
+    //------------------------------------------------
+    // master modules
 
 
-//     // clock polarity register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             clockPolarity <= 1'd0;
-//         else if(configLoadEn)
-//             clockPolarity <= clockPolarityIn;
-//         else
-//             clockPolarity <= clockPolarity;
-//     end
+    i2cUnit
+    i2cUnit(
+        .clk,
+        .reset,
+        .command,
+        .transmitData,
+        .receiveData          (receiveDataWire),
+        .transmitAck,
+        .receiveAck           (receiveAckWire),
+        .cycleDone,
+        .transmitValid        (~transmitReady),
+        .transmitReady        (transmitReadyWire),
+        .receiveValid         (receiveValidWire),
+        .busy                 (),
+        .scl,
+        .sda
+    );
 
 
-//     // clock phase register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             clockPhase <= 1'd0;
-//         else if(configLoadEn)
-//             clockPhase <= clockPhaseIn;
-//         else
-//             clockPhase <= clockPhase;
-//     end
+    i2cClockUnit
+    i2cClockUnit(
+        .clk,
+        .reset,
+        .cycleDone       // high when a full cycle is complete
+    );
 
 
-//     // data direction register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             dataDirection <= 1'd0;
-//         else if(configLoadEn)
-//             dataDirection <= dataDirectionIn;
-//         else
-//             dataDirection <= dataDirection;
-//     end
-
-
-//     // slave select enable register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             ssEnable <= 1'd0;
-//         else if(configLoadEn)
-//             ssEnable <= ssEnableIn;
-//         else
-//             ssEnable <= ssEnable;
-//     end
-
-
-//     // receive interrupt request enable register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             receiveIre <= 1'd0;
-//         else if(configLoadEn)
-//             receiveIre <= receiveIreIn;
-//         else
-//             receiveIre <= receiveIre;
-//     end
-
-
-//     // transmit interrupt request enable register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             transmitIre <= 1'd0;
-//         else if(configLoadEn)
-//             transmitIre <= transmitIreIn;
-//         else
-//             transmitIre <= transmitIre;
-//     end
-
-
-//     //------------------------------------------------
-//     // hidden registers
-
-
-//     // transmitDataValid register
-//     always_ff @(posedge clk or posedge reset) begin
-//         if(reset)
-//             transmitDataValid <= 1'b0; // set not valid
-//         else if(transmitDataLoadEn)
-//             transmitDataValid <= 1'b1; // set ready if another byte is written (this gets priority if the condition below is active at the same time)
-//         else if(transmitReadyWire)
-//             transmitDataValid <= 1'b0; // reset ready when the transmitter reads the data
-//         else
-//             transmitDataValid <= transmitDataValid;
-//     end
-
-
-//     //------------------------------------------------
-//     // transmit and receive modules
-
-
-//     spiUnit  #(
-//         .DATAWIDTH(DATAWIDTH)
-//     )spiUnit(
-//         .clk,
-//         .reset,
-//         .clocksPerCycle,
-//         .clockPolarity,
-//         .clockPhase,
-//         .dataDirection,
-//         .ssEnable,
-//         .transmitValid     (transmitDataValid),
-//         .dataRegIn         (transmitData),
-//         .dataReg           (receiveDataWire),
-//         .transmitReady     (transmitReadyWire),
-//         .receiveValid      (receiveDataValid),
-//         .miso,
-//         .mosi,
-//         .sclk,
-//         .ss
-//     );
-
-
-// endmodule
+endmodule
 
