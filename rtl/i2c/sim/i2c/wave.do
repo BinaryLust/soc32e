@@ -16,7 +16,6 @@ add wave -noupdate -expand -group i2c /i2c_tb/dut/writeReg
 add wave -noupdate -expand -group i2c /i2c_tb/dut/addressReg
 add wave -noupdate -expand -group i2c /i2c_tb/dut/readMux
 add wave -noupdate -expand -group i2c /i2c_tb/dut/transmitDataLoadEn
-add wave -noupdate -expand -group i2c /i2c_tb/dut/transmitData
 add wave -noupdate -expand -group i2c /i2c_tb/dut/receiveData
 add wave -noupdate -expand -group i2c /i2c_tb/dut/receiveAck
 add wave -noupdate -expand -group i2c /i2c_tb/dut/receiveValid
@@ -127,7 +126,7 @@ add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0E
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0F
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/TimingCheckEnable
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {100114650 ps} 1} {{Cursor 2} {100157350 ps} 0}
+WaveRestoreCursors {{Cursor 1} {100114650 ps} 1} {{Cursor 2} {3103003580 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 311
 configure wave -valuecolwidth 210
@@ -143,4 +142,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {99740200 ps} {100479800 ps}
+WaveRestoreZoom {0 ps} {85554241500 ps}

@@ -129,44 +129,50 @@ module i2c_tb();
             end while(dataOut[8] == 1'b1);                   // check ack bit
 
             tx({21'd0, 2'b10, 1'b1, taddress});              // send address
+            rx();                                            // read ack bit
             tx({21'd0, 2'b10, 1'b1, tdata[taddress[3:0]]});  // send data
+            rx();                                            // read ack bit
             tx({21'd0, 2'b01, 1'b1, 8'd0});                  // send stop
 
             taddress = taddress + 1;                         // inrement the address
 
             // wait some time
-            repeat(1000) @(posedge clk);
+            repeat(10000) @(posedge clk);
         end
-
-        // // wait some time
-        // repeat(100000) @(posedge clk);
-
-        // // reset address
-        // taddress = 0;
-
-        // // read the data back from the eeprom
-        // repeat(16) begin
-        //     do begin
-        //         i2cStart();                     // send start
-        //         i2cTransmit(8'b1010_0000, ack); // send contorl byte
-        //     end while(ack != 1'b0);
-
-        //     i2cTransmit(taddress, ack);         // send address
-        //     i2cStart();                         // send start
-        //     i2cTransmit(8'b1010_0001, ack);     // send contorl byte
-        //     i2cReceive(1'b1, data);             // transmit no ack and receive data
-        //     i2cStop();                          // send stop
-
-        //     $info("For address: %h we wrote: %h and read: %h", taddress, tdata[taddress], data);
-
-        //     taddress++;                          // inrement the address
-
-        //     // wait some time
-        //     repeat(1000) @(posedge clk);
-        // end
 
         // wait some time
         repeat(100000) @(posedge clk);
+
+        // reset address
+        taddress = 0;
+
+        // // read the data back from the eeprom
+        repeat(16) begin
+            do begin
+                tx({21'd0, 2'b00, 1'b1, 8'd0});              // send start
+                tx({21'd0, 2'b10, 1'b1, 8'b1010_0000});      // send contorl byte
+                rx();                                        // read ack bit
+            end while(dataOut[8] == 1'b1);                   // check ack bit
+
+            tx({21'd0, 2'b10, 1'b1, taddress});              // send address
+            rx();                                            // read ack bit
+            tx({21'd0, 2'b00, 1'b1, 8'd0});                  // send start
+            tx({21'd0, 2'b10, 1'b1, 8'b1010_0001});          // send contorl byte
+            rx();                                            // read ack bit
+            tx({21'd0, 2'b11, 1'b1, 8'd0});                  // receive data and transmit no ack
+            rx();                                            // read data and ack bit
+            tx({21'd0, 2'b01, 1'b1, 8'd0});                  // send stop
+
+            $info("For address: %h we wrote: %h and read: %h", taddress[3:0], tdata[taddress[3:0]], dataOut[7:0]);
+
+            taddress++;                          // inrement the address
+
+            // wait some time
+            repeat(10000) @(posedge clk);
+        end
+
+        // wait some time
+        repeat(1000000) @(posedge clk);
 
         //$display("%d Errors", errorCount);
         $stop;
@@ -230,47 +236,6 @@ module i2c_tb();
             readData(1'b0);                // read the data
         end
     endtask
-
-
-    // task i2cStart();
-    //     command             = 2'b00; // start command
-    //     transmitValid       = 1'b1;
-    //     @(posedge cycleDone);
-    //     transmitValid       = 1'b0;
-    //     @(negedge busy);
-    // endtask
-
-
-    // task i2cStop();
-    //     command             = 2'b01; // stop command
-    //     transmitValid       = 1'b1;
-    //     @(posedge cycleDone);
-    //     transmitValid       = 1'b0;
-    //     @(negedge busy);
-    // endtask
-
-
-    // task i2cTransmit(input logic [7:0] data, output logic ackOut);
-    //     command             = 2'b10; // transmit command
-    //     transmitData        = data;
-    //     transmitValid       = 1'b1;
-    //     @(posedge cycleDone);
-    //     transmitValid       = 1'b0;
-    //     @(negedge busy);
-    //     ackOut              = receiveAck;
-    // endtask
-
-
-    // task i2cReceive(input logic ack, output logic [7:0] data);
-    //     command             = 2'b11; // receive command
-    //     //transmitData        = 8'b0;  // not really needed
-    //     transmitAck         = ack;   // ack bit
-    //     transmitValid       = 1'b1;
-    //     @(posedge cycleDone);
-    //     transmitValid       = 1'b0;
-    //     @(negedge busy);
-    //     data                = receiveData;
-    // endtask
 
 
 endmodule

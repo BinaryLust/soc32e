@@ -34,7 +34,6 @@ module i2c(
 
 
     // read data lines
-    logic  [7:0]   transmitData;
     logic  [7:0]   receiveData;
     logic          receiveAck;
     logic          receiveValid;
