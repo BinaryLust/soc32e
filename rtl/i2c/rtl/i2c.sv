@@ -95,7 +95,7 @@ module i2c(
 
 
     // special read request signal to reset rx valid bit
-    assign receiveDataReadReq = ((addressReg == 1'd1) && readReg) ? 1'b1 : 1'b0;
+    assign receiveDataReadReq = ((addressReg == 1'd0) && readReg) ? 1'b1 : 1'b0;
 
 
     i2cCore

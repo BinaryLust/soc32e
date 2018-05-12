@@ -43,6 +43,40 @@ add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/receiveAckWire
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/command
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitData
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitAck
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/clk
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/reset
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/command
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitData
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveData
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitAck
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveAck
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/cycleDone
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitValid
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitReady
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValid
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/busy
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/scl
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sda
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/state
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/nextState
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounter
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounterNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/commandReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/commandRegNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataRegNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/ackReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/ackRegNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitReadyReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitReadyRegNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValidReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValidRegNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOutNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOut
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclIn
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOutNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOut
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaIn
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A0
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A1
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A2
@@ -93,10 +127,10 @@ add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0E
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0F
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/TimingCheckEnable
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6560000 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 258
-configure wave -valuecolwidth 82
+WaveRestoreCursors {{Cursor 1} {100114650 ps} 1} {{Cursor 2} {100157350 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 311
+configure wave -valuecolwidth 210
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -109,4 +143,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {962354650 ps} {1002107650 ps}
+WaveRestoreZoom {99740200 ps} {100479800 ps}

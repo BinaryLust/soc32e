@@ -73,9 +73,9 @@ module i2c_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer             seed    = 125376;
-    //integer             address = 0;
-    //logic   [15:0][7:0] tdata;
+    integer             seed     = 125376;
+    logic   [7:0]       taddress = 0;
+    logic   [15:0][7:0] tdata;
     //logic               ack;
     //logic   [7:0]       data;
 
@@ -118,34 +118,31 @@ module i2c_tb();
         // reset the system
         hardwareReset();
 
-        writeData(1'b0, {21'd0, 2'b00, 1'b1, 8'd0});
-        writeData(1'b0, {21'd0, 2'b00, 1'b1, 8'd0});
-        writeData(1'b0, {21'd0, 2'b01, 1'b1, 8'd0});
-        writeData(1'b0, {21'd0, 2'b01, 1'b1, 8'd0});
         // write data to the eeprom
-        // repeat(16) begin
-        //     tdata[address] = $urandom();
+        repeat(16) begin
+            tdata[taddress[3:0]] = $urandom();
 
-        //     do begin
-        //         i2cStart();                     // send start
-        //         i2cTransmit(8'b1010_0000, ack); // send contorl byte
-        //     end while(ack != 1'b0);
+            do begin
+                tx({21'd0, 2'b00, 1'b1, 8'd0});              // send start
+                tx({21'd0, 2'b10, 1'b1, 8'b1010_0000});      // send contorl byte
+                rx();                                        // read ack bit
+            end while(dataOut[8] == 1'b1);                   // check ack bit
 
-        //     i2cTransmit(address, ack);          // send address
-        //     i2cTransmit(tdata[address], ack);   // send data
-        //     i2cStop();                          // send stop
+            tx({21'd0, 2'b10, 1'b1, taddress});              // send address
+            tx({21'd0, 2'b10, 1'b1, tdata[taddress[3:0]]});  // send data
+            tx({21'd0, 2'b01, 1'b1, 8'd0});                  // send stop
 
-        //     address++;                          // inrement the address
+            taddress = taddress + 1;                         // inrement the address
 
-        //     // wait some time
-        //     repeat(1000) @(posedge clk);
-        // end
+            // wait some time
+            repeat(1000) @(posedge clk);
+        end
 
         // // wait some time
         // repeat(100000) @(posedge clk);
 
         // // reset address
-        // address = 0;
+        // taddress = 0;
 
         // // read the data back from the eeprom
         // repeat(16) begin
@@ -154,15 +151,15 @@ module i2c_tb();
         //         i2cTransmit(8'b1010_0000, ack); // send contorl byte
         //     end while(ack != 1'b0);
 
-        //     i2cTransmit(address, ack);          // send address
+        //     i2cTransmit(taddress, ack);         // send address
         //     i2cStart();                         // send start
         //     i2cTransmit(8'b1010_0001, ack);     // send contorl byte
         //     i2cReceive(1'b1, data);             // transmit no ack and receive data
         //     i2cStop();                          // send stop
 
-        //     $info("For address: %h we wrote: %h and read: %h", address, tdata[address], data);
+        //     $info("For address: %h we wrote: %h and read: %h", taddress, tdata[taddress], data);
 
-        //     address++;                          // inrement the address
+        //     taddress++;                          // inrement the address
 
         //     // wait some time
         //     repeat(1000) @(posedge clk);
@@ -194,7 +191,7 @@ module i2c_tb();
     endtask
 
 
-    task writeData(input logic [31:0] _data, input logic _address);
+    task writeData(input logic _address, input logic [31:0] _data);
         begin
             @(posedge clk); // wait for clk edge
             #1 read = 1'b0; write = 1'b1; address = _address; dataIn = _data;
@@ -210,6 +207,27 @@ module i2c_tb();
             #1 read = 1'b1; write = 1'b0; address = _address;
             @(posedge clk); // wait for clk edge
             #1 read = 1'b0; write = 1'b0; address = 1'b0;
+            @(posedge readValid);
+        end
+    endtask
+
+
+    task tx(input logic [31:0] _data);
+        begin
+            do begin
+                readData(1'b1);            // check transmitReady flag
+            end while(dataOut[0] == 1'b0); // wait for it to be ready
+            writeData(1'b0, _data);        // write the data
+        end
+    endtask
+
+
+    task rx();
+        begin
+            do begin
+                readData(1'b1);            // check receiveValid flag
+            end while(dataOut[1] == 1'b0); // wait for it to be valid
+            readData(1'b0);                // read the data
         end
     endtask
 
