@@ -8,7 +8,7 @@
 // 		parameter RECEIVEADDRESSWIDTH  = $clog2(RECEIVEDEPTH))(
 //     input   logic                   clk,
 // 	 input   logic                   reset,
-	 
+
 // 	 input   logic  [DATAWIDTH-1:0]  transmitDataIn,     // data from the master interface
 // 	 input   logic  [15:0]           clocksPerCycleIn,   // data from the master interface
 // 	 input   logic                   clockPolarityIn,    // data from the master interface
@@ -17,11 +17,11 @@
 // 	 input   logic                   ssEnableIn,         // data from the master interface
 // 	 input   logic                   receiveIreIn,       // data from the master interface
 // 	 input   logic                   transmitIreIn,      // data from the master interface
-	 
+
 // 	 input   logic                   transmitDataLoadEn, // write enable from the master interface
 // 	 input   logic                   configLoadEn,       // write enable from the master interface
 // 	 input   logic                   receiveDataReadReq, // read request from the master interface
-	 
+
 // 	 output  logic  [DATAWIDTH-1:0]  receiveData,        // visible state to the master interface
 // 	 output  logic                   receiveValid,       // visible state to the master interface
 // 	 output  logic                   transmitReady,      // visible state to the master interface
@@ -32,17 +32,17 @@
 // 	 output  logic                   ssEnable,           // visible state to the master interface
 // 	 output  logic                   receiveIre,         // visible state to the master interface
 // 	 output  logic                   transmitIre,        // visible state to the master interface
-	 
+
 // 	 output  logic                   transmitIrq,        // interrupt request to the master
 // 	 output  logic                   receiveIrq,         // interrupt request to the master
-	 
+
 // 	 input   logic                   miso,
 // 	 output  logic                   mosi,
 // 	 output  logic                   sclk,
 // 	 output  logic                   ss
 // 	 );
 
-	 
+
 // 	 // wires
 // 	 logic                   transmitReadyWire;  // from the transmitter
 // 	 logic                   receiveDataValid;   // from the receiver
@@ -52,20 +52,20 @@
 // 	 logic                   transmitFifoFull;
 // 	 logic                   receiveFifoEmpty;
 //     logic  [DATAWIDTH-1:0]  transmitData;
-	 
-	 
+
+
 // 	 // interrupt detection registers
 // 	 //logic                   transmitIrePre;
 // 	 //logic                   transmitDataValidPre;
-	 
-	 
+
+
 // 	 //------------------------------------------------
 // 	 // transmit interrupt notes
 // 	 // we can do a transmit interrupt anytime the transmit data is empty or
 // 	 // when the transmit data goes from being full to empty after sending a
 // 	 // byte to begin with
 
-	 
+
 // 	 // transmit interrupt request logic
 // 	 // if transmitDataValid is not valid and we detect transmitIre changing from disabled to enabled
 // 	 // or if transmitIre is enabled and we detect transmitDataValid changing from valid to not valid
@@ -80,8 +80,8 @@
 // 				transmitDataValidPre <= transmitDataValid;
 // 		  end
 // 	 end
-	 
-	 
+
+
 // 	 // receive interrupt request logic
 // 	 // if receive interrupt request enable is set and receiveDataValid is asserted
 // 	 always_ff @(posedge clk or posedge reset) begin
@@ -90,22 +90,22 @@
 // 		  else
 // 		      receiveIrq <= receiveIre & receiveDataValid;
 // 	 end*/
-	 
-	 
+
+
 // 	 // use greater than/less than comparator to monitor fifo fill level and trigger interrupt
 // 	 assign transmitIrq = 1'b0;
 // 	 assign receiveIrq  = 1'b0;
-	 
-	 
+
+
 // 	 //------------------------------------------------
 // 	 // visible registers
 
-	 
+
 // 	 assign transmitDataValid = !transmitFifoEmpty;
 // 	 assign receiveValid      = !receiveFifoEmpty;
 // 	 assign transmitReady     = !transmitFifoFull;
-	 
-	 
+
+
 // 	 // transmit fifo
 // 	 spiFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(TRANSMITDEPTH))
 // 	 spiTransmitFifo(
@@ -120,7 +120,7 @@
 // 		  .full          (transmitFifoFull)
 // 	 );
 
-	 
+
 // 	 // receive fifo
 // 	 spiFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(RECEIVEDEPTH))
 // 	 spiReceiveFifo(
@@ -134,8 +134,8 @@
 // 	     .empty         (receiveFifoEmpty),
 // 		  .full          ()
 // 	 );
-	 
-	 
+
+
 // 	 // cycles per clock register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 		  if(reset)
@@ -145,8 +145,8 @@
 // 		  else
 // 				clocksPerCycle <= clocksPerCycle;
 // 	 end
-	 
-	 
+
+
 // 	 // clock polarity register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -156,8 +156,8 @@
 // 		  else
 // 				clockPolarity <= clockPolarity;
 // 	 end
-	 
-	 
+
+
 // 	 // clock phase register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -167,8 +167,8 @@
 // 		  else
 // 				clockPhase <= clockPhase;
 // 	 end
-	 
-	 
+
+
 // 	 // data direction register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -178,8 +178,8 @@
 // 		  else
 // 				dataDirection <= dataDirection;
 // 	 end
-	 
-	 
+
+
 // 	 // slave select enable register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -189,8 +189,8 @@
 // 		  else
 // 				ssEnable <= ssEnable;
 // 	 end
-	 
-	 
+
+
 // 	 // receive interrupt request enable register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -200,8 +200,8 @@
 // 		  else
 // 				receiveIre <= receiveIre;
 // 	 end
-	 
-	 
+
+
 // 	 // transmit interrupt request enable register
 // 	 always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset)
@@ -211,12 +211,12 @@
 // 		  else
 // 				transmitIre <= transmitIre;
 // 	 end
-	 
-	 
+
+
 // 	 //------------------------------------------------
 // 	 // hidden registers
 
-	 
+
 // 	 // previous word count registers
 // 	 /*always_ff @(posedge clk or posedge reset) begin
 // 	     if(reset) begin
@@ -227,12 +227,12 @@
 // 				wordCountP2 <= wordCountP1; // two cycles ago
 // 		  end
 // 	 end*/
-	 
-	 	 
+
+
 // 	 //------------------------------------------------
 // 	 // transmit and receive modules
-	 
-	 
+
+
 //     spiUnit  #(.DATAWIDTH(DATAWIDTH))
 // 	 spiUnit(
 //         .clk,
@@ -252,7 +252,7 @@
 // 	     .sclk,
 // 		  .ss
 // 	 );
-	 
-	 
+
+
 // endmodule
 

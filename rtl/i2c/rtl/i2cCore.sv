@@ -12,8 +12,8 @@ module i2cCore(
     input   logic  [7:0]   transmitDataIn,  // data from the master interface
     input   logic          transmitAckIn,   // data from the master interface
 
-	input   logic          transmitDataLoadEn, // write enable from the master interface
-	input   logic          receiveDataReadReq, // read request from the master interface
+    input   logic          transmitDataLoadEn, // write enable from the master interface
+    input   logic          receiveDataReadReq, // read request from the master interface
 
     output  logic  [7:0]   receiveData,     // visible state to the master interface
     output  logic          receiveAck,      // visible state to the master interface

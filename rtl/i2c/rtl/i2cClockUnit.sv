@@ -5,7 +5,7 @@ module i2cClockUnit(
     input   logic          reset,
 
     //input   logic  [15:0]  clocksPerCycle, // the cycles of main clock we must count for a slave cycle to complete
-    
+
     output  logic          cycleDone       // high when a full cycle is complete
     );
 

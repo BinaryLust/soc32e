@@ -7,7 +7,7 @@ module vga();
 // contains setting registers, and font memory
 // and fetches lines from memory to give to the driver
 
- 
+
 // vga driver clock domain 2
 // receives lines from the core and drives them to the monitor
 

@@ -2,19 +2,19 @@
 
 module sdram(
     input   logic          clk,
-	 input   logic          reset,
-	 input   logic          chipEnable,
-	 input   logic          read,
-	 input   logic          write,
-	 input   logic  [3:0]   bwe,
+    input   logic          reset,
+    input   logic          chipEnable,
+    input   logic          read,
+    input   logic          write,
+    input   logic  [3:0]   bwe,
     input   logic  [20:0]  address,
-	 input   logic  [31:0]  dataIn,
-	 
-	 output  logic          waitRequest,
-	 output  logic          readValid,
-	 output  logic  [31:0]  dataOut,
-	 
-	 output  logic  [11:0]  externalSdramAddress,
+    input   logic  [31:0]  dataIn,
+
+    output  logic          waitRequest,
+    output  logic          readValid,
+    output  logic  [31:0]  dataOut,
+
+    output  logic  [11:0]  externalSdramAddress,
     output  logic  [1:0]   externalSdramBa,
     output  logic          externalSdramCas,
     output  logic          externalSdramCke,
@@ -23,84 +23,84 @@ module sdram(
     output  logic  [1:0]   externalSdramDqm,
     output  logic          externalSdramRas,
     output  logic          externalSdramWe
-	 );
+    );
 
-	 
-	 logic          wordCount;
-	 logic          readCount;
-	 logic  [1:0]   bweMux;
-	 logic  [15:0]  dataInMux;
-	 logic  [15:0]  readDataReg;
-	 
-	 
-	 logic          sdramWaitRequest;
-	 logic          sdramValid;
-	 logic  [15:0]  sdramData;
 
-	 
-	 // data output
-	 assign dataOut     = {readDataReg, sdramData};
-	 
-	 
-	 // wait request logic
-	 assign waitRequest = (read || write) && ((wordCount == 1'b0) || sdramWaitRequest);
-	 
-	 
-	 // read valid logic
-	 assign readValid   = (readCount == 1'b1) && sdramValid;
-	 
-	 
-	 // word counter
-	 always_ff @(posedge clk or posedge reset) begin
-	     if(reset)
-		      wordCount <= 1'b0;
-		  else if((read || write) && !sdramWaitRequest) // advance the counter if read/write is active unless the sdram controller requests a wait
-		      wordCount <= !wordCount;
-		  else
-		      wordCount <= wordCount;
-	 end
-	 
-	 
-	 // read counter
-	 always_ff @(posedge clk or posedge reset) begin
-	     if(reset)
-		      readCount <= 1'b0;
-		  else if (sdramValid)            // advance the count everytime we detect a valid output word
-		      readCount <= !readCount;
-		  else
-		      readCount <= readCount;
-	 end
-	 
-	 
-	 // read data register
-	 always_ff @(posedge clk) begin
-	     if((readCount == 1'b0) && sdramValid)
-		      readDataReg <= sdramData;   // store the first word
-		  else
-		      readDataReg <= readDataReg; // keep old data
-	 end
-	 
-	 
-	 // bwe select
-	 always_comb begin
-	     case(wordCount)
-		      1'b0: bweMux = ~bwe[3:2];
-				1'b1: bweMux = ~bwe[1:0];
-		  endcase
-	 end
-	 
-	 
-	 // data in select
-	 always_comb begin
-	     case(wordCount)
-		      1'b0: dataInMux = dataIn[31:16];
-				1'b1: dataInMux = dataIn[15:0];
-		  endcase
-	 end
-	 
-	 
-	 soc32e_sdram
-	 soc32e_sdram(
+    logic          wordCount;
+    logic          readCount;
+    logic  [1:0]   bweMux;
+    logic  [15:0]  dataInMux;
+    logic  [15:0]  readDataReg;
+
+
+    logic          sdramWaitRequest;
+    logic          sdramValid;
+    logic  [15:0]  sdramData;
+
+
+    // data output
+    assign dataOut     = {readDataReg, sdramData};
+
+
+    // wait request logic
+    assign waitRequest = (read || write) && ((wordCount == 1'b0) || sdramWaitRequest);
+
+
+    // read valid logic
+    assign readValid   = (readCount == 1'b1) && sdramValid;
+
+
+    // word counter
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            wordCount <= 1'b0;
+        else if((read || write) && !sdramWaitRequest) // advance the counter if read/write is active unless the sdram controller requests a wait
+            wordCount <= !wordCount;
+        else
+            wordCount <= wordCount;
+    end
+
+
+    // read counter
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            readCount <= 1'b0;
+        else if (sdramValid)            // advance the count everytime we detect a valid output word
+            readCount <= !readCount;
+        else
+            readCount <= readCount;
+    end
+
+
+    // read data register
+    always_ff @(posedge clk) begin
+        if((readCount == 1'b0) && sdramValid)
+            readDataReg <= sdramData;   // store the first word
+        else
+            readDataReg <= readDataReg; // keep old data
+    end
+
+
+    // bwe select
+    always_comb begin
+        case(wordCount)
+            1'b0: bweMux = ~bwe[3:2];
+            1'b1: bweMux = ~bwe[1:0];
+        endcase
+    end
+
+
+     // data in select
+     always_comb begin
+        case(wordCount)
+            1'b0: dataInMux = dataIn[31:16];
+            1'b1: dataInMux = dataIn[15:0];
+        endcase
+    end
+
+
+    soc32e_sdram
+    soc32e_sdram(
         .az_addr                ({address, wordCount}),
         .az_be_n                (bweMux),
         .az_cs                  (chipEnable),
@@ -122,7 +122,7 @@ module sdram(
         .zs_ras_n               (externalSdramRas),
         .zs_we_n                (externalSdramWe)
     );
-					  
-	
+
+
 endmodule
 

@@ -11,98 +11,98 @@
 
 module regfile(
     input   logic          clk,
-	 input   logic          reset,
-	 input   logic          writeEnableA,
-	 input   logic          writeEnableB,
-	 input   logic  [4:0]   writeAddressA,
-	 input   logic  [4:0]   writeAddressB,
-	 input   logic  [31:0]  writeDataA,
-	 input   logic  [31:0]  writeDataB,
-	 input   logic  [4:0]   readAddressA,
-	 input   logic  [4:0]   readAddressB,
-	
-	 output  logic  [31:0]  readDataA,
-	 output  logic  [31:0]  readDataB
-	 );
+    input   logic          reset,
+    input   logic          writeEnableA,
+    input   logic          writeEnableB,
+    input   logic  [4:0]   writeAddressA,
+    input   logic  [4:0]   writeAddressB,
+    input   logic  [31:0]  writeDataA,
+    input   logic  [31:0]  writeDataB,
+    input   logic  [4:0]   readAddressA,
+    input   logic  [4:0]   readAddressB,
 
-	
-	 logic          writeEnableAReg;
-	 logic          writeEnableBReg;
-	 logic  [4:0]   writeAddressAReg;
-	 logic  [4:0]   writeAddressBReg;
-	 logic  [4:0]   readAddressAReg;
-	 logic  [4:0]   readAddressBReg;
-	 logic          bankSelectA;
-	 logic          bankSelectB;
+    output  logic  [31:0]  readDataA,
+    output  logic  [31:0]  readDataB
+    );
+
+
+    logic          writeEnableAReg;
+    logic          writeEnableBReg;
+    logic  [4:0]   writeAddressAReg;
+    logic  [4:0]   writeAddressBReg;
+    logic  [4:0]   readAddressAReg;
+    logic  [4:0]   readAddressBReg;
+    logic          bankSelectA;
+    logic          bankSelectB;
     logic  [31:0]  bankADataA;
-	 logic  [31:0]  bankADataB;
-	 logic  [31:0]  bankBDataA;
-	 logic  [31:0]  bankBDataB;
-	
-	
-	 regfileInputRegisters
-	 regfileInputRegisters(
+    logic  [31:0]  bankADataB;
+    logic  [31:0]  bankBDataA;
+    logic  [31:0]  bankBDataB;
+
+
+    regfileInputRegisters
+    regfileInputRegisters(
         .clk,
-	     .reset,
-	     .writeEnableA,
-	     .writeEnableB,
-	     .writeAddressA,
-	     .writeAddressB,
-	     .readAddressA,
-	     .readAddressB,
-	     .writeEnableAReg,
-	     .writeEnableBReg,
-	     .writeAddressAReg,
-	     .writeAddressBReg,
-	     .readAddressAReg,
-	     .readAddressBReg
-	 );
-	
-	
-	 regfileLiveValueTable
-	 regfileLiveValueTable(
+        .reset,
+        .writeEnableA,
+        .writeEnableB,
+        .writeAddressA,
+        .writeAddressB,
+        .readAddressA,
+        .readAddressB,
+        .writeEnableAReg,
+        .writeEnableBReg,
+        .writeAddressAReg,
+        .writeAddressBReg,
+        .readAddressAReg,
+        .readAddressBReg
+    );
+
+
+    regfileLiveValueTable
+    regfileLiveValueTable(
         .clk,
-		  .reset,
-	     .writeEnableA   (writeEnableAReg),
-	     .writeEnableB   (writeEnableBReg),
-	     .writeAddressA  (writeAddressAReg),
-	     .writeAddressB  (writeAddressBReg),
-	     .readAddressA   (readAddressAReg),
-	     .readAddressB   (readAddressBReg),
-	     .bankSelectA,
-	     .bankSelectB
-	 );
-	
-	
+        .reset,
+        .writeEnableA   (writeEnableAReg),
+        .writeEnableB   (writeEnableBReg),
+        .writeAddressA  (writeAddressAReg),
+        .writeAddressB  (writeAddressBReg),
+        .readAddressA   (readAddressAReg),
+        .readAddressB   (readAddressBReg),
+        .bankSelectA,
+        .bankSelectB
+    );
+
+
     regfileBank
-	 regfileBankA(
+    regfileBankA(
         .clk,
-	     .writeEnable    (writeEnableA),
-	     .writeAddress   (writeAddressA),
-	     .writeData      (writeDataA),
-	     .readAddressA,
-	     .readAddressB,
-	     .readDataA      (bankADataA),
-	     .readDataB      (bankADataB)
-	 );
-	
-	
-	 regfileBank
-	 regfileBankB(
+        .writeEnable    (writeEnableA),
+        .writeAddress   (writeAddressA),
+        .writeData      (writeDataA),
+        .readAddressA,
+        .readAddressB,
+        .readDataA      (bankADataA),
+        .readDataB      (bankADataB)
+    );
+
+
+    regfileBank
+    regfileBankB(
         .clk,
-	     .writeEnable    (writeEnableB),
-	     .writeAddress   (writeAddressB),
-	     .writeData      (writeDataB),
-	     .readAddressA,
-	     .readAddressB,
-	     .readDataA      (bankBDataA),
-	     .readDataB      (bankBDataB)
-	 );
-	
-	
-	 assign readDataA = (bankSelectA) ? bankBDataA : bankADataA;
-	 assign readDataB = (bankSelectB) ? bankBDataB : bankADataB;
-	
-	
+        .writeEnable    (writeEnableB),
+        .writeAddress   (writeAddressB),
+        .writeData      (writeDataB),
+        .readAddressA,
+        .readAddressB,
+        .readDataA      (bankBDataA),
+        .readDataB      (bankBDataB)
+    );
+
+
+    assign readDataA = (bankSelectA) ? bankBDataA : bankADataA;
+    assign readDataB = (bankSelectB) ? bankBDataB : bankADataB;
+
+
 endmodule
 

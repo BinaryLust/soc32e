@@ -5,49 +5,49 @@ package architecture;
 
     // bit fields
     //localparam fields
-	 
-	 
-	 // could do an enum instead?
-	 
-	 // registers
+
+
+     // could do an enum instead?
+
+     // registers
     localparam logic [4:0]
-	            R0  = 5'd0,
-	            R1  = 5'd1,
-	            R2  = 5'd2,
-					R3  = 5'd3,
-					R4  = 5'd4,
-					R5  = 5'd5,
-					R6  = 5'd6,
-					R7  = 5'd7,
-					R8  = 5'd8,
-					R9  = 5'd9,
-					R10 = 5'd10,
-					R11 = 5'd11,
-					R12 = 5'd12,
-					R13 = 5'd13,
-					R14 = 5'd14,
-					R15 = 5'd15,
-					R16 = 5'd16,
-					R17 = 5'd17,
-					R18 = 5'd18,
-					R19 = 5'd19,
-					R20 = 5'd20,
-					R21 = 5'd21,
-					R22 = 5'd22,
-					R23 = 5'd23,
-					R24 = 5'd24,
-					R25 = 5'd25,
-					R26 = 5'd26,
-					R27 = 5'd27,
-					FP  = 5'd28,
-					EPC = 5'd29,
-					LR  = 5'd30,
-					SP  = 5'd31;
-	
-	 
-	 // opcodes
+        R0  = 5'd0,
+        R1  = 5'd1,
+        R2  = 5'd2,
+        R3  = 5'd3,
+        R4  = 5'd4,
+        R5  = 5'd5,
+        R6  = 5'd6,
+        R7  = 5'd7,
+        R8  = 5'd8,
+        R9  = 5'd9,
+        R10 = 5'd10,
+        R11 = 5'd11,
+        R12 = 5'd12,
+        R13 = 5'd13,
+        R14 = 5'd14,
+        R15 = 5'd15,
+        R16 = 5'd16,
+        R17 = 5'd17,
+        R18 = 5'd18,
+        R19 = 5'd19,
+        R20 = 5'd20,
+        R21 = 5'd21,
+        R22 = 5'd22,
+        R23 = 5'd23,
+        R24 = 5'd24,
+        R25 = 5'd25,
+        R26 = 5'd26,
+        R27 = 5'd27,
+        FP  = 5'd28,
+        EPC = 5'd29,
+        LR  = 5'd30,
+        SP  = 5'd31;
+
+
+     // opcodes
     typedef enum logic [11:0] {
-        ADC_I   = {6'd1,  6'd? },	
+        ADC_I   = {6'd1,  6'd? },
         ADC_R   = {6'd0,  6'd0 },
         ADD_I   = {6'd2,  6'd? },
         ADD_R   = {6'd0,  6'd1 },
@@ -141,9 +141,9 @@ package architecture;
         UADC_R  = {6'd0,  6'd42},
         UADD_I  = {6'd50, 6'd? },
         UADD_R  = {6'd0,  6'd43},
-		  UCMP_I  = {6'd51, 6'd? },
+        UCMP_I  = {6'd51, 6'd? },
         UCMP_R  = {6'd0,  6'd44},
-		  UDIV_R  = {6'd0,  6'd45},
+        UDIV_R  = {6'd0,  6'd45},
         UMUL_R  = {6'd0,  6'd46},
         USBB_I  = {6'd52, 6'd? },
         USBB_R  = {6'd0,  6'd47},
@@ -151,54 +151,53 @@ package architecture;
         USUB_R  = {6'd0,  6'd48},
         XOR_I   = {6'd54, 6'd? },
         XOR_R   = {6'd0,  6'd49},
-			
-		  UKN1_R   = {6'd0,  6'd50}, // undefined instructions below here
-		  UKN2_R   = {6'd0,  6'd51},
-		  UKN3_R   = {6'd0,  6'd52},
-		  UKN4_R   = {6'd0,  6'd53},
-		  UKN5_R   = {6'd0,  6'd54},
-		  UKN6_R   = {6'd0,  6'd55},
-		  UKN7_R   = {6'd0,  6'd56},
-		  UKN8_R   = {6'd0,  6'd57},
-		  UKN9_R   = {6'd0,  6'd58},
-		  UKN10_R  = {6'd0,  6'd59},
-		  UKN11_R  = {6'd0,  6'd60},
-		  UKN12_R  = {6'd0,  6'd61},
-		  UKN13_R  = {6'd0,  6'd62},
-		  UKN14_R  = {6'd0,  6'd63},
-			
-		  UKN1_I   = {6'd55,  6'd?},
-		  UKN2_I   = {6'd56,  6'd?},
-		  UKN3_I   = {6'd57,  6'd?},
-		  UKN4_I   = {6'd58,  6'd?},
-		  UKN5_I   = {6'd59,  6'd?},
-		  UKN6_I   = {6'd60,  6'd?},
-		  UKN7_I   = {6'd61,  6'd?},
-		  UKN8_I   = {6'd62,  6'd?},
-		  UKN9_I   = {6'd63,  6'd?}
-		
-	   } opcodes;
-		
-		
-	   // condition codes
-		typedef enum logic [3:0] {
+
+        UKN1_R   = {6'd0,  6'd50}, // undefined instructions below here
+        UKN2_R   = {6'd0,  6'd51},
+        UKN3_R   = {6'd0,  6'd52},
+        UKN4_R   = {6'd0,  6'd53},
+        UKN5_R   = {6'd0,  6'd54},
+        UKN6_R   = {6'd0,  6'd55},
+        UKN7_R   = {6'd0,  6'd56},
+        UKN8_R   = {6'd0,  6'd57},
+        UKN9_R   = {6'd0,  6'd58},
+        UKN10_R  = {6'd0,  6'd59},
+        UKN11_R  = {6'd0,  6'd60},
+        UKN12_R  = {6'd0,  6'd61},
+        UKN13_R  = {6'd0,  6'd62},
+        UKN14_R  = {6'd0,  6'd63},
+
+        UKN1_I   = {6'd55,  6'd?},
+        UKN2_I   = {6'd56,  6'd?},
+        UKN3_I   = {6'd57,  6'd?},
+        UKN4_I   = {6'd58,  6'd?},
+        UKN5_I   = {6'd59,  6'd?},
+        UKN6_I   = {6'd60,  6'd?},
+        UKN7_I   = {6'd61,  6'd?},
+        UKN8_I   = {6'd62,  6'd?},
+        UKN9_I   = {6'd63,  6'd?}
+    } opcodes;
+
+
+    // condition codes
+    typedef enum logic [3:0] {
         UNCONDITIONAL    = 4'd0,
-		  ZERO             = 4'd1,
-		  NOTZERO          = 4'd2,
-		  CARRY            = 4'd3,
-		  NOTCARRY         = 4'd4,
-		  OVERFLOW         = 4'd5,
-		  NOTOVERFLOW      = 4'd6,
-		  NEGATIVE         = 4'd7,
-		  NOTNEGATIVE      = 4'd8,
-		  GREATER_U        = 4'd9,
-		  LESSOREQUAL_U    = 4'd10,
-		  GREATER_S        = 4'd11,
-		  LESS_S           = 4'd12,
-		  GREATEROREQUAL_S = 4'd13,
-  		  LESSOREQUAL_S    = 4'd14
-	 }  conditions;
-	 
-	 
+        ZERO             = 4'd1,
+        NOTZERO          = 4'd2,
+        CARRY            = 4'd3,
+        NOTCARRY         = 4'd4,
+        OVERFLOW         = 4'd5,
+        NOTOVERFLOW      = 4'd6,
+        NEGATIVE         = 4'd7,
+        NOTNEGATIVE      = 4'd8,
+        GREATER_U        = 4'd9,
+        LESSOREQUAL_U    = 4'd10,
+        GREATER_S        = 4'd11,
+        LESS_S           = 4'd12,
+        GREATEROREQUAL_S = 4'd13,
+        LESSOREQUAL_S    = 4'd14
+    } conditions;
+
+
 endpackage
 

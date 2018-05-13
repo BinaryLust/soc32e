@@ -69,7 +69,7 @@ module i2cUnit_tb();
         .RESET    (reset)
     );
 
-    
+
     pullup(sda);
     pullup(scl);
 
@@ -170,7 +170,7 @@ module i2cUnit_tb();
                 i2cStart();                     // send start
                 i2cTransmit(8'b1010_0000, ack); // send contorl byte
             end while(ack != 1'b0);
-            
+
             i2cTransmit(address, ack);          // send address
             i2cStart();                         // send start
             i2cTransmit(8'b1010_0001, ack);     // send contorl byte

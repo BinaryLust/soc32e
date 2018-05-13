@@ -2,8 +2,8 @@
 
 module i2cFifoMemory #(
     parameter DATAWIDTH    = 8,
-	parameter DATADEPTH    = 1024,
-	parameter ADDRESSWIDTH = $clog2(DATADEPTH)
+    parameter DATADEPTH    = 1024,
+    parameter ADDRESSWIDTH = $clog2(DATADEPTH)
     )(
     input   logic                      clk,
     input   logic                      writeEn,
