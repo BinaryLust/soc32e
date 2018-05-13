@@ -272,6 +272,7 @@ module i2cUnit(
         // defaults
         nextState            = IDLE;       // go to idle
         bitCounterNext       = bitCounter; // keep old value
+        commandRegNext       = commandReg; // keep old value
         dataRegNext          = dataReg;    // keep old value
         ackRegNext           = ackReg;     // keep old value
         sclOutNext           = sclOut;     // keep old value

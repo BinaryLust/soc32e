@@ -70,7 +70,13 @@ module addressMap(
     output  logic          sdCardSpiChipEnable,
     output  logic          sdCardSpiRead,
     output  logic          sdCardSpiWrite,
-    output  logic  [1:0]   sdCardSpiAddress
+    output  logic  [1:0]   sdCardSpiAddress,
+
+    //input   logic          i2cWaitRequest,
+    output  logic          i2cChipEnable,
+    output  logic          i2cRead,
+    output  logic          i2cWrite,
+    output  logic          i2cAddress
     );
 
 
@@ -92,6 +98,7 @@ module addressMap(
         dacSpiChipEnable    = 1'b0;
         soundChipEnable     = 1'b0;
         sdCardSpiChipEnable = 1'b0;
+        i2cChipEnable       = 1'b0;
 
 
         if((address >= 32'h00000000) && (address <= 32'h00003FFF)) ramChipEnable       = 1'b1;
@@ -105,6 +112,7 @@ module addressMap(
         if((address >= 32'h03001000) && (address <= 32'h0300100F)) dacSpiChipEnable    = 1'b1;
         if((address >= 32'h03002000) && (address <= 32'h0300200F)) soundChipEnable     = 1'b1;
         if((address >= 32'h03003000) && (address <= 32'h0300300F)) sdCardSpiChipEnable = 1'b1;
+        if((address >= 32'h03004000) && (address <= 32'h03004007)) i2cChipEnable       = 1'b1;
     end
 
 
@@ -132,6 +140,8 @@ module addressMap(
         soundWrite     = soundChipEnable     && write;
         sdCardSpiRead  = sdCardSpiChipEnable && read;
         sdCardSpiWrite = sdCardSpiChipEnable && write;
+        i2cRead        = i2cChipEnable       && read;
+        i2cWrite       = i2cChipEnable       && write;
     end
 
 
@@ -146,6 +156,7 @@ module addressMap(
         dacSpiAddress    = address[3:2];
         soundAddress     = address[3:2];
         sdCardSpiAddress = address[3:2];
+        i2cAddress       = address[2];
     end
 
 

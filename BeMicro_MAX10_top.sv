@@ -171,8 +171,8 @@ module BeMicro_MAX10_top(
 `ifdef ENABLE_HEADERS
     /* Expansion headers (pair of 40-pin headers) */
     // Voltage Level 2.5V
-    inout  logic  GPIO_01,
-    inout  logic  GPIO_02,
+    inout  wire   GPIO_01, // used to be // inout  logic  GPIO_01,
+    inout  wire   GPIO_02, // used to be // inout  logic  GPIO_02,
     inout  logic  GPIO_03,
     inout  logic  GPIO_04,
     inout  logic  GPIO_05,
@@ -284,6 +284,8 @@ module BeMicro_MAX10_top(
         .sdCardMosi             (PMOD_C[1]),
         .sdCardSclk             (PMOD_C[3]),
         .sdCardSs               (PMOD_C[0]),
+        .scl                    (GPIO_02),//(ADT7420_SCL),
+        .sda                    (GPIO_01),//(ADT7420_SDA),
         .pwmOut                 (PMOD_A[0]),
         .externalSdramAddress   (SDRAM_A[11:0]),
         .externalSdramBa        (SDRAM_BA),

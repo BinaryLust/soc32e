@@ -19,6 +19,9 @@ module soc32e(
     output  logic          sdCardSclk,
     output  logic          sdCardSs,
 
+    inout   wire           scl,
+    inout   wire           sda,
+
     output  logic          pwmOut,
 
     output  logic  [11:0]  externalSdramAddress,
@@ -147,6 +150,13 @@ module soc32e(
     logic          sdCardSpiValid;
     logic  [31:0]  sdCardSpiData;
 
+    logic          i2cChipEnable;
+    logic          i2cRead;
+    logic          i2cWrite;
+    logic          i2cAddress;
+    logic          i2cValid;
+    logic  [31:0]  i2cData;
+
 
     // interrupt wires
     logic  [15:0]  triggerInterrupt;
@@ -258,7 +268,11 @@ module soc32e(
         .sdCardSpiChipEnable,
         .sdCardSpiRead,
         .sdCardSpiWrite,
-        .sdCardSpiAddress
+        .sdCardSpiAddress,
+        .i2cChipEnable,
+        .i2cRead,
+        .i2cWrite,
+        .i2cAddress
     );
 
 
@@ -498,6 +512,21 @@ module soc32e(
     );
 
 
+    i2c
+    i2c(
+       .clk                     (clk100),
+       .reset                   (reset100),
+       .read                    (i2cRead),
+       .write                   (i2cWrite),
+       .address                 (i2cAddress),
+       .dataIn                  (dataOut),
+       .readValid               (i2cValid),
+       .dataOut                 (i2cData),
+       .scl,
+       .sda
+    );
+
+
     dataSelect
     dataSelect(
         .ramValid,
@@ -511,6 +540,7 @@ module soc32e(
         .dacSpiValid,
         .soundValid,
         .sdCardSpiValid,
+        .i2cValid,
         .ramData,
         .ioData,
         .uartData,
@@ -522,6 +552,7 @@ module soc32e(
         .dacSpiData,
         .soundData,
         .sdCardSpiData,
+        .i2cData,
         .readValid,
         .dataIn
     );
