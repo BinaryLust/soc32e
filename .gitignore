@@ -1,31 +1,10 @@
 # folders to ignore
-.qsys_edit
-
 db
 incremental_db
-greybox_tmp
-synthesis
 output_files
 simulation
 work
 
 # file types to ignore
-*.bak
-*.rpt
-*.html
-*.qbd
-*.qbg
-*.qtl
-*.log
 *.qws
-*.vstf
-*.ppf
 *.wlf
-*.ver
-*.json
-*.bin
-
-sim/normal/wlft3txh1w
-sim/normal/wlft94fv32
-sim/normal/wlftftdtb2
-sim/normal/wlftw3ncf6

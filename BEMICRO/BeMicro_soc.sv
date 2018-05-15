@@ -1,6 +1,6 @@
 
 
-module soc32e(
+module BeMicro_soc(
     input   logic          clk,
     input   logic          reset,
 

@@ -25,7 +25,7 @@
 `define ENABLE_GPIO_J4
 `define ENABLE_PMOD
 
-module BeMicro_MAX10_top(
+module BeMicro_top(
 
     /* Clock inputs, SYS_CLK = 50MHz, USER_CLK = 24MHz */
 `ifdef ENABLE_CLOCK_INPUTS
@@ -269,8 +269,8 @@ module BeMicro_MAX10_top(
     logic  [7:0]  ioOut;
 
 
-    soc32e
-    soc32e(
+    BeMicro_soc
+    BeMicro_soc(
         .clk                    (SYS_CLK),
         .reset                  (~PB[1]),
         .ioOut,
