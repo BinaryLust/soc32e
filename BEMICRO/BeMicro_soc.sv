@@ -74,27 +74,27 @@ module BeMicro_soc(
 
 
     // slave module wires
-    logic          ramChipEnable;
+    //logic          ramChipEnable;
     logic          ramRead;
     logic          ramWrite;
     logic  [11:0]  ramAddress;
     logic          ramValid;
     logic  [31:0]  ramData;
 
-    logic          randomChipEnable;
+    //logic          randomChipEnable;
     logic          randomRead;
     logic          randomWrite;
     logic          randomValid;
     logic  [31:0]  randomData;
 
-    logic          timerChipEnable;
+    //logic          timerChipEnable;
     logic          timerRead;
     logic          timerWrite;
     logic  [2:0]   timerAddress;
     logic          timerValid;
     logic  [31:0]  timerData;
 
-    logic          uartChipEnable;
+    //logic          uartChipEnable;
     logic          uartRead;
     logic          uartWrite;
     logic  [1:0]   uartAddress;
@@ -102,55 +102,55 @@ module BeMicro_soc(
     logic  [31:0]  uartData;
 
     logic          sdramWaitRequest;
-    logic          sdramChipEnable;
+    //logic          sdramChipEnable;
     logic          sdramRead;
     logic          sdramWrite;
     logic  [20:0]  sdramAddress;
     logic          sdramValid;
     logic  [31:0]  sdramData;
 
-    logic          sequencerChipEnable;
+    //logic          sequencerChipEnable;
     logic          sequencerRead;
     logic          sequencerWrite;
     logic          sequencerAddress;
     logic          sequencerValid;
     logic  [31:0]  sequencerData;
 
-    logic          sampleChipEnable;
+    //logic          sampleChipEnable;
     logic          sampleRead;
     logic          sampleWrite;
     logic  [6:0]   sampleAddress;
     logic          sampleValid;
     logic  [31:0]  sampleData;
 
-    logic          ioChipEnable;
+    //logic          ioChipEnable;
     logic          ioRead;
     logic          ioWrite;
     logic          ioValid;
     logic  [31:0]  ioData;
 
-    logic          dacSpiChipEnable;
+    //logic          dacSpiChipEnable;
     logic          dacSpiRead;
     logic          dacSpiWrite;
     logic  [1:0]   dacSpiAddress;
     logic          dacSpiValid;
     logic  [31:0]  dacSpiData;
 
-    logic          soundChipEnable;
+    //logic          soundChipEnable;
     logic          soundRead;
     logic          soundWrite;
     logic  [1:0]   soundAddress;
     logic          soundValid;
     logic  [31:0]  soundData;
 
-    logic          sdCardSpiChipEnable;
+    //logic          sdCardSpiChipEnable;
     logic          sdCardSpiRead;
     logic          sdCardSpiWrite;
     logic  [1:0]   sdCardSpiAddress;
     logic          sdCardSpiValid;
     logic  [31:0]  sdCardSpiData;
 
-    logic          i2cChipEnable;
+    //logic          i2cChipEnable;
     logic          i2cRead;
     logic          i2cWrite;
     logic          i2cAddress;
@@ -217,62 +217,6 @@ module BeMicro_soc(
         .clk25,
         .reset100,
         .reset25
-    );
-
-
-    addressMap
-    addressMap(
-        .address,
-        .read,
-        .write,
-        .waitRequest,
-        .ramChipEnable,
-        .ramRead,
-        .ramWrite,
-        .ramAddress,
-        .randomChipEnable,
-        .randomRead,
-        .randomWrite,
-        .timerChipEnable,
-        .timerRead,
-        .timerWrite,
-        .timerAddress,
-        .uartChipEnable,
-        .uartRead,
-        .uartWrite,
-        .uartAddress,
-        .sdramWaitRequest,
-        .sdramChipEnable,
-        .sdramRead,
-        .sdramWrite,
-        .sdramAddress,
-        .sequencerChipEnable,
-        .sequencerRead,
-        .sequencerWrite,
-        .sequencerAddress,
-        .sampleChipEnable,
-        .sampleRead,
-        .sampleWrite,
-        .sampleAddress,
-        .ioChipEnable,
-        .ioRead,
-        .ioWrite,
-        .dacSpiChipEnable,
-        .dacSpiRead,
-        .dacSpiWrite,
-        .dacSpiAddress,
-        .soundChipEnable,
-        .soundRead,
-        .soundWrite,
-        .soundAddress,
-        .sdCardSpiChipEnable,
-        .sdCardSpiRead,
-        .sdCardSpiWrite,
-        .sdCardSpiAddress,
-        .i2cChipEnable,
-        .i2cRead,
-        .i2cWrite,
-        .i2cAddress
     );
 
 
@@ -403,7 +347,7 @@ module BeMicro_soc(
     sdram(
         .clk                    (clk100),
         .reset                  (reset100),
-        .chipEnable             (sdramChipEnable),
+        .chipEnable             (1'b1),
         .read                   (sdramRead),
         .write                  (sdramWrite),
         .bwe,
@@ -527,32 +471,71 @@ module BeMicro_soc(
     );
 
 
-    dataSelect
-    dataSelect(
-        .ramValid,
-        .ioValid,
-        .uartValid,
-        .randomValid,
-        .timerValid,
-        .sdramValid,
-        .sequencerValid,
-        .sampleValid,
-        .dacSpiValid,
-        .soundValid,
-        .sdCardSpiValid,
-        .i2cValid,
+    BeMicro_soc_interconnect
+    BeMicro_soc_interconnect(
         .ramData,
-        .ioData,
-        .uartData,
+        .ramValid,
+        .ramRead,
+        .ramWrite,
+        .ramAddress,
         .randomData,
+        .randomValid,
+        .randomRead,
+        .randomWrite,
         .timerData,
+        .timerValid,
+        .timerRead,
+        .timerWrite,
+        .timerAddress,
+        .uartData,
+        .uartValid,
+        .uartRead,
+        .uartWrite,
+        .uartAddress,
         .sdramData,
+        .sdramValid,
+        .sdramWaitRequest,
+        .sdramRead,
+        .sdramWrite,
+        .sdramAddress,
         .sequencerData,
+        .sequencerValid,
+        .sequencerRead,
+        .sequencerWrite,
+        .sequencerAddress,
         .sampleData,
+        .sampleValid,
+        .sampleRead,
+        .sampleWrite,
+        .sampleAddress,
+        .ioData,
+        .ioValid,
+        .ioRead,
+        .ioWrite,
         .dacSpiData,
+        .dacSpiValid,
+        .dacSpiRead,
+        .dacSpiWrite,
+        .dacSpiAddress,
         .soundData,
+        .soundValid,
+        .soundRead,
+        .soundWrite,
+        .soundAddress,
         .sdCardSpiData,
+        .sdCardSpiValid,
+        .sdCardSpiRead,
+        .sdCardSpiWrite,
+        .sdCardSpiAddress,
         .i2cData,
+        .i2cValid,
+        .i2cRead,
+        .i2cWrite,
+        .i2cAddress,
+        .address,
+        .read,
+        .write,
+        .waitRequest,
         .readValid,
         .dataIn
     );

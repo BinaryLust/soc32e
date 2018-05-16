@@ -813,6 +813,7 @@ set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[3]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[2]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[1]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[0]
+set_global_assignment -name SYSTEMVERILOG_FILE BeMicro_soc_interconnect.sv
 set_global_assignment -name SDC_FILE ../parts/adc/rtl/altera_modular_adc_control.sdc
 set_global_assignment -name MIF_FILE program.mif
 set_global_assignment -name SYSTEMVERILOG_FILE BeMicro_top.sv
@@ -831,7 +832,6 @@ set_global_assignment -name VERILOG_FILE ../parts/adc/rtl/altera_modular_adc_con
 set_global_assignment -name VERILOG_FILE ../parts/adc/rtl/altera_modular_adc_control_avrg_fifo.v
 set_global_assignment -name VERILOG_FILE ../parts/adc/rtl/altera_modular_adc_control.v
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/adc/rtl/adc.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/addressMap/rtl/addressMap.sv
 set_global_assignment -name SDC_FILE ../parts/cpu32e2/cpu32e2.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/transaction.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/system.sv
@@ -894,7 +894,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileDebug.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileBank.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfile.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/dataSelect/rtl/dataSelect.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2c/rtl/i2cUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2c/rtl/i2cCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2c/rtl/i2cClockUnit.sv
