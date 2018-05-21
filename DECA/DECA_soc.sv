@@ -157,6 +157,14 @@ module DECA_soc(
     logic          i2cValid;
     logic  [31:0]  i2cData;
 
+    logic          ocFlashWaitRequest;
+    //logic          ocFlashChipEnable;
+    logic          ocFlashRead;
+    //logic          ocFlashWrite;
+    logic  [13:0]  ocFlashAddress;
+    logic          ocFlashValid;
+    logic  [31:0]  ocFlashData;
+
 
     // interrupt wires
     logic  [15:0]  triggerInterrupt;
@@ -471,6 +479,19 @@ module DECA_soc(
     );
 
 
+    ocflash
+    ocflash(
+		.clock                   (clk100),
+		.avmm_data_addr          (ocFlashAddress),
+		.avmm_data_read          (ocFlashRead),
+		.avmm_data_readdata      (ocFlashData),
+		.avmm_data_waitrequest   (ocFlashWaitRequest),
+		.avmm_data_readdatavalid (ocFlashValid),
+		.avmm_data_burstcount    (4'd1),
+		.reset_n                 (~reset100)
+	);
+
+
     DECA_soc_interconnect
     DECA_soc_interconnect(
         .ramData,
@@ -532,6 +553,11 @@ module DECA_soc(
         .i2cRead,
         .i2cWrite,
         .i2cAddress,
+        .ocFlashData,
+        .ocFlashValid,
+        .ocFlashWaitRequest,
+        .ocFlashRead,
+        .ocFlashAddress,
         .address,
         .read,
         .write,

@@ -13,6 +13,7 @@
 //`define SOUND_BASE     32'h03002000
 //`define SDCARDSPI_BASE 32'h03003000
 `define I2C_BASE       32'h03004000
+`define OCFLASH_BASE   32'h04000000
 
 
 // the device address space size in bytes
@@ -28,6 +29,7 @@
 //`define SOUND_SIZE     32'h10
 //`define SDCARDSPI_SIZE 32'h10
 `define I2C_SIZE       32'h8
+`define OCFLASH_SIZE   32'h10000
 
 
 module DECA_soc_interconnect(
@@ -139,6 +141,15 @@ module DECA_soc_interconnect(
     output  logic          i2cAddress,
 
 
+    input   logic  [31:0]  ocFlashData,
+    input   logic          ocFlashValid,
+    input   logic          ocFlashWaitRequest,
+    //output  logic          ocFlashChipEnable,
+    output  logic          ocFlashRead,
+    //output  logic          ocFlashWrite,
+    output  logic  [13:0]  ocFlashAddress,
+
+
     input   logic  [31:0]  address,
     input   logic          read,
     input   logic          write,
@@ -203,7 +214,7 @@ module DECA_soc_interconnect(
         //     sdramWrite  = 1'b0;
         // end
         // sdramAddress    = address[22:2];
-        waitRequest = 1'b0; // set this if if you disable sdram
+        //waitRequest = 1'b0; // set this if if you disable sdram and ocflash
 
         // adc sequencer
         // if((address >= `SEQUENCER_BASE) && (address <= (`SEQUENCER_BASE + (`SEQUENCER_SIZE - 1)))) begin
@@ -273,6 +284,19 @@ module DECA_soc_interconnect(
             i2cWrite = 1'b0;
         end
         i2cAddress   = address[2];
+
+        // on chip flash
+        if((address >= `OCFLASH_BASE) && (address <= (`OCFLASH_BASE + (`OCFLASH_SIZE - 1)))) begin
+            waitRequest  = ocFlashWaitRequest;
+            ocFlashRead  = read;
+            //ocFlashWrite = write;
+        end else begin
+            waitRequest  = 1'b0;
+            ocFlashRead  = 1'b0;
+            //ocFlashWrite = 1'b0;
+        end
+        ocFlashAddress  = address[15:2];
+        //waitRequest = 1'b0; // set this if if you disable sdram and ocflash
     end
 
 
@@ -288,13 +312,14 @@ module DECA_soc_interconnect(
                     //dacSpiValid,
                     //soundValid,
                     //sdCardSpiValid,
-                    i2cValid};
+                    i2cValid,
+                    ocFlashValid};
 
         case(validBus)
-            5'b10000: dataIn = ramData;
-            5'b01000: dataIn = randomData;
-            5'b00100: dataIn = timerData;
-            5'b00010: dataIn = uartData;
+            6'b100000: dataIn = ramData;
+            6'b010000: dataIn = randomData;
+            6'b001000: dataIn = timerData;
+            6'b000100: dataIn = uartData;
             //12'b000010000000: dataIn = sdramData;
             //12'b000001000000: dataIn = sequencerData;
             //12'b000000100000: dataIn = sampleData;
@@ -302,8 +327,9 @@ module DECA_soc_interconnect(
             //12'b000000001000: dataIn = dacSpiData;
             //12'b000000000100: dataIn = soundData;
             //12'b000010: dataIn = sdCardSpiData;
-            5'b00001: dataIn = i2cData;
-            default:  dataIn = 32'b0;
+            6'b000010: dataIn = i2cData;
+            6'b000001: dataIn = ocFlashData;
+            default:   dataIn = 32'b0;
         endcase
 
         readValid = |validBus;
