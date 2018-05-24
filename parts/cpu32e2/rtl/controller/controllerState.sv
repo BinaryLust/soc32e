@@ -379,7 +379,7 @@ module controllerState(
                            UKN12_R,
                            UKN13_R,
                            UKN14_R,
-                           UKN15_5: nextState = WRITEBACK;
+                           UKN15_R: nextState = WRITEBACK;
 
                            default: nextState = RESET0;
                        endcase

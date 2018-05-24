@@ -164,7 +164,7 @@ module instructionDecoder(
             architecture::BR_RO:    instruction = decoderPkg::BR_RO;
             architecture::BREAK_R:  instruction = decoderPkg::BREAK_R;
             architecture::BRL_PR:   instruction = decoderPkg::BRL_PR;
-            architecture::BRL_RR    instruction = decoderPkg::BRL_RR;
+            architecture::BRL_RR:   instruction = decoderPkg::BRL_RR;
             architecture::BRL_RO:   instruction = decoderPkg::BRL_RO;
             architecture::CMP_I:    instruction = decoderPkg::CMP_I;
             architecture::CMP_R:    instruction = decoderPkg::CMP_R;

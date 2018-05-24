@@ -2,17 +2,12 @@
 
 -sv 
 
++define+DEBUG
+
 ../../rtl/globals.sv
 ../../rtl/boolPkg.sv
 ../../rtl/execute/alu/rtl/aluPkg.sv
 ../../rtl/execute/alu/rtl/alu.sv
-#../../rtl/execute/divider/rtl/dividerPkg.sv
-#../../rtl/execute/divider/rtl/dividendState.sv
-#../../rtl/execute/divider/rtl/divisorState.sv
-#../../rtl/execute/divider/rtl/negateState.sv
-#../../rtl/execute/divider/rtl/remainderState.sv
-#../../rtl/execute/divider/rtl/dividerController.sv
-#../../rtl/execute/divider/rtl/divider.sv
 ../../rtl/execute/divider2/rtl/divider2Pkg.sv
 ../../rtl/execute/divider2/rtl/dividendState.sv
 ../../rtl/execute/divider2/rtl/divisorState.sv

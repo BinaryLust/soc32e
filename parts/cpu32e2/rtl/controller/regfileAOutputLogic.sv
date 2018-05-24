@@ -47,7 +47,7 @@ module regfileAOutputLogic(
                        endcase
 
             LOAD:      casex(instruction)
-                           MUI_I:   regfileAControlNext = BREG_DRL;
+                           MUI_I:   regfileAControlNext = AREG_DRL;
 
                            default: regfileAControlNext = NO_OP;
                        endcase

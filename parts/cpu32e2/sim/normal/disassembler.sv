@@ -25,6 +25,8 @@ package disassembler;
         logic  signed    [31:0]  imm19;
         logic  signed    [31:0]  imm24;
 
+        logic  unsigned  [15:0]  imm16u;
+
 
         // constructor
         function new();
@@ -33,7 +35,7 @@ package disassembler;
 
 
         // everything else
-        function decode(
+        function void decode(
             logic  [31:0]  instruction = 32'b0
             );
 
@@ -53,6 +55,9 @@ package disassembler;
             imm5   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
             imm19  = {{13{instruction[25]}}, instruction[25:21], instruction[15:10], instruction[5:0], 2'b0}; // {bits[25:21], bits[15:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
             imm24  = {{8{instruction[25]}}, instruction[25:10], instruction[5:0], 2'b0};                      // {bits[25:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
+
+            // used for special case
+            imm16u = instruction[15:0];
         endfunction
 
 
@@ -67,38 +72,38 @@ package disassembler;
                 AND_I,
                 AND_R:   str = "and   ";
                 BR_PR,
-                BR_R,
+                BR_RR,
                 BR_RO:   str = "br    ";
                 BREAK_R: str = "break ";
                 BRL_PR,
-                BRL_R,
+                BRL_RR,
                 BRL_RO:  str = "brl   ";
                 CMP_I,
                 CMP_R:   str = "cmp   ";
                 INT_I:   str = "int   ";
                 IRET_R:  str = "iret  ";
                 LDBS_PR,
-                LDBS_R,
+                LDBS_RR,
                 LDBS_RO,
                 LDBS_IA,
                 LDBS_IB,
                 LDBU_PR,
-                LDBU_R,
+                LDBU_RR,
                 LDBU_RO,
                 LDBU_IA,
                 LDBU_IB,
                 LDD_PR,
-                LDD_R,
+                LDD_RR,
                 LDD_RO,
                 LDD_IA,
                 LDD_IB,
                 LDWS_PR,
-                LDWS_R,
+                LDWS_RR,
                 LDWS_RO,
                 LDWS_IA,
                 LDWS_IB,
                 LDWU_PR,
-                LDWU_R,
+                LDWU_RR,
                 LDWU_RO,
                 LDWU_IA,
                 LDWU_IB: str = "ld    ";
@@ -128,17 +133,17 @@ package disassembler;
                 SMUL_R:  str = "smul  ";
                 SSR_R:   str = "ssr   ";
                 STB_PR,
-                STB_R,
+                STB_RR,
                 STB_RO,
                 STB_IA,
                 STB_IB,
                 STD_PR,
-                STD_R,
+                STD_RR,
                 STD_RO,
                 STD_IA,
                 STD_IB,
                 STW_PR,
-                STW_R,
+                STW_RR,
                 STW_RO,
                 STW_IA,
                 STW_IB:  str = "st    ";
@@ -200,49 +205,49 @@ package disassembler;
 
             casex(itype)
                 LDBS_PR,
-                LDBS_R,
+                LDBS_RR,
                 LDBS_RO,
                 LDBS_IA,
                 LDBS_IB: str = "signed byte";
 
                 LDBU_PR,
-                LDBU_R,
+                LDBU_RR,
                 LDBU_RO,
                 LDBU_IA,
                 LDBU_IB: str = "unsigned byte";
 
                 LDD_PR,
-                LDD_R,
+                LDD_RR,
                 LDD_RO,
                 LDD_IA,
                 LDD_IB:  str = "dword";
 
                 LDWS_PR,
-                LDWS_R,
+                LDWS_RR,
                 LDWS_RO,
                 LDWS_IA,
                 LDWS_IB: str = "signed word";
 
                 LDWU_PR,
-                LDWU_R,
+                LDWU_RR,
                 LDWU_RO,
                 LDWU_IA,
                 LDWU_IB: str = "unsigned word";
 
                 STB_PR,
-                STB_R,
+                STB_RR,
                 STB_RO,
                 STB_IA,
                 STB_IB:  str = " byte";
 
                 STD_PR,
-                STD_R,
+                STD_RR,
                 STD_RO,
                 STD_IA,
                 STD_IB:  str = " dword";
 
                 STW_PR,
-                STW_R,
+                STW_RR,
                 STW_RO,
                 STW_IA,
                 STW_IB:  str = " word";
@@ -432,9 +437,9 @@ package disassembler;
                 BR_RO,
                 BRL_RO:  $sformat(str, "%s  [%s+%9d]  %s", iTypeToString(), regToString(sra), imm19, condToString());
 
-                INT_I:   $sformat(str, "%s  %9d", iTypeToString(), instruction[7:0]);
+                INT_I:   $sformat(str, "%s  %9d", iTypeToString(), imm16[7:0]);
 
-                MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), instruction[15:0], regToString(sra));
+                MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), imm16u, regToString(sra));
 
                 LDBS_PR,
                 LDBU_PR,

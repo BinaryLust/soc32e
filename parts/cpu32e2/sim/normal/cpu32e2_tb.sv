@@ -191,7 +191,7 @@ module cpu32e2_tb();
 
         // run some instructions
         repeat(100000) begin
-            wait(debugOut.fetchCycle && read) doImmInstruction();
+            wait(debugOut.fetchCycle && read) doRandInstruction();
 
             wait(debugOut.machineCycleDone)
             model.run(instructionData);
@@ -255,42 +255,10 @@ module cpu32e2_tb();
     endtask
 
 
-    task doImmInstruction();
+    task doRandInstruction();
 
 
         import architecture::*;
-
-
-        opcodes          instruction;
-        logic    [4:0]   dr;
-        logic    [4:0]   sra;
-        logic    [15:0]  imm;
-
-
-        // generate random destinations and sources
-        dr  = $urandom_range(0, 31);
-        sra = $urandom_range(0, 31);
-
-
-        // generate random immediate value
-        imm = $urandom(); //$urandom_range(0, 255);
-
-
-        // pick one of these instructions randomly
-        case($urandom_range(0, 10))//randcase
-            0:       instruction = UADC_I;
-            1:       instruction = UADD_I;
-            //2:       instruction = USUB_I;
-            //3:       instruction = USBB_I;
-            4:       instruction = ADC_I;
-            5:       instruction = ADD_I;
-            //6:       instruction = SBB_I;
-            //7:       instruction = SUB_I;
-            8:       instruction = AND_I;
-            9:       instruction = OR_I;
-            10:      instruction = XOR_I;
-            default: instruction = UADC_I;
-        endcase
 
 
         // random wait cycles
@@ -310,6 +278,63 @@ module cpu32e2_tb();
         @(posedge clk);
         instructionValid = 1'b0;
     endtask
+
+
+    // task doImmInstruction();
+
+
+    //     import architecture::*;
+
+
+    //     opcodes          instruction;
+    //     logic    [4:0]   dr;
+    //     logic    [4:0]   sra;
+    //     logic    [15:0]  imm;
+
+
+    //     // generate random destinations and sources
+    //     dr  = $urandom_range(0, 31);
+    //     sra = $urandom_range(0, 31);
+
+
+    //     // generate random immediate value
+    //     imm = $urandom(); //$urandom_range(0, 255);
+
+
+    //     // pick one of these instructions randomly
+    //     case($urandom_range(0, 10))//randcase
+    //         0:       instruction = UADC_I;
+    //         1:       instruction = UADD_I;
+    //         //2:       instruction = USUB_I;
+    //         //3:       instruction = USBB_I;
+    //         4:       instruction = ADC_I;
+    //         5:       instruction = ADD_I;
+    //         //6:       instruction = SBB_I;
+    //         //7:       instruction = SUB_I;
+    //         8:       instruction = AND_I;
+    //         9:       instruction = OR_I;
+    //         10:      instruction = XOR_I;
+    //         default: instruction = UADC_I;
+    //     endcase
+
+
+    //     // random wait cycles
+    //     #1 instructionWait = 1'b1;
+    //     repeat($urandom_range(0, 3)) @(posedge clk);
+    //     #1 instructionWait = 1'b0;
+
+
+    //     // random cycles before ready
+    //     instructionValid   = 1'b0;
+    //     repeat($urandom_range(2, 4)) @(posedge clk);
+
+
+    //     // put instruction on data in
+    //     instructionValid = 1'b1;
+    //     instructionData  = $urandom();//{instruction[11:6], dr, sra, imm}; // finished instruction
+    //     @(posedge clk);
+    //     instructionValid = 1'b0;
+    // endtask
 
 
     //task startOperation(
