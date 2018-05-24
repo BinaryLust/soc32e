@@ -118,38 +118,31 @@ package cpu32e2_modelPkg;
                 AND_I:   execute_AndImm();
                 AND_R:   execute_AndReg();
                 BR_PR:   execute_BrPcr();
-                BR_R:    execute_BrReg();
                 BR_RO:   execute_BrRgo();
                 BREAK_R: execute_Break();
                 BRL_PR:  execute_BrlPcr();
-                BRL_R:   execute_BrlReg();
                 BRL_RO:  execute_BrlRgo();
                 CMP_I:   execute_CmpImm();
                 CMP_R:   execute_CmpReg();
                 INT_I:   execute_IntImm();
                 IRET_R:  execute_IretReg();
                 LDBS_PR: execute_LdbsPcr();
-                LDBS_R:  execute_LdbsReg();
                 LDBS_RO: execute_LdbsRgo();
                 LDBS_IA: execute_LdbsIa();
                 LDBS_IB: execute_LdbsIb();
                 LDBU_PR: execute_LdbuPcr();
-                LDBU_R:  execute_LdbuReg();
                 LDBU_RO: execute_LdbuRgo();
                 LDBU_IA: execute_LdbuIa();
                 LDBU_IB: execute_LdbuIb();
                 LDD_PR:  execute_LddPcr();
-                LDD_R:   execute_LddReg();
                 LDD_RO:  execute_LddRgo();
                 LDD_IA:  execute_LddIa();
                 LDD_IB:  execute_LddIb();
                 LDWS_PR: execute_LdwsPcr();
-                LDWS_R:  execute_LdwsReg();
                 LDWS_RO: execute_LdwsRgo();
                 LDWS_IA: execute_LdwsIa();
                 LDWS_IB: execute_LdwsIb();
                 LDWU_PR: execute_LdwuPcr();
-                LDWU_R:  execute_LdwuReg();
                 LDWU_RO: execute_LdwuRgo();
                 LDWU_IA: execute_LdwuIa();
                 LDWU_IB: execute_LdwuIb();
@@ -181,17 +174,14 @@ package cpu32e2_modelPkg;
                 SMUL_R:  execute_SmulReg();
                 SSR_R:   execute_SsrReg();
                 STB_PR:  execute_StbPcr();
-                STB_R:   execute_StbReg();
                 STB_RO:  execute_StbRgo();
                 STB_IA:  execute_StbIa();
                 STB_IB:  execute_StbIb();
                 STD_PR:  execute_StdPcr();
-                STD_R:   execute_StdReg();
                 STD_RO:  execute_StdRgo();
                 STD_IA:  execute_StdIa();
                 STD_IB:  execute_StdIb();
                 STW_PR:  execute_StwPcr();
-                STW_R:   execute_StwReg();
                 STW_RO:  execute_StwRgo();
                 STW_IA:  execute_StwIa();
                 STW_IB:  execute_StwIb();
@@ -857,12 +847,6 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function void execute_BrReg();
-            if(checkCondition())
-                nextPC = regfile[sra];
-        endfunction
-
-
         function void execute_BrRgo();
             if(checkCondition())
                 nextPC = regfile[sra] + imm19;
@@ -875,15 +859,6 @@ package cpu32e2_modelPkg;
                 operandB = imm24;
                 address = operandA + operandB;
 
-                regfile[LR] = nextPC;
-                nextPC = address;
-            end
-        endfunction
-
-
-        function void execute_BrlReg();
-            if(checkCondition()) begin
-                address = regfile[sra];
                 regfile[LR] = nextPC;
                 nextPC = address;
             end
@@ -926,35 +901,6 @@ package cpu32e2_modelPkg;
 
         function void execute_StdPcr();
             address = nextPC + imm21c;
-
-            memory[address[11:2]] = regfile[srb];
-        endfunction
-
-
-        function void execute_StbReg();
-            address = regfile[sra];
-
-            case(address[1:0])
-                2'd0: memory[address[11:2]][31:24] = regfile[srb][7:0];
-                2'd1: memory[address[11:2]][23:16] = regfile[srb][7:0];
-                2'd2: memory[address[11:2]][15:8]  = regfile[srb][7:0];
-                2'd3: memory[address[11:2]][7:0]   = regfile[srb][7:0];
-            endcase
-        endfunction
-
-
-        function void execute_StwReg();
-            address = regfile[sra];
-
-            case(address[1])
-                1'd0: memory[address[11:2]][31:16] = regfile[srb][15:0];
-                1'd1: memory[address[11:2]][15:0]  = regfile[srb][15:0];
-            endcase
-        endfunction
-
-
-        function void execute_StdReg();
-            address = regfile[sra];
 
             memory[address[11:2]] = regfile[srb];
         endfunction
@@ -1118,66 +1064,6 @@ package cpu32e2_modelPkg;
 
         function void execute_LddPcr();
             address = nextPC + imm21b;
-            result = memory[address[11:2]];
-
-            regfile[drl] = result[31:0];
-        endfunction
-
-
-        function void execute_LdbsReg();
-            address = regfile[sra];
-
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {{24{result[7]}}, result[7:0]};
-        endfunction
-
-
-        function void execute_LdbuReg();
-            address = regfile[sra];
-
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {24'b0, result[7:0]};
-        endfunction
-
-
-        function void execute_LdwsReg();
-            address = regfile[sra];
-
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {{16{result[15]}}, result[15:0]};
-        endfunction
-
-
-        function void execute_LdwuReg();
-            address = regfile[sra];
-
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {16'b0, result[15:0]};
-        endfunction
-
-
-        function void execute_LddReg();
-            address = regfile[sra];
             result = memory[address[11:2]];
 
             regfile[drl] = result[31:0];

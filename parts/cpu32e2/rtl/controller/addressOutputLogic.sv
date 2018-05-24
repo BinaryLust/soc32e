@@ -42,19 +42,6 @@ module addressOutputLogic(
         case(state)
             RESET1:    addressControlNext = PC_ADDR;
 
-            DECODE:    casex(instruction)
-                           LDBS_R,
-                           LDBU_R,
-                           LDD_R,
-                           LDWS_R,
-                           LDWU_R,
-                           STB_R,
-                           STD_R,
-                           STW_R:   addressControlNext = RFA_ADDR;
-
-                           default: addressControlNext = NO_OP;
-                       endcase
-
             LOAD:      casex(instruction)
                            LDBS_PR,
                            LDBS_RO,

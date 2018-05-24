@@ -7,7 +7,6 @@ module regfileAOutputLogic(
     input   architecture::opcodes              instruction,
     //input   decoderPkg::instructions           instruction,
     input   controllerPkg::states              state,
-    input   boolPkg::bool                      conditionResult,
     input   logic                              exceptionPending,
     input   logic                              interruptPending,
 
@@ -42,8 +41,6 @@ module regfileAOutputLogic(
 
         case(state)
             DECODE:    casex(instruction)
-                           BRL_R:   regfileAControlNext = (conditionResult) ? NEXTPC_LR : NO_OP; // don't load if we aren't going to branch anyway
-
                            LSR_R:   regfileAControlNext = SYSREG_DRL;
 
                            default: regfileAControlNext = NO_OP;
@@ -112,31 +109,26 @@ module regfileAOutputLogic(
 
             MEMORY3:   casex(instruction)
                            LDD_PR,
-                           LDD_R,
                            LDD_RO,
                            LDD_IA,
                            LDD_IB:  regfileAControlNext = DWORD_DRL;
 
                            LDBS_PR,
-                           LDBS_R,
                            LDBS_RO,
                            LDBS_IA,
                            LDBS_IB: regfileAControlNext = SBYTE_DRL;
 
                            LDWS_PR,
-                           LDWS_R,
                            LDWS_RO,
                            LDWS_IA,
                            LDWS_IB: regfileAControlNext = SWORD_DRL;
 
                            LDBU_PR,
-                           LDBU_R,
                            LDBU_RO,
                            LDBU_IA,
                            LDBU_IB: regfileAControlNext = UBYTE_DRL;
 
                            LDWU_PR,
-                           LDWU_R,
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB: regfileAControlNext = UWORD_DRL;

@@ -42,19 +42,16 @@ module dataOutputLogic(
 
             DECODE:  casex(instruction)
                          STB_PR,
-                         STB_R,
                          STB_RO,
                          STB_IA,
                          STB_IB:  dataControlNext = WRITE_BYTE;
 
                          STD_PR,
-                         STD_R,
                          STD_RO,
                          STD_IA,
                          STD_IB:  dataControlNext = WRITE_DWORD;
 
                          STW_PR,
-                         STW_R,
                          STW_RO,
                          STW_IA,
                          STW_IB:  dataControlNext = WRITE_WORD;
@@ -64,27 +61,22 @@ module dataOutputLogic(
 
             MEMORY2: casex(instruction)
                          LDBS_PR,
-                         LDBS_R,
                          LDBS_RO,
                          LDBS_IA,
                          LDBS_IB,
                          LDBU_PR,
-                         LDBU_R,
                          LDBU_RO,
                          LDBU_IA,
                          LDBU_IB,
                          LDD_PR,
-                         LDD_R,
                          LDD_RO,
                          LDD_IA,
                          LDD_IB,
                          LDWS_PR,
-                         LDWS_R,
                          LDWS_RO,
                          LDWS_IA,
                          LDWS_IB,
                          LDWU_PR,
-                         LDWU_R,
                          LDWU_RO,
                          LDWU_IA,
                          LDWU_IB: dataControlNext = READ_DATA;

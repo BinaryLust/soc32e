@@ -155,7 +155,6 @@ module controller(
         .enable,
         .instruction,
         .state,
-        .conditionResult,
         .exceptionPending,
         .interruptPending,
         .programCounterControl
@@ -182,7 +181,6 @@ module controller(
         .enable,
         .instruction,
         .state,
-        .conditionResult,
         .exceptionPending,
         .interruptPending,
         .regfileAControl

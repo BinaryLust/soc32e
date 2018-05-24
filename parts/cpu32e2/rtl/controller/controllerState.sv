@@ -136,14 +136,12 @@ module controllerState(
                            BRL_PR,
                            BRL_RO:  nextState = (conditionResult) ? LOAD : WRITEBACK; // skip address calculation if we aren't going to branch anyway
 
-                           BR_R,
-                           BRL_R,
                            IRET_R,
                            NOP_R,
                            LSR_R,
                            SSR_R:   nextState = WRITEBACK;
 
-                           default: nextState = EXECUTE0; // BREAK_R, INT_I, LDBS_R, LDBU_R, LDD_R, LDWS_R, LDWU_R, STB_R, STD_R, STW_R // and all unknown instructions
+                           default: nextState = EXECUTE0; // BREAK_R, INT_I // and all unknown instructions
                        endcase
 
             LOAD:      casex(instruction)
@@ -292,43 +290,35 @@ module controllerState(
                            XOR_R:   nextState = EXECUTE1;
 
                            LDBS_PR,
-                           LDBS_R,
                            LDBS_RO,
                            LDBS_IA,
                            LDBS_IB,
                            LDBU_PR,
-                           LDBU_R,
                            LDBU_RO,
                            LDBU_IA,
                            LDBU_IB,
                            LDD_PR,
-                           LDD_R,
                            LDD_RO,
                            LDD_IA,
                            LDD_IB,
                            LDWS_PR,
-                           LDWS_R,
                            LDWS_RO,
                            LDWS_IA,
                            LDWS_IB,
                            LDWU_PR,
-                           LDWU_R,
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB: nextState = MEMORY1;
 
                            STB_PR,
-                           STB_R,
                            STB_RO,
                            STB_IA,
                            STB_IB,
                            STD_PR,
-                           STD_R,
                            STD_RO,
                            STD_IA,
                            STD_IB,
                            STW_PR,
-                           STW_R,
                            STW_RO,
                            STW_IA,
                            STW_IB:  nextState = EXECUTE1;
@@ -361,24 +351,31 @@ module controllerState(
                            UKN11_R,
                            UKN12_R,
                            UKN13_R,
-                           UKN14_R: nextState = WRITEBACK;
+                           UKN14_R,
+                           UKN15_R,
+                           UKN16_R,
+                           UKN17_R,
+                           UKN18_R,
+                           UKN19_R,
+                           UKN20_R,
+                           UKN21_R,
+                           UKN22_R,
+                           UKN23_R,
+                           UKN24_R: nextState = WRITEBACK;
 
                            default: nextState = RESET0;
                        endcase
 
             EXECUTE1:  casex(instruction)
                            STB_PR,
-                           STB_R,
                            STB_RO,
                            STB_IA,
                            STB_IB,
                            STD_PR,
-                           STD_R,
                            STD_RO,
                            STD_IA,
                            STD_IB,
                            STW_PR,
-                           STW_R,
                            STW_RO,
                            STW_IA,
                            STW_IB:  nextState = MEMORY1;
@@ -438,43 +435,35 @@ module controllerState(
 
             MEMORY1:   casex(instruction)
                            LDBS_PR,
-                           LDBS_R,
                            LDBS_RO,
                            LDBS_IA,
                            LDBS_IB,
                            LDBU_PR,
-                           LDBU_R,
                            LDBU_RO,
                            LDBU_IA,
                            LDBU_IB,
                            LDD_PR,
-                           LDD_R,
                            LDD_RO,
                            LDD_IA,
                            LDD_IB,
                            LDWS_PR,
-                           LDWS_R,
                            LDWS_RO,
                            LDWS_IA,
                            LDWS_IB,
                            LDWU_PR,
-                           LDWU_R,
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB: nextState = MEMORY2;
 
                            STB_PR,
-                           STB_R,
                            STB_RO,
                            STB_IA,
                            STB_IB,
                            STD_PR,
-                           STD_R,
                            STD_RO,
                            STD_IA,
                            STD_IB,
                            STW_PR,
-                           STW_R,
                            STW_RO,
                            STW_IA,
                            STW_IB:  nextState = WRITEBACK;
@@ -484,27 +473,22 @@ module controllerState(
 
             MEMORY2:   casex(instruction)
                            LDBS_PR,
-                           LDBS_R,
                            LDBS_RO,
                            LDBS_IA,
                            LDBS_IB,
                            LDBU_PR,
-                           LDBU_R,
                            LDBU_RO,
                            LDBU_IA,
                            LDBU_IB,
                            LDD_PR,
-                           LDD_R,
                            LDD_RO,
                            LDD_IA,
                            LDD_IB,
                            LDWS_PR,
-                           LDWS_R,
                            LDWS_RO,
                            LDWS_IA,
                            LDWS_IB,
                            LDWU_PR,
-                           LDWU_R,
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB: nextState = MEMORY3;
@@ -514,27 +498,22 @@ module controllerState(
 
             MEMORY3:   casex(instruction)
                            LDBS_PR,
-                           LDBS_R,
                            LDBS_RO,
                            LDBS_IA,
                            LDBS_IB,
                            LDBU_PR,
-                           LDBU_R,
                            LDBU_RO,
                            LDBU_IA,
                            LDBU_IB,
                            LDD_PR,
-                           LDD_R,
                            LDD_RO,
                            LDD_IA,
                            LDD_IB,
                            LDWS_PR,
-                           LDWS_R,
                            LDWS_RO,
                            LDWS_IA,
                            LDWS_IB,
                            LDWU_PR,
-                           LDWU_R,
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB: nextState = WRITEBACK;
