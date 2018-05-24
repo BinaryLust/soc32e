@@ -47,8 +47,7 @@ package decoderPkg;
         LDWU_RO = 127'b1 << 39,
         LDWU_IA = 127'b1 << 40,
         LDWU_IB = 127'b1 << 41,
-        MOV_I   = 127'b1 << 42,
-        MOV_R   = 127'b1 << 43,
+
         MUI_I   = 127'b1 << 44,
         NOP_R   = 127'b1 << 45,
         NOT_R   = 127'b1 << 46,
@@ -195,8 +194,6 @@ module instructionDecoder(
             architecture::LDWU_RO:  instruction = decoderPkg::LDWU_RO;
             architecture::LDWU_IA:  instruction = decoderPkg::LDWU_IA;
             architecture::LDWU_IB:  instruction = decoderPkg::LDWU_IB;
-            architecture::MOV_I:    instruction = decoderPkg::MOV_I;
-            architecture::MOV_R:    instruction = decoderPkg::MOV_R;
             architecture::MUI_I:    instruction = decoderPkg::MUI_I;
             architecture::NOP_R:    instruction = decoderPkg::NOP_R;
             architecture::NOT_R:    instruction = decoderPkg::NOT_R;
@@ -272,6 +269,7 @@ module instructionDecoder(
             architecture::UKN12_R:  instruction = decoderPkg::UKN12_R;
             architecture::UKN13_R:  instruction = decoderPkg::UKN13_R;
             architecture::UKN14_R:  instruction = decoderPkg::UKN14_R;
+            architecture::UKN15_R:  instruction = decoderPkg::UKN15_R;
 
             architecture::UKN1_I:   instruction = decoderPkg::UKN1_I;
             architecture::UKN2_I:   instruction = decoderPkg::UKN2_I;
@@ -282,6 +280,7 @@ module instructionDecoder(
             architecture::UKN7_I:   instruction = decoderPkg::UKN7_I;
             architecture::UKN8_I:   instruction = decoderPkg::UKN8_I;
             architecture::UKN9_I:   instruction = decoderPkg::UKN9_I;
+            architecture::UKN10_I:  instruction = decoderPkg::UKN10_I;
 
             default:                instruction = decoderPkg::XXX;
         endcase

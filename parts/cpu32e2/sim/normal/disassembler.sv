@@ -112,8 +112,6 @@ package disassembler;
                 LDWU_RO,
                 LDWU_IA,
                 LDWU_IB: str = "ld    ";
-                MOV_I,
-                MOV_R:   str = "mov   ";
                 MUI_I:   str = "mui   ";
                 NOP_R:   str = "nop   ";
                 NOT_R:   str = "not   ";
@@ -392,7 +390,6 @@ package disassembler;
                 BREAK_R,
                 NOP_R:   str = iTypeToString();
 
-                MOV_R,
                 NOT_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), regToString(srb));
 
                 IRET_R:  $sformat(str, "%s  %s", iTypeToString(), regToString(sra));
@@ -446,8 +443,6 @@ package disassembler;
                 BRL_RO:  $sformat(str, "%s  [%s+%9d]  %s", iTypeToString(), regToString(sra), imm19, condToString());
 
                 INT_I:   $sformat(str, "%s  %9d", iTypeToString(), imm16a[5:0]);
-
-                MOV_I:   $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(drl), imm21b);
 
                 MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), imm16c, regToString(srb));
 

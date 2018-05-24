@@ -89,8 +89,6 @@ package architecture;
         LDWU_RO = {6'd27, 6'd? },
         LDWU_IA = {6'd28, 6'd? },
         LDWU_IB = {6'd29, 6'd? },
-        MOV_I   = {6'd30, 6'd? },
-        MOV_R   = {6'd0,  6'd13},
         MUI_I   = {6'd31, 6'd? },
         NOP_R   = {6'd0,  6'd14},
         NOT_R   = {6'd0,  6'd15},
@@ -166,6 +164,7 @@ package architecture;
         UKN12_R  = {6'd0,  6'd61},
         UKN13_R  = {6'd0,  6'd62},
         UKN14_R  = {6'd0,  6'd63},
+        UKN15_R  = {6'd0,  6'd13},
 
         UKN1_I   = {6'd55,  6'd?},
         UKN2_I   = {6'd56,  6'd?},
@@ -175,7 +174,8 @@ package architecture;
         UKN6_I   = {6'd60,  6'd?},
         UKN7_I   = {6'd61,  6'd?},
         UKN8_I   = {6'd62,  6'd?},
-        UKN9_I   = {6'd63,  6'd?}
+        UKN9_I   = {6'd63,  6'd?},
+        UKN10_I  = {6'd30,  6'd?}
     } opcodes;
 
 

@@ -57,6 +57,7 @@ module exceptionTriggerOutputLogic(
                          UKN12_R,
                          UKN13_R,
                          UKN14_R,
+                         UKN15_R,
                          UKN1_I,
                          UKN2_I,
                          UKN3_I,
@@ -65,7 +66,8 @@ module exceptionTriggerOutputLogic(
                          UKN6_I,
                          UKN7_I,
                          UKN8_I,
-                         UKN9_I:  exceptionTriggerControlNext <= UNK_EXC;
+                         UKN9_I,
+                         UKN10_I: exceptionTriggerControlNext <= UNK_EXC;
 
                          default: exceptionTriggerControlNext <= NO_OP;
                      endcase

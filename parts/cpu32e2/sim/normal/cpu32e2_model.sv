@@ -153,8 +153,6 @@ package cpu32e2_modelPkg;
                 LDWU_RO: execute_LdwuRgo();
                 LDWU_IA: execute_LdwuIa();
                 LDWU_IB: execute_LdwuIb();
-                MOV_I:   execute_MovImm();
-                MOV_R:   execute_MovReg();
                 MUI_I:   execute_MuiImm();
                 NOP_R:   execute_NopReg();
                 NOT_R:   execute_NotReg();
@@ -796,20 +794,6 @@ package cpu32e2_modelPkg;
 
         function execute_IntImm();
             systemCall   = imm6; // written even when interrupts are disabled
-        endfunction
-
-
-        function execute_MovImm();
-            operandB     = imm21b;
-
-            regfile[drl] = operandB;
-        endfunction
-
-
-        function execute_MovReg();
-            operandB     = regfile[srb];
-
-            regfile[drl] = operandB;
         endfunction
 
 

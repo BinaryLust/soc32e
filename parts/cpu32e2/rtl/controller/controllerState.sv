@@ -74,8 +74,6 @@ module controllerState(
                            LDWU_RO,
                            LDWU_IA,
                            LDWU_IB,
-                           MOV_I,
-                           MOV_R,
                            MUI_I,
                            NOT_R,
                            OR_I,
@@ -233,8 +231,6 @@ module controllerState(
                            XOR_I,
                            XOR_R:   nextState = EXECUTE0;
 
-                           MOV_I,
-                           MOV_R,
                            MUI_I:   nextState = WRITEBACK;
 
                            default: nextState = RESET0;
@@ -348,6 +344,7 @@ module controllerState(
                            UKN7_I,
                            UKN8_I,
                            UKN9_I,
+                           UKN10_I,
                            UKN1_R,
                            UKN2_R,
                            UKN3_R,
@@ -361,7 +358,8 @@ module controllerState(
                            UKN11_R,
                            UKN12_R,
                            UKN13_R,
-                           UKN14_R: nextState = WRITEBACK;
+                           UKN14_R,
+                           UKN15_5: nextState = WRITEBACK;
 
                            default: nextState = RESET0;
                        endcase
