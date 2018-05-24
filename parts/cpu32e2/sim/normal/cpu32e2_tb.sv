@@ -1,7 +1,7 @@
 `timescale 1ns / 100ps
 
 
-`include "E:/My Code/systemverilog/soc32/cpu32e2/rtl/globals.sv"
+`include "G:/My Code/on git/systemverilog/soc32e/parts/cpu32e2/rtl/globals.sv"
 
 
 module cpu32e2_tb();
@@ -31,9 +31,9 @@ module cpu32e2_tb();
     logic                 [3:0]           interruptOut;
     logic                                 read;
     logic                                 write;
-    logic                 [3:0]           byteWriteEnable;
+    logic                 [3:0]           bwe;
     logic                 [31:0]          dataOut;
-    logic                 [31:0]          addressOut;
+    logic                 [31:0]          address;
 
 
     // debug wires
@@ -47,7 +47,7 @@ module cpu32e2_tb();
     /*                                                                                                                                                       */
     /* test module instantiation                                                                                                                             */
     /*                                                                                                                                                       */
-     /*********************************************************************************************************************************************************/
+    /*********************************************************************************************************************************************************/
 
 
     cpu32e2
@@ -68,9 +68,9 @@ module cpu32e2_tb();
         .interruptOut,
         .read,
         .write,
-        .byteWriteEnable,
+        .bwe,
         .dataOut,
-        .addressOut
+        .address
     );
 
 
@@ -79,8 +79,8 @@ module cpu32e2_tb();
         .clk,
         .reset,
         .we        (write),
-        .address   (addressOut[11:2]),
-        .bwe       (byteWriteEnable),
+        .address   (address[11:2]),
+        .bwe       (bwe),
         .d         (dataOut),
         .q         (ramQ),
         .ramState

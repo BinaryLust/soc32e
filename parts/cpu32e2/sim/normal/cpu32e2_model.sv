@@ -821,25 +821,25 @@ package cpu32e2_modelPkg;
 
 
         function execute_LsrReg();
-            case(srb)
-                5'd0:    operandB = {28'b0, negativeFlag, overflowFlag, zeroFlag, carryFlag};
-                5'd1:    operandB = {exceptionMask, interruptEn, 10'b0, cause};
-                5'd2:    operandB = isrBaseAddress;
-                5'd3:    operandB = {26'b0, systemCall};
-                default: operandB = 32'b0;
+            case(sra)
+                5'd0:    operandA = {28'b0, negativeFlag, overflowFlag, zeroFlag, carryFlag};
+                5'd1:    operandA = {exceptionMask, interruptEn, 10'b0, cause};
+                5'd2:    operandA = isrBaseAddress;
+                5'd3:    operandA = {26'b0, systemCall};
+                default: operandA = 32'b0;
             endcase
 
-            regfile[drl] = operandB;
+            regfile[drl] = operandA;
         endfunction
 
 
         function execute_SsrReg();
-            operandB = regfile[srb];
+            operandA = regfile[sra];
 
             case(drl)
-                5'd0:    begin negativeFlag = operandB[3]; overflowFlag = operandB[2]; zeroFlag = operandB[1]; carryFlag = operandB[0]; end
-                5'd1:    begin exceptionMask = operandB[31:16]; interruptEn = operandB[15]; end
-                5'd2:    isrBaseAddress = operandB[31:0];
+                5'd0:    begin negativeFlag = operandA[3]; overflowFlag = operandA[2]; zeroFlag = operandA[1]; carryFlag = operandA[0]; end
+                5'd1:    begin exceptionMask = operandA[31:16]; interruptEn = operandA[15]; end
+                5'd2:    isrBaseAddress = operandA[31:0];
                 default: ; // nothing written
             endcase
         endfunction

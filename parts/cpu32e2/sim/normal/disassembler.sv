@@ -397,9 +397,9 @@ package disassembler;
 
                 IRET_R:  $sformat(str, "%s  %s", iTypeToString(), regToString(sra));
 
-                SSR_R:   $sformat(str, "%s  %s, %s", iTypeToString(), sysRegToString(drl), regToString(srb));
+                SSR_R:   $sformat(str, "%s  %s, %s", iTypeToString(), sysRegToString(drl), regToString(sra));
 
-                LSR_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), sysRegToString(srb));
+                LSR_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), sysRegToString(sra));
 
                 RCL_I,
                 RCR_I,

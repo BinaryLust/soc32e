@@ -213,7 +213,7 @@ module cpu32e2(
         .systemControl,
         .instructionReg,
         .resultFlags,
-        .registerFileB,
+        .registerFileA, // changed from registerFileB to registerFileA for ssr instruction
         .cause,
 
         `ifdef  DEBUG

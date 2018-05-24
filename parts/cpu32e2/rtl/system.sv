@@ -55,7 +55,7 @@ module system(
     input   systemGroup::controlBus          systemControl,
     input   logic                    [31:0]  instructionReg,
     input   logic                    [3:0]   resultFlags,
-    input   logic                    [31:0]  registerFileB,
+    input   logic                    [31:0]  registerFileA, // changed from registerFileB to registerFileA for ssr instruction
     input   logic                    [4:0]   cause,
 
     `ifdef  DEBUG
@@ -104,7 +104,7 @@ module system(
     always_comb begin
         case(systemControl.flagsSel)
             RESULT: flagsNext = resultFlags;
-            RFB:    flagsNext = registerFileB[3:0];
+            RFB:    flagsNext = registerFileA[3:0]; // changed from registerFileB to registerFileA for ssr instruction
         endcase
     end
 
@@ -125,7 +125,7 @@ module system(
         if(reset)
             isrBaseAddress <= 32'd4;
         else if(isrBaseAddressEn && !exceptionPending)
-            isrBaseAddress <= registerFileB;
+            isrBaseAddress <= registerFileA; // changed from registerFileB to registerFileA for ssr instruction
         else
             isrBaseAddress <= isrBaseAddress;
     end
@@ -145,10 +145,10 @@ module system(
     // interrupt enable mux
     always_comb begin
         case(systemControl.interruptEnableSel)
-            LOAD:    interruptEnableNext = registerFileB[15];
+            LOAD:    interruptEnableNext = registerFileA[15]; // changed from registerFileB to registerFileA for ssr instruction
             RESET:   interruptEnableNext = 1'b0;
             SET:     interruptEnableNext = 1'b1;
-            default: interruptEnableNext = registerFileB[15];
+            default: interruptEnableNext = registerFileA[15]; // changed from registerFileB to registerFileA for ssr instruction
         endcase
     end
 
@@ -158,7 +158,7 @@ module system(
         if(reset)
             exceptionMask <= 16'b0;
         else if(exceptionMaskEn && !exceptionPending)
-            exceptionMask <= registerFileB[31:16];
+            exceptionMask <= registerFileA[31:16]; // changed from registerFileB to registerFileA for ssr instruction
         else
             exceptionMask <= exceptionMask;
     end
@@ -189,7 +189,7 @@ module system(
         // default
         systemRegister = 32'b0;
 
-        case(instructionReg[15:11]) // SRB
+        case(instructionReg[20:16]) // SRA // changed from SRB[15:11] for lsr instruction
             5'd0:    systemRegister = {28'b0, flags};
             5'd1:    systemRegister = {exceptionMask, interruptEnable, 10'b0, cause};
             5'd2:    systemRegister = isrBaseAddress;
