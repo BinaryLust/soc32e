@@ -61,7 +61,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function doReset();
+        function void doReset();
             // reset all machine state and memory state
             regfile        = {32{32'b0}};
             nextPC         = 32'b0;
@@ -79,7 +79,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function run(
+        function void run(
             logic  [31:0]  instruction = 32'b0
             );
             // fetching is skipped because we are directly feeding an instruction in
@@ -246,7 +246,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic addFlags();
+        function void addFlags();
             carryFlag    = result[32];
             zeroFlag     = ~|result[31:0];
             overflowFlag = (operandA[31] & operandB[31] & ~result[31]) | (~operandA[31] & ~operandB[31] & result[31]);
@@ -254,7 +254,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic subFlags();
+        function void subFlags();
             carryFlag    = ~result[32];
             zeroFlag     = ~|result[31:0];
             overflowFlag = (operandA[31] & ~operandB[31] & ~result[31]) | (~operandA[31] & operandB[31] & result[31]);
@@ -262,7 +262,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic logicFlags();
+        function void logicFlags();
             carryFlag    = 1'b0;
             zeroFlag     = ~|result[31:0];
             overflowFlag = 1'b0;
@@ -270,7 +270,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic lShiftFlags();
+        function void lShiftFlags();
             carryFlag    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[32-operandB[4:0]];
             zeroFlag     = ~|result[31:0];
             overflowFlag = 1'b0;
@@ -278,7 +278,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic rShiftFlags();
+        function void rShiftFlags();
             carryFlag    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[operandB[4:0]-1];
             zeroFlag     = ~|result[31:0];
             overflowFlag = 1'b0;
@@ -286,7 +286,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function logic mulFlags();
+        function void mulFlags();
             carryFlag    = 1'b0;
             zeroFlag     = ~|result[63:0];
             overflowFlag = 1'b0;
@@ -294,12 +294,12 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_Unk();
+        function void execute_Unk();
 
         endfunction
 
 
-        function execute_AdcImm();
+        function void execute_AdcImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA + operandB + carryFlag;
@@ -309,7 +309,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_AdcReg();
+        function void execute_AdcReg();
              operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA + operandB + carryFlag;
@@ -319,7 +319,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-         function execute_AddImm();
+         function void execute_AddImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA + operandB;
@@ -329,7 +329,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_AddReg();
+        function void execute_AddReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = operandA + operandB;
@@ -339,7 +339,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UadcImm();
+        function void execute_UadcImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA + operandB + carryFlag;
@@ -349,7 +349,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UadcReg();
+        function void execute_UadcReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA + operandB + carryFlag;
@@ -359,7 +359,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-         function execute_UaddImm();
+         function void execute_UaddImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA + operandB;
@@ -369,7 +369,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UaddReg();
+        function void execute_UaddReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = operandA + operandB;
@@ -379,7 +379,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SbbImm();
+        function void execute_SbbImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = (operandA + ~operandB) + carryFlag;
@@ -389,7 +389,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SbbReg();
+        function void execute_SbbReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + carryFlag;
@@ -399,7 +399,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SubImm();
+        function void execute_SubImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = (operandA + ~operandB) + 1'b1;
@@ -409,7 +409,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SubReg();
+        function void execute_SubReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + 1'b1;
@@ -419,7 +419,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UsbbImm();
+        function void execute_UsbbImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = (operandA + ~operandB) + carryFlag;
@@ -429,7 +429,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UsbbReg();
+        function void execute_UsbbReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + carryFlag;
@@ -439,7 +439,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UsubImm();
+        function void execute_UsubImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = (operandA + ~operandB) + 1'b1;
@@ -449,7 +449,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UsubReg();
+        function void execute_UsubReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + 1'b1;
@@ -459,7 +459,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_CmpImm();
+        function void execute_CmpImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
             result       = (operandA + ~operandB) + 1'b1;
@@ -468,7 +468,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_CmpReg();
+        function void execute_CmpReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + 1'b1;
@@ -477,7 +477,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UcmpImm();
+        function void execute_UcmpImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
             result       = (operandA + ~operandB) + 1'b1;
@@ -486,7 +486,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UcmpReg();
+        function void execute_UcmpReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
              result       = (operandA + ~operandB) + 1'b1;
@@ -495,7 +495,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SmulReg();
+        function void execute_SmulReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = signed'(operandA) * signed'(operandB);
@@ -506,7 +506,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UmulReg();
+        function void execute_UmulReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = unsigned'(operandA) * unsigned'(operandB);
@@ -517,7 +517,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SdivReg();
+        function void execute_SdivReg();
             operandA      = regfile[sra];
             operandB      = regfile[srb];
               result[63:32] = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
@@ -528,7 +528,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_UdivReg();
+        function void execute_UdivReg();
             operandA      = regfile[sra];
             operandB      = regfile[srb];
               result[63:32] = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
@@ -539,7 +539,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_AndImm();
+        function void execute_AndImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA & operandB;
@@ -549,7 +549,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_AndReg();
+        function void execute_AndReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA & operandB;
@@ -559,7 +559,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_NotReg();
+        function void execute_NotReg();
             operandB     = regfile[srb];
             result       = ~operandB;
 
@@ -568,7 +568,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_OrImm();
+        function void execute_OrImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA | operandB;
@@ -578,7 +578,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_OrReg();
+        function void execute_OrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA | operandB;
@@ -588,7 +588,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_XorImm();
+        function void execute_XorImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA ^ operandB;
@@ -598,7 +598,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_XorReg();
+        function void execute_XorReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA ^ operandB;
@@ -608,7 +608,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_TeqImm();
+        function void execute_TeqImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
             result       = operandA ^ operandB;
@@ -617,7 +617,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_TeqReg();
+        function void execute_TeqReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA ^ operandB;
@@ -626,7 +626,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_TstImm();
+        function void execute_TstImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
             result       = operandA & operandB;
@@ -635,7 +635,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_TstReg();
+        function void execute_TstReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA & operandB;
@@ -644,7 +644,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_ShlImm();
+        function void execute_ShlImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = operandA << operandB[4:0];
@@ -654,7 +654,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_ShlReg();
+        function void execute_ShlReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA << operandB[4:0];
@@ -664,7 +664,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_ShrImm();
+        function void execute_ShrImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = operandA >> operandB[4:0];
@@ -674,7 +674,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_ShrReg();
+        function void execute_ShrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA >> operandB[4:0];
@@ -684,7 +684,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SarImm();
+        function void execute_SarImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = unsigned'(signed'(operandA) >>> operandB[4:0]);
@@ -694,7 +694,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SarReg();
+        function void execute_SarReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = unsigned'(signed'(operandA) >>> operandB[4:0]);
@@ -704,7 +704,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RolImm();
+        function void execute_RolImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
@@ -714,7 +714,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RolReg();
+        function void execute_RolReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
@@ -724,7 +724,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RorImm();
+        function void execute_RorImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
@@ -734,7 +734,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RorReg();
+        function void execute_RorReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
@@ -744,7 +744,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RclImm();
+        function void execute_RclImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0])); // 32 or 33 width???
@@ -754,7 +754,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RclReg();
+        function void execute_RclReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0]));
@@ -764,7 +764,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RcrImm();
+        function void execute_RcrImm();
             operandA     = regfile[sra];
             operandB     = imm5;
             result       = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
@@ -774,7 +774,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_RcrReg();
+        function void execute_RcrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
@@ -784,43 +784,43 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_NopReg();
+        function void execute_NopReg();
 
         endfunction
 
 
-        function execute_Break();
+        function void execute_Break();
 
         endfunction
 
 
-        function execute_IntImm();
+        function void execute_IntImm();
             systemCall   = imm6; // written even when interrupts are disabled
         endfunction
 
 
-        function execute_MovImm();
+        function void execute_MovImm();
             operandB     = imm21b;
 
             regfile[drl] = operandB;
         endfunction
 
 
-        function execute_MovReg();
+        function void execute_MovReg();
             operandB     = regfile[srb];
 
             regfile[drl] = operandB;
         endfunction
 
 
-        function execute_MuiImm();
+        function void execute_MuiImm();
             operandB     = {imm16c, regfile[srb][15:0]};
 
             regfile[drl] = operandB;
         endfunction
 
 
-        function execute_LsrReg();
+        function void execute_LsrReg();
             case(srb)
                 5'd0:    operandB = {28'b0, negativeFlag, overflowFlag, zeroFlag, carryFlag};
                 5'd1:    operandB = {exceptionMask, interruptEn, 10'b0, cause};
@@ -833,7 +833,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_SsrReg();
+        function void execute_SsrReg();
             operandB = regfile[srb];
 
             case(drl)
@@ -845,31 +845,31 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_IretReg();
+        function void execute_IretReg();
             nextPC      = regfile[sra];
             interruptEn = 1'b1;
         endfunction
 
 
-        function execute_BrPcr();
+        function void execute_BrPcr();
             if(checkCondition())
                 nextPC = nextPC + imm24;
         endfunction
 
 
-        function execute_BrReg();
+        function void execute_BrReg();
             if(checkCondition())
                 nextPC = regfile[sra];
         endfunction
 
 
-        function execute_BrRgo();
+        function void execute_BrRgo();
             if(checkCondition())
                 nextPC = regfile[sra] + imm19;
         endfunction
 
 
-        function execute_BrlPcr();
+        function void execute_BrlPcr();
             if(checkCondition()) begin
                 operandA = nextPC;
                 operandB = imm24;
@@ -881,7 +881,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_BrlReg();
+        function void execute_BrlReg();
             if(checkCondition()) begin
                 address = regfile[sra];
                 regfile[LR] = nextPC;
@@ -890,7 +890,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_BrlRgo();
+        function void execute_BrlRgo();
             if(checkCondition()) begin
                 operandA = regfile[sra];
                 operandB = imm19;
@@ -902,7 +902,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StbPcr();
+        function void execute_StbPcr();
             address = nextPC + imm21c;
 
             case(address[1:0])
@@ -914,7 +914,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StwPcr();
+        function void execute_StwPcr();
             address = nextPC + imm21c;
 
             case(address[1])
@@ -924,14 +924,14 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StdPcr();
+        function void execute_StdPcr();
             address = nextPC + imm21c;
 
             memory[address[11:2]] = regfile[srb];
         endfunction
 
 
-        function execute_StbReg();
+        function void execute_StbReg();
             address = regfile[sra];
 
             case(address[1:0])
@@ -943,7 +943,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StwReg();
+        function void execute_StwReg();
             address = regfile[sra];
 
             case(address[1])
@@ -953,14 +953,14 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StdReg();
+        function void execute_StdReg();
             address = regfile[sra];
 
             memory[address[11:2]] = regfile[srb];
         endfunction
 
 
-        function execute_StbRgo();
+        function void execute_StbRgo();
             address = regfile[sra] + imm16b;
 
             case(address[1:0])
@@ -972,7 +972,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StwRgo();
+        function void execute_StwRgo();
             address = regfile[sra] + imm16b;
 
             case(address[1])
@@ -982,14 +982,14 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StdRgo();
+        function void execute_StdRgo();
             address = regfile[sra] + imm16b;
 
             memory[address[11:2]] = regfile[srb];
         endfunction
 
 
-        function execute_StbIa();
+        function void execute_StbIa();
             address = regfile[sra];
 
             case(address[1:0])
@@ -1005,7 +1005,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StwIa();
+        function void execute_StwIa();
             address = regfile[sra];
 
             case(address[1])
@@ -1019,7 +1019,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StdIa();
+        function void execute_StdIa();
             address = regfile[sra];
 
             memory[address[11:2]] = regfile[srb];
@@ -1030,7 +1030,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StbIb();
+        function void execute_StbIb();
             address = regfile[sra] + imm16b;
 
             case(address[1:0])
@@ -1044,7 +1044,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StwIb();
+        function void execute_StwIb();
             address = regfile[sra] + imm16b;
 
             case(address[1])
@@ -1056,7 +1056,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_StdIb();
+        function void execute_StdIb();
             address = regfile[sra] + imm16b;
 
             memory[address[11:2]] = regfile[srb];
@@ -1064,7 +1064,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbsPcr();
+        function void execute_LdbsPcr();
             address = nextPC + imm21b;
 
             case(address[1:0])
@@ -1078,7 +1078,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbuPcr();
+        function void execute_LdbuPcr();
             address = nextPC + imm21b;
 
             case(address[1:0])
@@ -1092,7 +1092,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwsPcr();
+        function void execute_LdwsPcr();
             address = nextPC + imm21b;
 
             case(address[1])
@@ -1104,7 +1104,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwuPcr();
+        function void execute_LdwuPcr();
             address = nextPC + imm21b;
 
             case(address[1])
@@ -1116,7 +1116,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LddPcr();
+        function void execute_LddPcr();
             address = nextPC + imm21b;
             result = memory[address[11:2]];
 
@@ -1124,7 +1124,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbsReg();
+        function void execute_LdbsReg();
             address = regfile[sra];
 
             case(address[1:0])
@@ -1138,7 +1138,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbuReg();
+        function void execute_LdbuReg();
             address = regfile[sra];
 
             case(address[1:0])
@@ -1152,7 +1152,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwsReg();
+        function void execute_LdwsReg();
             address = regfile[sra];
 
             case(address[1])
@@ -1164,7 +1164,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwuReg();
+        function void execute_LdwuReg();
             address = regfile[sra];
 
             case(address[1])
@@ -1176,7 +1176,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LddReg();
+        function void execute_LddReg();
             address = regfile[sra];
             result = memory[address[11:2]];
 
@@ -1184,7 +1184,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbsRgo();
+        function void execute_LdbsRgo();
             address = regfile[sra] + imm16a;
 
             case(address[1:0])
@@ -1198,7 +1198,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbuRgo();
+        function void execute_LdbuRgo();
             address = regfile[sra] + imm16a;
 
             case(address[1:0])
@@ -1212,7 +1212,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwsRgo();
+        function void execute_LdwsRgo();
             address = regfile[sra] + imm16a;
 
             case(address[1])
@@ -1224,7 +1224,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwuRgo();
+        function void execute_LdwuRgo();
             address = regfile[sra] + imm16a;
 
             case(address[1])
@@ -1236,7 +1236,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LddRgo();
+        function void execute_LddRgo();
             address = regfile[sra] + imm16a;
             result = memory[address[11:2]];
 
@@ -1244,7 +1244,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbsIa();
+        function void execute_LdbsIa();
             address = regfile[sra];
 
             case(address[1:0])
@@ -1261,7 +1261,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbuIa();
+        function void execute_LdbuIa();
             address = regfile[sra];
 
             case(address[1:0])
@@ -1278,7 +1278,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwsIa();
+        function void execute_LdwsIa();
             address = regfile[sra];
 
             case(address[1])
@@ -1293,7 +1293,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwuIa();
+        function void execute_LdwuIa();
             address = regfile[sra];
 
             case(address[1])
@@ -1308,7 +1308,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LddIa();
+        function void execute_LddIa();
             address = regfile[sra];
             result = memory[address[11:2]];
 
@@ -1319,7 +1319,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbsIb();
+        function void execute_LdbsIb();
             address = regfile[sra] + imm16a;
 
             case(address[1:0])
@@ -1334,7 +1334,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdbuIb();
+        function void execute_LdbuIb();
             address = regfile[sra] + imm16a;
 
             case(address[1:0])
@@ -1349,7 +1349,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwsIb();
+        function void execute_LdwsIb();
             address = regfile[sra] + imm16a;
 
             case(address[1])
@@ -1362,7 +1362,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LdwuIb();
+        function void execute_LdwuIb();
             address = regfile[sra] + imm16a;
 
             case(address[1])
@@ -1375,7 +1375,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function execute_LddIb();
+        function void execute_LddIb();
             address = regfile[sra] + imm16a;
             result = memory[address[11:2]];
 
