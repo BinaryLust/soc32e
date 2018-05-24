@@ -85,7 +85,7 @@ module cpu32e2(
     logic                fetchCycle;
     logic                machineCycleDone;
     logic  [31:0][31:0]  regfileState;
-    logic  [5:0]         systemCallState;
+    logic  [7:0]         systemCallState;
 
 
     assign debugOut.fetchCycle           = fetchCycle;
@@ -108,7 +108,7 @@ module cpu32e2(
 
     // wire assignments
     assign opcode           = architecture::opcodes'({instructionReg[31:26], instructionReg[5:0]});
-    assign condition        = architecture::conditions'(instructionReg[9:6]);
+    assign condition        = architecture::conditions'(instructionReg[24:21]);
     assign read             = transactionControl.read;
     assign write            = transactionControl.write;
     assign bwe              = transactionControl.bwe;
@@ -238,7 +238,7 @@ module cpu32e2(
         .dataSelectBits,
         .dataInReg,
         .resultLow,
-        .bRegister,
+        .aRegister,
         .nextPC,
         .systemRegister,
         .resultHigh,

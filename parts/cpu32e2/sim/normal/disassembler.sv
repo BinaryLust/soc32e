@@ -19,13 +19,9 @@ package disassembler;
         logic  unsigned  [4:0]   sra;
         logic  unsigned  [4:0]   srb;
 
-        logic  signed    [31:0]  imm16a;
-        logic  signed    [31:0]  imm16b;
-        logic  unsigned  [31:0]  imm16c;
-        logic  signed    [31:0]  imm21b;
-        logic  signed    [31:0]  imm21c;
+        logic  signed    [31:0]  imm16;
+        logic  signed    [31:0]  imm21;
         logic  unsigned  [31:0]  imm5;
-        logic  unsigned  [31:0]  imm6;
         logic  signed    [31:0]  imm19;
         logic  signed    [31:0]  imm24;
 
@@ -45,20 +41,16 @@ package disassembler;
             opcode    = instruction[31:26];
             rcode     = instruction[5:0];
             itype     = opcodes'({opcode, rcode});
-            condition = conditions'(instruction[9:6]);
+            condition = conditions'(instruction[24:21]);
 
             drl    = instruction[25:21];
             drh    = instruction[10:6];
             sra    = instruction[20:16];
             srb    = instruction[15:11];
 
-            imm16a = {{16{instruction[15]}}, instruction[15:0]};                                              // bits[15:0] sign extended to bits[31:0]
-            imm16b = {{16{instruction[25]}}, instruction[25:21], instruction[10:0]};                          // {bits[25:21], bits[10:0]} sign extended to bits[31:0]
-            imm16c = {16'b0, instruction[20:16], instruction[10:0]};                                          // {bits[20:16], bits[10:0]} zero extended to bits[31:0]
-            imm21b = {{11{instruction[20]}}, instruction[20:0]};                                              // bits[20:0] sign extended to bits[31:0]
-            imm21c = {{11{instruction[25]}}, instruction[25:16], instruction[10:0]};                          // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
+            imm16  = {{16{instruction[15]}}, instruction[15:0]};                                              // bits[15:0] sign extended to bits[31:0]
+            imm21  = {{11{instruction[20]}}, instruction[20:0]};                                              // bits[20:0] sign extended to bits[31:0]
             imm5   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
-            imm6   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
             imm19  = {{13{instruction[25]}}, instruction[25:21], instruction[15:10], instruction[5:0], 2'b0}; // {bits[25:21], bits[15:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
             imm24  = {{8{instruction[25]}}, instruction[25:10], instruction[5:0], 2'b0};                      // {bits[25:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
         endfunction
@@ -404,18 +396,18 @@ package disassembler;
                 SHL_I,
                 SHR_I:   $sformat(str, "%s  %s, %s, %9d", iTypeToString(), regToString(drl), regToString(sra), imm5);
 
-                BR_R,
-                BRL_R:   $sformat(str, "%s  [%s]              %s", iTypeToString(), regToString(sra), condToString());
+                BR_RR,
+                BRL_RR:  $sformat(str, "%s  [%s+%s]           %s", iTypeToString(), regToString(sra), regToString(srb), condToString());
 
-                LDBS_R,
-                LDBU_R,
-                LDD_R,
-                LDWS_R,
-                LDWU_R:  $sformat(str, "%s  %s, [%s]             %s", iTypeToString(), regToString(drl), regToString(sra), memString());
+                LDBS_RR,
+                LDBU_RR,
+                LDD_RR,
+                LDWS_RR,
+                LDWU_RR: $sformat(str, "%s  %s, [%s+%s]         %s", iTypeToString(), regToString(drl), regToString(sra), regToString(srb), memString());
 
-                STB_R,
-                STD_R,
-                STW_R:   $sformat(str, "%s  [%s], %s            %s", iTypeToString(), regToString(sra), regToString(srb), memString());
+                STB_RR,
+                STD_RR,
+                STW_RR:  $sformat(str, "%s  [%s+%s], %s         %s", iTypeToString(), regToString(sra), regToString(srb), regToString(drl), memString());
 
                 ADC_I,
                 ADD_I,
@@ -427,12 +419,12 @@ package disassembler;
                 UADD_I,
                 USBB_I,
                 USUB_I,
-                XOR_I:   $sformat(str, "%s  %s, %s, %9d", iTypeToString(), regToString(drl), regToString(sra), imm16a);
+                XOR_I:   $sformat(str, "%s  %s, %s, %9d", iTypeToString(), regToString(drl), regToString(sra), imm16);
 
                 CMP_I,
                 TEQ_I,
                 TST_I,
-                UCMP_I:  $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(sra), imm16a);
+                UCMP_I:  $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(sra), imm16);
 
                 BR_PR,
                 BRL_PR:  $sformat(str, "%s  [npc+%9d]  %s", iTypeToString(), imm24, condToString());
@@ -440,49 +432,49 @@ package disassembler;
                 BR_RO,
                 BRL_RO:  $sformat(str, "%s  [%s+%9d]  %s", iTypeToString(), regToString(sra), imm19, condToString());
 
-                INT_I:   $sformat(str, "%s  %9d", iTypeToString(), imm16a[5:0]);
+                INT_I:   $sformat(str, "%s  %9d", iTypeToString(), instruction[7:0]);
 
-                MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), imm16c, regToString(srb));
+                MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), instruction[15:0], regToString(sra));
 
                 LDBS_PR,
                 LDBU_PR,
                 LDD_PR,
                 LDWS_PR,
-                LDWU_PR: $sformat(str, "%s  %s,  [npc+%9d]  %s", iTypeToString(), regToString(drl), imm21b, memString());
+                LDWU_PR: $sformat(str, "%s  %s,  [npc+%9d]  %s", iTypeToString(), regToString(drl), imm21, memString());
 
                 LDBS_RO,
                 LDBU_RO,
                 LDD_RO,
                 LDWS_RO,
-                LDWU_RO: $sformat(str, "%s  %s,  [%s+%9d]  %s", iTypeToString(), regToString(drl), regToString(sra), imm16a, memString());
+                LDWU_RO: $sformat(str, "%s  %s,  [%s+%9d]  %s", iTypeToString(), regToString(drl), regToString(sra), imm16, memString());
 
                 LDBS_IA,
                 LDBU_IA,
                 LDD_IA,
                 LDWS_IA,
-                LDWU_IA: $sformat(str, "%s  %s,  [%s+%9d]  %s  (increment after)", iTypeToString(), regToString(drl), regToString(sra), imm16a, memString());
+                LDWU_IA: $sformat(str, "%s  %s,  [%s+%9d]  %s  (increment after)", iTypeToString(), regToString(drl), regToString(sra), imm16, memString());
 
                 LDBS_IB,
                 LDBU_IB,
                 LDD_IB,
                 LDWS_IB,
-                LDWU_IB: $sformat(str, "%s  %s,  [%s+%9d]  %s  (increment before)", iTypeToString(), regToString(drl), regToString(sra), imm16a, memString());
+                LDWU_IB: $sformat(str, "%s  %s,  [%s+%9d]  %s  (increment before)", iTypeToString(), regToString(drl), regToString(sra), imm16, memString());
 
                 STB_PR,
                 STD_PR,
-                STW_PR:  $sformat(str, "%s  [npc+%9d], %s  %s", iTypeToString(), imm21c, regToString(srb), memString());
+                STW_PR:  $sformat(str, "%s  [npc+%9d], %s  %s", iTypeToString(), imm21, regToString(srb), memString());
 
                 STB_RO,
                 STD_RO,
-                STW_RO:  $sformat(str, "%s  [%s+%9d], %s  %s", iTypeToString(), regToString(sra), imm16b, regToString(srb), memString());
+                STW_RO:  $sformat(str, "%s  [%s+%9d], %s  %s", iTypeToString(), regToString(sra), imm16, regToString(srb), memString());
 
                 STB_IA,
                 STD_IA,
-                STW_IA:  $sformat(str, "%s  [%s+%9d], %s  %s  (increment after)", iTypeToString(), regToString(sra), imm16b, regToString(srb), memString());
+                STW_IA:  $sformat(str, "%s  [%s+%9d], %s  %s  (increment after)", iTypeToString(), regToString(sra), imm16, regToString(srb), memString());
 
                 STB_IB,
                 STD_IB,
-                STW_IB:  $sformat(str, "%s  [%s+%9d], %s  %s  (increment before)", iTypeToString(), regToString(sra), imm16b, regToString(srb), memString());
+                STW_IB:  $sformat(str, "%s  [%s+%9d], %s  %s  (increment before)", iTypeToString(), regToString(sra), imm16, regToString(srb), memString());
 
                 default: str = "unkn";
             endcase

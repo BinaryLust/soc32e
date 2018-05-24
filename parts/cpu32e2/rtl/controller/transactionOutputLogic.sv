@@ -43,27 +43,27 @@ module transactionOutputLogic(
 
             EXECUTE0: casex(instruction)
                           LDBS_PR,
-                          LDBS_R,
+                          LDBS_RR,
                           LDBS_RO,
                           LDBS_IA,
                           LDBS_IB,
                           LDBU_PR,
-                          LDBU_R,
+                          LDBU_RR,
                           LDBU_RO,
                           LDBU_IA,
                           LDBU_IB,
                           LDD_PR,
-                          LDD_R,
+                          LDD_RR,
                           LDD_RO,
                           LDD_IA,
                           LDD_IB,
                           LDWS_PR,
-                          LDWS_R,
+                          LDWS_RR,
                           LDWS_RO,
                           LDWS_IA,
                           LDWS_IB,
                           LDWU_PR,
-                          LDWU_R,
+                          LDWU_RR,
                           LDWU_RO,
                           LDWU_IA,
                           LDWU_IB: transactionControlNext = READ;
@@ -73,7 +73,7 @@ module transactionOutputLogic(
 
             EXECUTE1: casex(instruction)
                           STB_PR,
-                          STB_R,
+                          STB_RR,
                           STB_RO,
                           STB_IA,
                           STB_IB:  case(dataSelectBits)
@@ -84,13 +84,13 @@ module transactionOutputLogic(
                                    endcase
 
                           STD_PR,
-                          STD_R,
+                          STD_RR,
                           STD_RO,
                           STD_IA,
                           STD_IB:  transactionControlNext = WRITE_DWORD;
 
                           STW_PR,
-                          STW_R,
+                          STW_RR,
                           STW_RO,
                           STW_IA,
                           STW_IB:  case(dataSelectBits[1])

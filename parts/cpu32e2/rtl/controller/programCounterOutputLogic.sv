@@ -7,7 +7,6 @@ module programCounterOutputLogic(
     input   architecture::opcodes                    instruction,
     //input   decoderPkg::instructions                 instruction,
     input   controllerPkg::states                    state,
-    input   boolPkg::bool                            conditionResult,
     input   logic                                    exceptionPending,
     input   logic                                    interruptPending,
 
@@ -44,9 +43,6 @@ module programCounterOutputLogic(
             RESET1:    programCounterControlNext = LOAD_PLUS4;
 
             DECODE:    casex(instruction)
-                           BR_R,
-                           BRL_R:   programCounterControlNext = (conditionResult) ? LOAD_RFA : NO_OP; // don't load if we aren't going to branch anyway
-
                            IRET_R:  programCounterControlNext = LOAD_RFA;
 
                            default: programCounterControlNext = NO_OP;
@@ -54,8 +50,10 @@ module programCounterOutputLogic(
 
             EXECUTE0:  casex(instruction)
                            BR_PR,
+                           BR_RR,
                            BR_RO,
                            BRL_PR,
+                           BRL_RR,
                            BRL_RO:  programCounterControlNext = LOAD_CALC;
 
                            default: programCounterControlNext = NO_OP;

@@ -28,8 +28,7 @@ package addressGroup;
         PC_ADDR     = '{addressOutEn:T, calculatedAddressEn:F, addressSel:NEXTPC},
         RFA_ADDR    = '{addressOutEn:T, calculatedAddressEn:T, addressSel:REGFILEA},
         APLUSB_ADDR = '{addressOutEn:T, calculatedAddressEn:T, addressSel:APLUSB},
-        RFA_CALC    = '{addressOutEn:F, calculatedAddressEn:T, addressSel:REGFILEA},
-        APLUSB_CALC = '{addressOutEn:F, calculatedAddressEn:T, addressSel:APLUSB};
+        RFA_CALC    = '{addressOutEn:F, calculatedAddressEn:T, addressSel:REGFILEA};
 
 
 endpackage

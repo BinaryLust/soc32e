@@ -7,23 +7,21 @@ package loadGroup;
 
 
     // a mux values
-    typedef enum logic {
-        REGFILEA = 1'b0,
-        NEXTPC   = 1'b1
+    typedef enum logic [1:0] {
+        REGFILEA = 2'b00,
+        NEXTPC   = 2'b01,
+        COMBO    = 2'b10
     } aMux;
 
 
     // b mux values
     typedef enum logic [3:0] {
         REGFILEB = 4'b0000,
-        COMBO    = 4'b0001,
-        IMM16A   = 4'b0010,
-        IMM16B   = 4'b0011,
-        IMM21B   = 4'b0101,
-        IMM21C   = 4'b0110,
-        IMM5     = 4'b0111,
-        IMM19    = 4'b1000,
-        IMM24    = 4'b1001
+        IMM16    = 4'b0001,
+        IMM21    = 4'b0010,
+        IMM5     = 4'b0011,
+        IMM19    = 4'b0100,
+        IMM24    = 4'b0101
     } bMux;
 
 
@@ -39,17 +37,14 @@ package loadGroup;
     // control group macro values
     localparam controlBus
         NO_OP         = '{aRegisterEn:F, bRegisterEn:F, aSel:REGFILEA, bSel:REGFILEB},
-        RFA_IMM16A    = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM16A},
-        RFA_RFB       = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:REGFILEB},
+        NEXTPC_IMM21  = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM21},
         NEXTPC_IMM24  = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM24},
+        RFA_IMM16     = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM16},
         RFA_IMM19     = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM19},
-        RFA_NULL      = '{aRegisterEn:T, bRegisterEn:F, aSel:REGFILEA, bSel:REGFILEB},
-        NEXTPC_IMM21B = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM21B},
         RFA_IMM5      = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM5},
-        NULL_IMM21B   = '{aRegisterEn:F, bRegisterEn:T, aSel:REGFILEA, bSel:IMM21B},
-        NULL_COMBO    = '{aRegisterEn:F, bRegisterEn:T, aSel:REGFILEA, bSel:COMBO},
-        RFA_IMM16B    = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM16B},
-        NEXTPC_IMM21C = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM21C};
+        RFA_RFB       = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:REGFILEB},
+        RFA_NULL      = '{aRegisterEn:T, bRegisterEn:F, aSel:REGFILEA, bSel:REGFILEB},
+        COMBO_NULL    = '{aRegisterEn:T, bRegisterEn:F, aSel:COMBO,    bSel:REGFILEB};
 
 
 endpackage
@@ -95,6 +90,7 @@ module load(
         case(loadControl.aSel)
             REGFILEA: aRegisterNext = registerFileA;
             NEXTPC:   aRegisterNext = nextPC;
+            COMBO:    aRegisterNext = {instructionReg[15:0], registerFileA[15:0]};
             default:  aRegisterNext = registerFileA;
         endcase
 
@@ -102,14 +98,11 @@ module load(
         // b mux
         case(loadControl.bSel)
             REGFILEB: bRegisterNext = registerFileB;
-            COMBO:    bRegisterNext = {instructionReg[20:16], instructionReg[10:0], registerFileB[15:0]};
-            IMM16A:   bRegisterNext = {{16{instructionReg[15]}}, instructionReg[15:0]};                                                    // bits[15:0] sign extended to bits[31:0]
-            IMM16B:   bRegisterNext = {{16{instructionReg[25]}}, instructionReg[25:21], instructionReg[10:0]};                             // {bits[25:21], bits[10:0]} sign extended to bits[31:0]
-            IMM21B:   bRegisterNext = {{11{instructionReg[20]}}, instructionReg[20:0]};                                                    // bits[20:0] sign extended to bits[31:0]
-            IMM21C:   bRegisterNext = {{11{instructionReg[25]}}, instructionReg[25:16], instructionReg[10:0]};                             // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
-            IMM5:     bRegisterNext = {27'b0, instructionReg[10:6]};                                                                       // bits[10:6] zero extended to bits[31:0]
-            IMM19:    bRegisterNext = {{13{instructionReg[25]}}, instructionReg[25:21], instructionReg[15:10], instructionReg[5:0], 2'b0}; // {bits[25:21], bits[15:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
-            IMM24:    bRegisterNext = {{8{instructionReg[25]}}, instructionReg[25:10], instructionReg[5:0], 2'b0};                         // {bits[25:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
+            IMM16:    bRegisterNext = {{16{instructionReg[15]}}, instructionReg[15:0]};        // bits[15:0] sign extended to bits[31:0]
+            IMM21:    bRegisterNext = {{11{instructionReg[20]}}, instructionReg[20:0]};        // bits[20:0] sign extended to bits[31:0]
+            IMM5:     bRegisterNext = {27'b0, instructionReg[10:6]};                           // bits[10:6] zero extended to bits[31:0]
+            IMM19:    bRegisterNext = {{14{instructionReg[25]}}, instructionReg[15:0], 2'b0};  // {bits[25], bits[15:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
+            IMM24:    bRegisterNext = {{9{instructionReg[25]}}, instructionReg[20:0], 2'b0};   // {bits[25], bits[20:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
             default:  bRegisterNext = registerFileB;
         endcase
     end

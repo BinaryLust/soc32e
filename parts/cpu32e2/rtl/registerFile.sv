@@ -12,7 +12,7 @@ package regfileAGroup;
     // rfa data mux values
     typedef enum logic [3:0] {
         RFA_RESULT_LOW = 4'b0000,
-        RFA_BREG       = 4'b0001,
+        RFA_AREG       = 4'b0001,
         RFA_NEXTPC     = 4'b0010,
         RFA_SYSREG     = 4'b0011,
         RFA_DWORD      = 4'b0100,
@@ -50,7 +50,7 @@ package regfileAGroup;
         SBYTE_DRL  = '{regfileAWriteEn:T, regfileADataSel:RFA_SBYTE,      regfileADestSel:RFA_DRL},
         UBYTE_DRL  = '{regfileAWriteEn:T, regfileADataSel:RFA_UBYTE,      regfileADestSel:RFA_DRL},
         SYSREG_DRL = '{regfileAWriteEn:T, regfileADataSel:RFA_SYSREG,     regfileADestSel:RFA_DRL},
-        BREG_DRL   = '{regfileAWriteEn:T, regfileADataSel:RFA_BREG,       regfileADestSel:RFA_DRL},
+        AREG_DRL   = '{regfileAWriteEn:T, regfileADataSel:RFA_AREG,       regfileADestSel:RFA_DRL},
         NEXTPC_EPC = '{regfileAWriteEn:T, regfileADataSel:RFA_NEXTPC,     regfileADestSel:RFA_EPC};
 
 
@@ -104,7 +104,7 @@ module registerFile(
     input   logic                      [1:0]         dataSelectBits,
     input   logic                      [31:0]        dataInReg,
     input   logic                      [31:0]        resultLow,
-    input   logic                      [31:0]        bRegister,
+    input   logic                      [31:0]        aRegister,
     input   logic                      [31:0]        nextPC,
     input   logic                      [31:0]        systemRegister,
     input   logic                      [31:0]        resultHigh,
@@ -197,7 +197,7 @@ module registerFile(
         //rfa data mux
         case(regfileAControl.regfileADataSel)
             RFA_RESULT_LOW: regfileAData = resultLow;
-            RFA_BREG:       regfileAData = bRegister;
+            RFA_AREG:       regfileAData = aRegister;
             RFA_NEXTPC:     regfileAData = nextPC;
             RFA_SYSREG:     regfileAData = systemRegister;
             RFA_DWORD:      regfileAData = dataInReg;

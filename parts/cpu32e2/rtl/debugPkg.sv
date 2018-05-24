@@ -20,7 +20,7 @@ package debugPkg;
 
         // other cpu state
         logic  [3:0]         flagsState;
-        logic  [5:0]         systemCallState;
+        logic  [7:0]         systemCallState;
         logic  [31:0]        isrBaseAddressState;
         logic                interruptEnableState;
         logic  [15:0]        exceptionMaskState;

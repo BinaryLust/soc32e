@@ -59,7 +59,7 @@ module system(
     input   logic                    [4:0]   cause,
 
     `ifdef  DEBUG
-    output  logic                    [5:0]   systemCallState,
+    output  logic                    [7:0]   systemCallState,
     `endif
 
     output  logic                            interruptEnable,
@@ -81,7 +81,7 @@ module system(
 
     logic  [3:0]  flagsNext;
     logic         interruptEnableNext;
-    logic  [5:0]  systemCall;
+    logic  [7:0]  systemCall;
 
 
     `ifdef  DEBUG
@@ -112,9 +112,9 @@ module system(
     // system call register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            systemCall <= 6'b0;
+            systemCall <= 8'b0;
         else if(systemControl.systemCallEn) // written even on exceptions
-            systemCall <= instructionReg[5:0]; // IMM6
+            systemCall <= instructionReg[7:0]; // lower 8-bits of imm16
         else
             systemCall <= systemCall;
     end
@@ -193,7 +193,7 @@ module system(
             5'd0:    systemRegister = {28'b0, flags};
             5'd1:    systemRegister = {exceptionMask, interruptEnable, 10'b0, cause};
             5'd2:    systemRegister = isrBaseAddress;
-            5'd3:    systemRegister = {26'b0, systemCall}; // sys3 - system call number
+            5'd3:    systemRegister = {24'b0, systemCall}; // sys3 - system call number
             default: systemRegister = 32'b0;
         endcase
     end

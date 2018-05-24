@@ -42,47 +42,44 @@ module addressOutputLogic(
         case(state)
             RESET1:    addressControlNext = PC_ADDR;
 
-            DECODE:    casex(instruction)
-                           LDBS_R,
-                           LDBU_R,
-                           LDD_R,
-                           LDWS_R,
-                           LDWU_R,
-                           STB_R,
-                           STD_R,
-                           STW_R:   addressControlNext = RFA_ADDR;
-
-                           default: addressControlNext = NO_OP;
-                       endcase
-
             LOAD:      casex(instruction)
                            LDBS_PR,
+                           LDBS_RR,
                            LDBS_RO,
                            LDBS_IB,
                            LDBU_PR,
+                           LDBU_RR,
                            LDBU_RO,
                            LDBU_IB,
                            LDD_PR,
+                           LDD_RR,
                            LDD_RO,
                            LDD_IB,
                            LDWS_PR,
+                           LDWS_RR,
                            LDWS_RO,
                            LDWS_IB,
                            LDWU_PR,
+                           LDWU_RR,
                            LDWU_RO,
                            LDWU_IB,
                            STB_PR,
+                           STB_RR,
                            STB_RO,
                            STB_IB,
                            STD_PR,
+                           STD_RR,
                            STD_RO,
                            STD_IB,
                            STW_PR,
+                           STW_RR,
                            STW_RO,
                            STW_IB,
                            BR_PR,
+                           BR_RR,
                            BR_RO,
                            BRL_PR,
+                           BRL_RR,
                            BRL_RO:  addressControlNext = APLUSB_ADDR;
 
                            LDBS_IA,
