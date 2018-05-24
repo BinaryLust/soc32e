@@ -19,7 +19,6 @@ package loadGroup;
         COMBO    = 4'b0001,
         IMM16A   = 4'b0010,
         IMM16B   = 4'b0011,
-        IMM21A   = 4'b0100,
         IMM21B   = 4'b0101,
         IMM21C   = 4'b0110,
         IMM5     = 4'b0111,
@@ -44,7 +43,6 @@ package loadGroup;
         RFA_RFB       = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:REGFILEB},
         NEXTPC_IMM24  = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM24},
         RFA_IMM19     = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM19},
-        RFA_IMM21A    = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM21A},
         RFA_NULL      = '{aRegisterEn:T, bRegisterEn:F, aSel:REGFILEA, bSel:REGFILEB},
         NEXTPC_IMM21B = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM21B},
         RFA_IMM5      = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM5},
@@ -107,7 +105,6 @@ module load(
             COMBO:    bRegisterNext = {instructionReg[20:16], instructionReg[10:0], registerFileB[15:0]};
             IMM16A:   bRegisterNext = {{16{instructionReg[15]}}, instructionReg[15:0]};                                                    // bits[15:0] sign extended to bits[31:0]
             IMM16B:   bRegisterNext = {{16{instructionReg[25]}}, instructionReg[25:21], instructionReg[10:0]};                             // {bits[25:21], bits[10:0]} sign extended to bits[31:0]
-            IMM21A:   bRegisterNext = {{11{instructionReg[25]}}, instructionReg[25:21], instructionReg[15:0]};                             // {bits[25:21], bits[15:0]} sign extended to bits[31:0]
             IMM21B:   bRegisterNext = {{11{instructionReg[20]}}, instructionReg[20:0]};                                                    // bits[20:0] sign extended to bits[31:0]
             IMM21C:   bRegisterNext = {{11{instructionReg[25]}}, instructionReg[25:16], instructionReg[10:0]};                             // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
             IMM5:     bRegisterNext = {27'b0, instructionReg[10:6]};                                                                       // bits[10:6] zero extended to bits[31:0]

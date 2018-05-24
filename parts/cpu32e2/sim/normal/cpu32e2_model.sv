@@ -46,7 +46,6 @@ package cpu32e2_modelPkg;
         logic       [31:0]  imm16a;
         logic       [31:0]  imm16b;
         logic       [15:0]  imm16c;
-        logic       [31:0]  imm21a;
         logic       [31:0]  imm21b;
         logic       [31:0]  imm21c;
         logic       [31:0]  imm5;
@@ -98,7 +97,6 @@ package cpu32e2_modelPkg;
             imm16a = {{16{instruction[15]}}, instruction[15:0]};                                              // bits[15:0] sign extended to bits[31:0]
             imm16b = {{16{instruction[25]}}, instruction[25:21], instruction[10:0]};                          // {bits[25:21], bits[10:0]} sign extended to bits[31:0]
             imm16c = {instruction[20:16],    instruction[10:0]};                                              // {bits[20:16], bits[10:0]}
-            imm21a = {{11{instruction[25]}}, instruction[25:21], instruction[15:0]};                          // {bits[25:21], bits[15:0]} sign extended to bits[31:0]
             imm21b = {{11{instruction[20]}}, instruction[20:0]};                                              // bits[20:0] sign extended to bits[31:0]
             imm21c = {{11{instruction[25]}}, instruction[25:16], instruction[10:0]};                          // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
             imm5   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
@@ -459,7 +457,7 @@ package cpu32e2_modelPkg;
 
         function execute_CmpImm();
             operandA     = regfile[sra];
-            operandB     = imm21a;
+            operandB     = imm16a;
             result       = (operandA + ~operandB) + 1'b1;
 
             subFlags();
@@ -477,7 +475,7 @@ package cpu32e2_modelPkg;
 
         function execute_UcmpImm();
             operandA     = regfile[sra];
-            operandB     = imm21a;
+            operandB     = imm16a;
             result       = (operandA + ~operandB) + 1'b1;
 
             subFlags();
@@ -608,7 +606,7 @@ package cpu32e2_modelPkg;
 
         function execute_TeqImm();
             operandA     = regfile[sra];
-            operandB     = imm21a;
+            operandB     = imm16a;
             result       = operandA ^ operandB;
 
             logicFlags();
@@ -626,7 +624,7 @@ package cpu32e2_modelPkg;
 
         function execute_TstImm();
             operandA     = regfile[sra];
-            operandB     = imm21a;
+            operandB     = imm16a;
             result       = operandA & operandB;
 
             logicFlags();

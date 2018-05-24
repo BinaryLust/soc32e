@@ -100,7 +100,7 @@ module loadOutputLogic(
                          CMP_I,
                          TEQ_I,
                          TST_I,
-                         UCMP_I:  loadControlNext = RFA_IMM21A;
+                         UCMP_I:  loadControlNext = RFA_IMM16A;
 
                          RCL_I,
                          RCR_I,

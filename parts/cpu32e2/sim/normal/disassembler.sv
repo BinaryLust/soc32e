@@ -22,7 +22,6 @@ package disassembler;
         logic  signed    [31:0]  imm16a;
         logic  signed    [31:0]  imm16b;
         logic  unsigned  [31:0]  imm16c;
-        logic  signed    [31:0]  imm21a;
         logic  signed    [31:0]  imm21b;
         logic  signed    [31:0]  imm21c;
         logic  unsigned  [31:0]  imm5;
@@ -56,7 +55,6 @@ package disassembler;
             imm16a = {{16{instruction[15]}}, instruction[15:0]};                                              // bits[15:0] sign extended to bits[31:0]
             imm16b = {{16{instruction[25]}}, instruction[25:21], instruction[10:0]};                          // {bits[25:21], bits[10:0]} sign extended to bits[31:0]
             imm16c = {16'b0, instruction[20:16], instruction[10:0]};                                          // {bits[20:16], bits[10:0]} zero extended to bits[31:0]
-            imm21a = {{11{instruction[25]}}, instruction[25:21], instruction[15:0]};                          // {bits[25:21], bits[15:0]} sign extended to bits[31:0]
             imm21b = {{11{instruction[20]}}, instruction[20:0]};                                              // bits[20:0] sign extended to bits[31:0]
             imm21c = {{11{instruction[25]}}, instruction[25:16], instruction[10:0]};                          // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
             imm5   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
@@ -434,7 +432,7 @@ package disassembler;
                 CMP_I,
                 TEQ_I,
                 TST_I,
-                UCMP_I:  $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(sra), imm21a);
+                UCMP_I:  $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(sra), imm16a);
 
                 BR_PR,
                 BRL_PR:  $sformat(str, "%s  [npc+%9d]  %s", iTypeToString(), imm24, condToString());
