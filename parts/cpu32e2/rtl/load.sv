@@ -45,7 +45,7 @@ package loadGroup;
         NEXTPC_IMM24  = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM24},
         RFA_IMM19     = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM19},
         RFA_IMM21A    = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM21A},
-        NULL_RFB      = '{aRegisterEn:F, bRegisterEn:T, aSel:REGFILEA, bSel:REGFILEB},
+        RFA_NULL      = '{aRegisterEn:T, bRegisterEn:F, aSel:REGFILEA, bSel:REGFILEB},
         NEXTPC_IMM21B = '{aRegisterEn:T, bRegisterEn:T, aSel:NEXTPC,   bSel:IMM21B},
         RFA_IMM5      = '{aRegisterEn:T, bRegisterEn:T, aSel:REGFILEA, bSel:IMM5},
         NULL_IMM21B   = '{aRegisterEn:F, bRegisterEn:T, aSel:REGFILEA, bSel:IMM21B},

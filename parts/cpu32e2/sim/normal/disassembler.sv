@@ -390,7 +390,7 @@ package disassembler;
                 BREAK_R,
                 NOP_R:   str = iTypeToString();
 
-                NOT_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), regToString(srb));
+                NOT_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), regToString(sra));
 
                 IRET_R:  $sformat(str, "%s  %s", iTypeToString(), regToString(sra));
 

@@ -58,7 +58,7 @@ module loadOutputLogic(
 
                          MUI_I:   loadControlNext = NULL_COMBO;
 
-                         NOT_R:   loadControlNext = NULL_RFB;
+                         NOT_R:   loadControlNext = RFA_NULL;
 
                          ADC_I,
                          ADD_I,

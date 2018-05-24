@@ -62,7 +62,7 @@ module alu(
             AND: begin {aluCarryNext, aluResultNext} = {1'b0, operandA & operandB};   end
             OR:  begin {aluCarryNext, aluResultNext} = {1'b0, operandA | operandB};   end
             XOR: begin {aluCarryNext, aluResultNext} = {1'b0, operandA ^ operandB};   end
-            NOT: begin {aluCarryNext, aluResultNext} = {1'b0, ~operandB};             end
+            NOT: begin {aluCarryNext, aluResultNext} = {1'b0, ~operandA};             end
         endcase
 
         // overflow detection
@@ -80,7 +80,7 @@ module alu(
             AND: {aluCarryOut, aluResult} = {1'b0, operandA & operandB};
             OR:  {aluCarryOut, aluResult} = {1'b0, operandA | operandB};
             XOR: {aluCarryOut, aluResult} = {1'b0, operandA ^ operandB};
-            NOT: {aluCarryOut, aluResult} = {1'b0, ~operandB};
+            NOT: {aluCarryOut, aluResult} = {1'b0, ~operandA};
             default: {aluCarryOut, aluResult} = operandA + operandB;
         endcase
     end*/

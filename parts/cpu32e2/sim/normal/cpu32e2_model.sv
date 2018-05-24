@@ -558,8 +558,8 @@ package cpu32e2_modelPkg;
 
 
         function execute_NotReg();
-            operandB     = regfile[srb];
-            result       = ~operandB;
+            operandA     = regfile[sra];
+            result       = ~operandA;
 
             regfile[drl] = result[31:0];
             logicFlags();
