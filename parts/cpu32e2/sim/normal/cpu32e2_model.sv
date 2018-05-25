@@ -1,5 +1,19 @@
 
 
+// exception handling in the full machine
+// go through each normal micro operation
+// figure out if each step triggers an exception if so flag it in the exceptionPending register
+// after all micro ops are done check for interrupt/exception if one is set find the highest priority one and start
+// the exception/interrupt special cycle and do the following
+//
+// reset pending exceptions
+// load cause register
+// if it was an interrupt ack the interrupt
+// load isr base address to next pc
+// clear interrupt enable flag
+// save current pc to epc
+
+
 package cpu32e2_modelPkg;
 
 
@@ -285,7 +299,13 @@ package cpu32e2_modelPkg;
 
 
         function void execute_Unk();
-
+            // if interrupts are enabled and unknown instruction exception is enabled
+            if(interruptEn && exceptionMask[4]) begin
+                interruptEn  = 1'b0;           // clear interrupt enable flag
+                cause        = 5'd4;           // load cause register // unknown instruction - exception 4
+                regfile[EPC] = nextPC;         // save current pc to epc
+                nextPC       = isrBaseAddress; // load isr base address to next pc
+            end
         endfunction
 
 
@@ -300,7 +320,7 @@ package cpu32e2_modelPkg;
 
 
         function void execute_AdcReg();
-             operandA     = regfile[sra];
+            operandA     = regfile[sra];
             operandB     = regfile[srb];
             result       = operandA + operandB + carryFlag;
 
@@ -309,7 +329,7 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-         function void execute_AddImm();
+        function void execute_AddImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
             result       = operandA + operandB;
@@ -322,7 +342,7 @@ package cpu32e2_modelPkg;
         function void execute_AddReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = operandA + operandB;
+            result       = operandA + operandB;
 
             regfile[drl] = result[31:0];
             addFlags();
@@ -362,7 +382,7 @@ package cpu32e2_modelPkg;
         function void execute_UaddReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = operandA + operandB;
+            result       = operandA + operandB;
 
             regfile[drl] = result[31:0];
             addFlags();
@@ -382,7 +402,7 @@ package cpu32e2_modelPkg;
         function void execute_SbbReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + carryFlag;
+            result       = (operandA + ~operandB) + carryFlag;
 
             regfile[drl] = result[31:0];
             subFlags();
@@ -402,7 +422,7 @@ package cpu32e2_modelPkg;
         function void execute_SubReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + 1'b1;
+            result       = (operandA + ~operandB) + 1'b1;
 
             regfile[drl] = result[31:0];
             subFlags();
@@ -422,7 +442,7 @@ package cpu32e2_modelPkg;
         function void execute_UsbbReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + carryFlag;
+            result       = (operandA + ~operandB) + carryFlag;
 
             regfile[drl] = result[31:0];
             subFlags();
@@ -442,7 +462,7 @@ package cpu32e2_modelPkg;
         function void execute_UsubReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + 1'b1;
+            result       = (operandA + ~operandB) + 1'b1;
 
             regfile[drl] = result[31:0];
             subFlags();
@@ -461,7 +481,7 @@ package cpu32e2_modelPkg;
         function void execute_CmpReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + 1'b1;
+            result       = (operandA + ~operandB) + 1'b1;
 
             subFlags();
         endfunction
@@ -479,7 +499,7 @@ package cpu32e2_modelPkg;
         function void execute_UcmpReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-             result       = (operandA + ~operandB) + 1'b1;
+            result       = (operandA + ~operandB) + 1'b1;
 
             subFlags();
         endfunction
@@ -510,7 +530,7 @@ package cpu32e2_modelPkg;
         function void execute_SdivReg();
             operandA      = regfile[sra];
             operandB      = regfile[srb];
-              result[63:32] = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
+            result[63:32] = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
             result[31:0]  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
 
             regfile[drh]  = result[63:32];
@@ -521,7 +541,7 @@ package cpu32e2_modelPkg;
         function void execute_UdivReg();
             operandA      = regfile[sra];
             operandB      = regfile[srb];
-              result[63:32] = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
+            result[63:32] = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
             result[31:0]  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
 
             regfile[drh]  = result[63:32];

@@ -25,7 +25,7 @@ module cpu32e2_tb();
 
 
     // output wires
-    debugPkg::debugLines          debugOut;
+    debugPkg::debugLines                  debugOut;
 
     logic                                 interruptAcknowledge;
     logic                 [3:0]           interruptOut;
@@ -118,7 +118,7 @@ module cpu32e2_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer        seed = 125376;
+    integer        seed = 9872;//125376;
     integer        i = 0;
 
 
@@ -191,44 +191,8 @@ module cpu32e2_tb();
 
         // run some instructions
         repeat(100000) begin
-            wait(debugOut.fetchCycle && read) doRandInstruction();
-
-            wait(debugOut.machineCycleDone)
-            model.run(instructionData);
-
-            instructionDecoder.decode(instructionData);
-            instructionStr = instructionDecoder.toString();
-
-            // register file check
-            for(i = 0; i < 32; i++)
-                if(debugOut.regfileState[i] != model.regfile[i])
-                    $fatal("Register File Miss Match! - got: %h expected: %h - %s", debugOut.regfileState[i], model.regfile[i], instructionStr);
-
-            // program counter check
-            if(debugOut.nextPCState != model.nextPC)   $fatal("Program Counter Miss Match! - got: %h expected: %h - %s", debugOut.nextPCState, model.nextPC, instructionStr);
-
-            // flags check
-            if(debugOut.flagsState != {model.negativeFlag, model.overflowFlag, model.zeroFlag, model.carryFlag}) $fatal("Flags Miss Match! - got: %h expected: %h - %s", debugOut.flagsState, {model.negativeFlag, model.overflowFlag, model.zeroFlag, model.carryFlag}, instructionStr);
-
-            // system call check
-            if(debugOut.systemCallState != model.systemCall) $fatal("System Call Miss Match! - got: %h expected: %h - %s", debugOut.systemCallState, model.systemCall, instructionStr);
-
-            // isr base check
-            if(debugOut.isrBaseAddressState != model.isrBaseAddress) $fatal("ISR Base Address Miss Match! - got: %h expected: %h - %s", debugOut.isrBaseAddressState, model.isrBaseAddress, instructionStr);
-
-            // interrupt enable check
-            if(debugOut.interruptEnableState != model.interruptEn) $fatal("Interrupt Enable Miss Match! - got: %h expected: %h - %s", debugOut.interruptEnableState, model.interruptEn, instructionStr);
-
-            // exception mask check
-            if(debugOut.exceptionMaskState != model.exceptionMask) $fatal("Exception Mask Miss Match! - got: %h expected: %h - %s", debugOut.exceptionMaskState, model.exceptionMask, instructionStr);
-
-            // cause check
-            if(debugOut.causeState != model.cause) $fatal("Cause Miss Match! - got: %h expected: %h - %s", debugOut.causeState, model.cause, instructionStr);
-
-            // memory check
-            for(i = 0; i < 1024; i++)
-                if(ramState[i] != model.memory[i])
-                    $fatal("Memory Miss Match! - got: %h expected: %h - %s", ramState[i], model.memory[i], instructionStr);
+            //doTest(randImmInstruction());
+            doTest($random);
         end
 
         // finish
@@ -255,109 +219,158 @@ module cpu32e2_tb();
     endtask
 
 
-    task doRandInstruction();
+    task doTest(
+        input  logic  [31:0]  instruction
+        );
+
+        bit missMatch;
+
+        wait(debugOut.fetchCycle && read)
+        runInstruction(instruction);
+
+        wait(debugOut.machineCycleDone)
+        model.run(instructionData);
+
+        instructionDecoder.decode(instructionData);
+        instructionStr = instructionDecoder.toString();
+
+        missMatch = 1'b0;
+
+        // register file check
+        for(i = 0; i < 32; i++) begin
+            if(debugOut.regfileState[i] != model.regfile[i]) begin
+                missMatch = 1'b1;
+                $warning("Register File Miss Match! - got: %h expected: %h - %s", debugOut.regfileState[i], model.regfile[i], instructionStr);
+            end
+        end
+
+        // program counter check
+        if(debugOut.nextPCState != model.nextPC) begin
+            missMatch = 1'b1;
+            $warning("Program Counter Miss Match! - got: %h expected: %h - %s", debugOut.nextPCState, model.nextPC, instructionStr);
+        end
+
+        // flags check
+        if(debugOut.flagsState != {model.negativeFlag, model.overflowFlag, model.zeroFlag, model.carryFlag}) begin
+            missMatch = 1'b1;
+            $warning("Flags Miss Match! - got: %h expected: %h - %s", debugOut.flagsState, {model.negativeFlag, model.overflowFlag, model.zeroFlag, model.carryFlag}, instructionStr);
+        end
+
+        // system call check
+        if(debugOut.systemCallState != model.systemCall) begin
+            missMatch = 1'b1;
+            $warning("System Call Miss Match! - got: %h expected: %h - %s", debugOut.systemCallState, model.systemCall, instructionStr);
+        end
+
+        // isr base check
+        if(debugOut.isrBaseAddressState != model.isrBaseAddress) begin
+            missMatch = 1'b1;
+            $warning("ISR Base Address Miss Match! - got: %h expected: %h - %s", debugOut.isrBaseAddressState, model.isrBaseAddress, instructionStr);
+        end
+
+        // interrupt enable check
+        if(debugOut.interruptEnableState != model.interruptEn) begin
+            missMatch = 1'b1;
+            $warning("Interrupt Enable Miss Match! - got: %h expected: %h - %s", debugOut.interruptEnableState, model.interruptEn, instructionStr);
+        end
+
+        // exception mask check
+        if(debugOut.exceptionMaskState != model.exceptionMask) begin
+            missMatch = 1'b1;
+            $warning("Exception Mask Miss Match! - got: %h expected: %h - %s", debugOut.exceptionMaskState, model.exceptionMask, instructionStr);
+        end
+
+        // cause check
+        if(debugOut.causeState != model.cause) begin
+            missMatch = 1'b1;
+            $warning("Cause Miss Match! - got: %h expected: %h - %s", debugOut.causeState, model.cause, instructionStr);
+        end
+
+        // memory check
+        for(i = 0; i < 1024; i++) begin
+            if(ramState[i] != model.memory[i]) begin
+                missMatch = 1'b1;
+                $warning("Memory Miss Match! - got: %h expected: %h - %s", ramState[i], model.memory[i], instructionStr);
+            end
+        end
+
+        if(missMatch == 1'b1)
+            $fatal("1 or more miss matches!");
+    endtask
 
 
-        import architecture::*;
-
+    task runInstruction(
+        input  logic  [31:0]  instruction
+        );
 
         // random wait cycles
         #1 instructionWait = 1'b1;
         repeat($urandom_range(0, 3)) @(posedge clk);
         #1 instructionWait = 1'b0;
 
-
         // random cycles before ready
         instructionValid   = 1'b0;
         repeat($urandom_range(2, 4)) @(posedge clk);
 
-
         // put instruction on data in
         instructionValid = 1'b1;
-        instructionData  = $urandom();//{instruction[11:6], dr, sra, imm}; // finished instruction
+        instructionData  = instruction;
         @(posedge clk);
         instructionValid = 1'b0;
     endtask
 
 
-    // task doImmInstruction();
+    /*********************************************************************************************************************************************************/
+    /*                                                                                                                                                       */
+    /* functions                                                                                                                                             */
+    /*                                                                                                                                                       */
+    /*********************************************************************************************************************************************************/
 
 
-    //     import architecture::*;
+    function logic [31:0] randImmInstruction();
+        logic  [5:0]   opcode;
+        logic  [25:0]  theRest;
+
+        opcode  = $urandom_range(1, 63);
+        theRest = $urandom();
+
+        return {opcode, theRest};
+    endfunction
 
 
-    //     opcodes          instruction;
-    //     logic    [4:0]   dr;
-    //     logic    [4:0]   sra;
-    //     logic    [15:0]  imm;
+    function logic [31:0] immInstruction(
+        input  logic  [5:0]  opcode
+        );
+        logic  [25:0]  theRest;
+
+        theRest = $urandom();
+
+        return {opcode, theRest};
+    endfunction
 
 
-    //     // generate random destinations and sources
-    //     dr  = $urandom_range(0, 31);
-    //     sra = $urandom_range(0, 31);
+    function logic [31:0] randRegInstruction();
+        logic    [5:0]   rcode;
+        logic    [19:0]  theRest;
+
+        rcode   = $urandom_range(1, 63);
+        theRest = $urandom();
+
+        return {6'd0, theRest, rcode};
+    endfunction
 
 
-    //     // generate random immediate value
-    //     imm = $urandom(); //$urandom_range(0, 255);
+    function logic [31:0] regInstruction(
+        input  logic  [5:0]  rcode
+        );
 
+        logic    [5:0]   opcode;
+        logic    [19:0]  theRest;
 
-    //     // pick one of these instructions randomly
-    //     case($urandom_range(0, 10))//randcase
-    //         0:       instruction = UADC_I;
-    //         1:       instruction = UADD_I;
-    //         //2:       instruction = USUB_I;
-    //         //3:       instruction = USBB_I;
-    //         4:       instruction = ADC_I;
-    //         5:       instruction = ADD_I;
-    //         //6:       instruction = SBB_I;
-    //         //7:       instruction = SUB_I;
-    //         8:       instruction = AND_I;
-    //         9:       instruction = OR_I;
-    //         10:      instruction = XOR_I;
-    //         default: instruction = UADC_I;
-    //     endcase
+        theRest = $urandom();
 
-
-    //     // random wait cycles
-    //     #1 instructionWait = 1'b1;
-    //     repeat($urandom_range(0, 3)) @(posedge clk);
-    //     #1 instructionWait = 1'b0;
-
-
-    //     // random cycles before ready
-    //     instructionValid   = 1'b0;
-    //     repeat($urandom_range(2, 4)) @(posedge clk);
-
-
-    //     // put instruction on data in
-    //     instructionValid = 1'b1;
-    //     instructionData  = $urandom();//{instruction[11:6], dr, sra, imm}; // finished instruction
-    //     @(posedge clk);
-    //     instructionValid = 1'b0;
-    // endtask
-
-
-    //task startOperation(
-    //	input  aluOpType                    operationType,
-    //	input  logic      unsigned  [31:0]  opA,
-   // input  logic      unsigned  [31:0]  opB,
-    //	input  logic      unsigned          carryInput
-    //	);
-
-
-        //@(posedge clk);
-    //	wait(ready);
-    //	#1 opType = operationType; carryIn = carryInput; operandA = opA; operandB = opB; validIn = 1'b1;
-    //	@(posedge clk);
-    //	#1 validIn = 1'b0;
-
-        // normal check
-        //wait(validOut);
-
-        // test results after negative clock edge
-        //@(negedge clk);
-
-    //endtask
+        return {6'd0, theRest, rcode};
+    endfunction
 
 
 endmodule

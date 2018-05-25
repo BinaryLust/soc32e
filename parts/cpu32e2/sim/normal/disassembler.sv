@@ -38,7 +38,7 @@ package disassembler;
 
 
         // everything else
-        function decode(
+        function void decode(
             logic  [31:0]  instruction = 32'b0
             );
 
