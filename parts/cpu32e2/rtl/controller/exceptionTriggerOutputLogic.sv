@@ -67,6 +67,7 @@ module exceptionTriggerOutputLogic(
                          UKN22_R,
                          UKN23_R,
                          UKN24_R,
+                         UKN25_R,
                          UKN1_I,
                          UKN2_I,
                          UKN3_I,

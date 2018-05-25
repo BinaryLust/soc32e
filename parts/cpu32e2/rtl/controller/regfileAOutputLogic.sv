@@ -48,7 +48,6 @@ module regfileAOutputLogic(
 
             LOAD:      casex(instruction)
                            MOV_I,
-                           MOV_R,
                            MUI_I:   regfileAControlNext = BREG_DRL;
 
                            default: regfileAControlNext = NO_OP;

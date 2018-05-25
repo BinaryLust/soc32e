@@ -60,7 +60,6 @@ module loadOutputLogic(
 
                          MOV_I:   loadControlNext = NULL_IMM21B;
 
-                         MOV_R,
                          NOT_R:   loadControlNext = NULL_RFB;
 
                          ADC_I,

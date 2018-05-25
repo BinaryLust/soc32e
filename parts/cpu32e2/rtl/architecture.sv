@@ -83,7 +83,6 @@ package architecture;
         LDWU_IA = {6'd28, 6'd? },
         LDWU_IB = {6'd29, 6'd? },
         MOV_I   = {6'd30, 6'd? },
-        MOV_R   = {6'd0,  6'd13},
         MUI_I   = {6'd31, 6'd? },
         NOP_R   = {6'd0,  6'd14},
         NOT_R   = {6'd0,  6'd15},
@@ -166,6 +165,7 @@ package architecture;
         UKN22_R  = {6'd0,  6'd36},
         UKN23_R  = {6'd0,  6'd37},
         UKN24_R  = {6'd0,  6'd38},
+        UKN25_R  = {6'd0,  6'd13},
 
         UKN1_I   = {6'd55,  6'd?},
         UKN2_I   = {6'd56,  6'd?},

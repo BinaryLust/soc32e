@@ -41,7 +41,6 @@ package decoderPkg;
         LDWU_IA = 127'b1 << 40,
         LDWU_IB = 127'b1 << 41,
         MOV_I   = 127'b1 << 42,
-        MOV_R   = 127'b1 << 43,
         MUI_I   = 127'b1 << 44,
         NOP_R   = 127'b1 << 45,
         NOT_R   = 127'b1 << 46,
@@ -124,6 +123,7 @@ package decoderPkg;
         UKN22_R  = 127'b1 << 70,
         UKN23_R  = 127'b1 << 75,
         UKN24_R  = 127'b1 << 80,
+        UKN25_R  = 127'b1 << 43,
 
         UKN1_I   = 127'b1 << 118,
         UKN2_I   = 127'b1 << 119,
@@ -189,7 +189,6 @@ module instructionDecoder(
             architecture::LDWU_IA:  instruction = decoderPkg::LDWU_IA;
             architecture::LDWU_IB:  instruction = decoderPkg::LDWU_IB;
             architecture::MOV_I:    instruction = decoderPkg::MOV_I;
-            architecture::MOV_R:    instruction = decoderPkg::MOV_R;
             architecture::MUI_I:    instruction = decoderPkg::MUI_I;
             architecture::NOP_R:    instruction = decoderPkg::NOP_R;
             architecture::NOT_R:    instruction = decoderPkg::NOT_R;
@@ -272,6 +271,7 @@ module instructionDecoder(
             architecture::UKN22_R:  instruction = decoderPkg::UKN22_R;
             architecture::UKN23_R:  instruction = decoderPkg::UKN23_R;
             architecture::UKN24_R:  instruction = decoderPkg::UKN24_R;
+            architecture::UKN25_R:  instruction = decoderPkg::UKN25_R;
 
             architecture::UKN1_I:   instruction = decoderPkg::UKN1_I;
             architecture::UKN2_I:   instruction = decoderPkg::UKN2_I;
