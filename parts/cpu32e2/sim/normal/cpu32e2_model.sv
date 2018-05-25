@@ -44,8 +44,16 @@ package cpu32e2_modelPkg;
         // hidden state
         logic       [31:0]  operandA;
         logic       [31:0]  operandB;
-        logic       [63:0]  result;
+        logic       [31:0]  resultLow;
+        logic       [31:0]  resultHigh;
+        logic       [15:0]  result16;
+        logic       [7:0]   result8;
+        logic       [31:0]  memoryData;
         logic       [31:0]  address;
+        logic               carry;
+        logic               zero;
+        logic               overflow;
+        logic               negative;
 
         // instruction fields
         logic       [5:0]   opcode;
@@ -94,7 +102,9 @@ package cpu32e2_modelPkg;
 
 
         function void run(
-            logic  [31:0]  instruction = 32'b0
+            logic  [31:0]  instruction,
+            logic          interruptRequest,
+            logic  [3:0]   interrupt
             );
             // fetching is skipped because we are directly feeding an instruction in
             // always write regfile[srb] first so that if regfile[sra] writes the same address it will get final priority and overwrites the value
@@ -161,7 +171,6 @@ package cpu32e2_modelPkg;
                 LDWU_IA: execute_LdwuIa();
                 LDWU_IB: execute_LdwuIb();
                 MOV_I:   execute_MovImm();
-                MOV_R:   execute_MovReg();
                 MUI_I:   execute_MuiImm();
                 NOP_R:   execute_NopReg();
                 NOT_R:   execute_NotReg();
@@ -250,51 +259,132 @@ package cpu32e2_modelPkg;
         endfunction
 
 
-        function void addFlags();
-            carryFlag    = result[32];
-            zeroFlag     = ~|result[31:0];
-            overflowFlag = (operandA[31] & operandB[31] & ~result[31]) | (~operandA[31] & ~operandB[31] & result[31]);
-            negativeFlag = result[31];
+        function void calcAddFlags();
+            zero     = ~|resultLow;
+            overflow = (operandA[31] & operandB[31] & ~resultLow[31]) | (~operandA[31] & ~operandB[31] & resultLow[31]);
+            negative = resultLow[31];
         endfunction
 
 
-        function void subFlags();
-            carryFlag    = ~result[32];
-            zeroFlag     = ~|result[31:0];
-            overflowFlag = (operandA[31] & ~operandB[31] & ~result[31]) | (~operandA[31] & operandB[31] & result[31]);
-            negativeFlag = result[31];
+        function void calcSubFlags();
+            zero     = ~|resultLow;
+            overflow = (operandA[31] & ~operandB[31] & ~resultLow[31]) | (~operandA[31] & operandB[31] & resultLow[31]);
+            negative = resultLow[31];
         endfunction
 
 
-        function void logicFlags();
-            carryFlag    = 1'b0;
-            zeroFlag     = ~|result[31:0];
-            overflowFlag = 1'b0;
-            negativeFlag = result[31];
+        function void calcLogicFlags();
+            carry    = 1'b0;
+            zero     = ~|resultLow;
+            overflow = 1'b0;
+            negative = resultLow[31];
         endfunction
 
 
-        function void lShiftFlags();
-            carryFlag    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[32-operandB[4:0]];
-            zeroFlag     = ~|result[31:0];
-            overflowFlag = 1'b0;
-            negativeFlag = result[31];
+        function void calcLShiftFlags();
+            carry    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[32-operandB[4:0]];
+            zero     = ~|resultLow;
+            overflow = 1'b0;
+            negative = resultLow[31];
         endfunction
 
 
-        function void rShiftFlags();
-            carryFlag    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[operandB[4:0]-1];
-            zeroFlag     = ~|result[31:0];
-            overflowFlag = 1'b0;
-            negativeFlag = result[31];
+        function void calcRShiftFlags();
+            carry    = (operandB[4:0] == 5'b0) ? carryFlag : operandA[operandB[4:0]-1];
+            zero     = ~|resultLow;
+            overflow = 1'b0;
+            negative = resultLow[31];
         endfunction
 
 
-        function void mulFlags();
-            carryFlag    = 1'b0;
-            zeroFlag     = ~|result[63:0];
-            overflowFlag = 1'b0;
-            negativeFlag = result[63];
+        function void calcMulFlags();
+            carry    = 1'b0;
+            zero     = ~|{resultHigh, resultLow};
+            overflow = 1'b0;
+            negative = resultLow[31];
+        endfunction
+
+
+        function void updateDrhDrl();
+            regfile[drh] = resultHigh;
+            regfile[drl] = resultLow;
+        endfunction
+
+
+        function void updateDrl();
+            regfile[drl] = resultLow;
+        endfunction
+
+
+        function void updateSra();
+            regfile[sra] = address;
+        endfunction
+
+
+        function void updateDrlSra();
+            regfile[drl] = resultLow;
+            regfile[sra] = address;
+        endfunction
+
+
+        function void updateDrlFlags();
+            regfile[drl] = resultLow;
+            carryFlag    = carry;
+            zeroFlag     = zero;
+            overflowFlag = overflow;
+            negativeFlag = negative;
+        endfunction
+
+
+        function void updateFlags();
+            carryFlag    = carry;
+            zeroFlag     = zero;
+            overflowFlag = overflow;
+            negativeFlag = negative;
+        endfunction
+
+
+        function void updateLrNpc();
+            regfile[LR] = nextPC;
+            nextPC      = address;
+        endfunction
+
+
+        function void updateNpc();
+            nextPC      = address;
+        endfunction
+
+
+        function void updateByteMemory();
+            case(address[1:0])
+                2'd0: memory[address[11:2]][31:24] = resultLow[7:0];
+                2'd1: memory[address[11:2]][23:16] = resultLow[7:0];
+                2'd2: memory[address[11:2]][15:8]  = resultLow[7:0];
+                2'd3: memory[address[11:2]][7:0]   = resultLow[7:0];
+            endcase
+        endfunction
+
+
+        function void updateWordMemory();
+            case(address[1])
+                1'd0: memory[address[11:2]][31:16] = resultLow[15:0];
+                1'd1: memory[address[11:2]][15:0]  = resultLow[15:0];
+            endcase
+        endfunction
+
+
+        function void updateDwordMemory();
+            memory[address[11:2]] = resultLow;
+        endfunction
+
+
+        function void getByteData();
+            case(address[1:0])
+                2'd0: memoryData = memory[address[11:2]][31:24];
+                2'd1: memoryData = memory[address[11:2]][23:16];
+                2'd2: memoryData = memory[address[11:2]][15:8];
+                2'd3: memoryData = memory[address[11:2]][7:0];
+            endcase
         endfunction
 
 
@@ -310,487 +400,493 @@ package cpu32e2_modelPkg;
 
 
         function void execute_AdcImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = operandA + operandB + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = operandA + operandB + carryFlag;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_AdcReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = operandA + operandB + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = operandA + operandB + carryFlag;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_AddImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = operandA + operandB;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = operandA + operandB;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_AddReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = operandA + operandB;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = operandA + operandB;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UadcImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = operandA + operandB + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = operandA + operandB + carryFlag;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UadcReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = operandA + operandB + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = operandA + operandB + carryFlag;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
          function void execute_UaddImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = operandA + operandB;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = operandA + operandB;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UaddReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = operandA + operandB;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = operandA + operandB;
+            calcAddFlags();
 
-            regfile[drl] = result[31:0];
-            addFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SbbImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = (operandA + ~operandB) + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SbbReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SubImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SubReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UsbbImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = (operandA + ~operandB) + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UsbbReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + carryFlag;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UsubImm();
-            operandA     = regfile[sra];
-            operandB     = imm16a;
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = imm16a;
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_UsubReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            regfile[drl] = result[31:0];
-            subFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_CmpImm();
-            operandA     = regfile[sra];
-            operandB     = imm21a;
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = imm21a;
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            subFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_CmpReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            subFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_UcmpImm();
-            operandA     = regfile[sra];
-            operandB     = imm21a;
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = imm21a;
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            subFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_UcmpReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = (operandA + ~operandB) + 1'b1;
+            operandA           = regfile[sra];
+            operandB           = regfile[srb];
+            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
+            calcSubFlags();
 
-            subFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_SmulReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = signed'(operandA) * signed'(operandB);
+            operandA                = regfile[sra];
+            operandB                = regfile[srb];
+            {resultHigh, resultLow} = signed'(operandA) * signed'(operandB);
+            calcMulFlags();
 
-            regfile[drh] = result[63:32];
-            regfile[drl] = result[31:0];
-            mulFlags();
+            updateDrhDrl();
+            updateFlags;
         endfunction
 
 
         function void execute_UmulReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            result       = unsigned'(operandA) * unsigned'(operandB);
+            operandA                = regfile[sra];
+            operandB                = regfile[srb];
+            {resultHigh, resultLow} = unsigned'(operandA) * unsigned'(operandB);
+            calcMulFlags();
 
-            regfile[drh] = result[63:32];
-            regfile[drl] = result[31:0];
-            mulFlags();
+            updateDrhDrl();
+            updateFlags;
         endfunction
 
 
         function void execute_SdivReg();
-            operandA      = regfile[sra];
-            operandB      = regfile[srb];
-            result[63:32] = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
-            result[31:0]  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
+            operandA     = regfile[sra];
+            operandB     = regfile[srb];
+            resultHigh   = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
+            resultLow    = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
 
-            regfile[drh]  = result[63:32];
-            regfile[drl]  = result[31:0];
+            updateDrhDrl();
         endfunction
 
 
         function void execute_UdivReg();
-            operandA      = regfile[sra];
-            operandB      = regfile[srb];
-            result[63:32] = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
-            result[31:0]  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
+            operandA     = regfile[sra];
+            operandB     = regfile[srb];
+            resultHigh   = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
+            resultLow    = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
 
-            regfile[drh]  = result[63:32];
-            regfile[drl]  = result[31:0];
+            updateDrhDrl();
         endfunction
 
 
         function void execute_AndImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
-            result       = operandA & operandB;
+            resultLow    = operandA & operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_AndReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA & operandB;
+            resultLow    = operandA & operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_NotReg();
             operandB     = regfile[srb];
-            result       = ~operandB;
+            resultLow    = ~operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_OrImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
-            result       = operandA | operandB;
+            resultLow    = operandA | operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_OrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA | operandB;
+            resultLow    = operandA | operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_XorImm();
             operandA     = regfile[sra];
             operandB     = imm16a;
-            result       = operandA ^ operandB;
+            resultLow    = operandA ^ operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_XorReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA ^ operandB;
+            resultLow    = operandA ^ operandB;
+            calcLogicFlags();
 
-            regfile[drl] = result[31:0];
-            logicFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_TeqImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
-            result       = operandA ^ operandB;
+            resultLow    = operandA ^ operandB;
+            calcLogicFlags();
 
-            logicFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_TeqReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA ^ operandB;
+            resultLow    = operandA ^ operandB;
+            calcLogicFlags();
 
-            logicFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_TstImm();
             operandA     = regfile[sra];
             operandB     = imm21a;
-            result       = operandA & operandB;
+            resultLow    = operandA & operandB;
+            calcLogicFlags();
 
-            logicFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_TstReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA & operandB;
+            resultLow    = operandA & operandB;
+            calcLogicFlags();
 
-            logicFlags();
+            updateFlags();
         endfunction
 
 
         function void execute_ShlImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = operandA << operandB[4:0];
+            resultLow    = operandA << operandB[4:0];
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_ShlReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA << operandB[4:0];
+            resultLow    = operandA << operandB[4:0];
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_ShrImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = operandA >> operandB[4:0];
+            resultLow    = operandA >> operandB[4:0];
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_ShrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = operandA >> operandB[4:0];
+            resultLow    = operandA >> operandB[4:0];
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SarImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = unsigned'(signed'(operandA) >>> operandB[4:0]);
+            resultLow    = unsigned'(signed'(operandA) >>> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_SarReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = unsigned'(signed'(operandA) >>> operandB[4:0]);
+            resultLow    = unsigned'(signed'(operandA) >>> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RolImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
+            resultLow    = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RolReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
+            resultLow    = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RorImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
+            resultLow    = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RorReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
+            resultLow    = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RclImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0])); // 32 or 33 width???
+            resultLow    = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0])); // 32 or 33 width???
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RclReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0]));
+            resultLow    = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0]));
+            calcLShiftFlags();
 
-            regfile[drl] = result[31:0];
-            lShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RcrImm();
             operandA     = regfile[sra];
             operandB     = imm5;
-            result       = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
+            resultLow    = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
         function void execute_RcrReg();
             operandA     = regfile[sra];
             operandB     = regfile[srb];
-            result       = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
+            resultLow    = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
+            calcRShiftFlags();
 
-            regfile[drl] = result[31:0];
-            rShiftFlags();
+            updateDrlFlags();
         endfunction
 
 
@@ -810,46 +906,39 @@ package cpu32e2_modelPkg;
 
 
         function void execute_MovImm();
-            operandB     = imm21b;
+            resultLow    = imm21b;
 
-            regfile[drl] = operandB;
-        endfunction
-
-
-        function void execute_MovReg();
-            operandB     = regfile[srb];
-
-            regfile[drl] = operandB;
+            updateDrl();
         endfunction
 
 
         function void execute_MuiImm();
-            operandB     = {imm16c, regfile[srb][15:0]};
+            resultLow    = {imm16c, regfile[srb][15:0]};
 
-            regfile[drl] = operandB;
+            updateDrl();
         endfunction
 
 
         function void execute_LsrReg();
             case(srb)
-                5'd0:    operandB = {28'b0, negativeFlag, overflowFlag, zeroFlag, carryFlag};
-                5'd1:    operandB = {exceptionMask, interruptEn, 10'b0, cause};
-                5'd2:    operandB = isrBaseAddress;
-                5'd3:    operandB = {26'b0, systemCall};
-                default: operandB = 32'b0;
+                5'd0:    resultLow = {28'b0, negativeFlag, overflowFlag, zeroFlag, carryFlag};
+                5'd1:    resultLow = {exceptionMask, interruptEn, 10'b0, cause};
+                5'd2:    resultLow = isrBaseAddress;
+                5'd3:    resultLow = {26'b0, systemCall};
+                default: resultLow = 32'b0;
             endcase
 
-            regfile[drl] = operandB;
+            updateDrl();
         endfunction
 
 
         function void execute_SsrReg();
-            operandB = regfile[srb];
+            resultLow = regfile[srb];
 
             case(drl)
-                5'd0:    begin negativeFlag = operandB[3]; overflowFlag = operandB[2]; zeroFlag = operandB[1]; carryFlag = operandB[0]; end
-                5'd1:    begin exceptionMask = operandB[31:16]; interruptEn = operandB[15]; end
-                5'd2:    isrBaseAddress = operandB[31:0];
+                5'd0:    begin negativeFlag = resultLow[3]; overflowFlag = resultLow[2]; zeroFlag = resultLow[1]; carryFlag = resultLow[0]; end
+                5'd1:    begin exceptionMask = resultLow[31:16]; interruptEn = resultLow[15]; end
+                5'd2:    isrBaseAddress = resultLow[31:0];
                 default: ; // nothing written
             endcase
         endfunction
@@ -862,431 +951,325 @@ package cpu32e2_modelPkg;
 
 
         function void execute_BrPcr();
-            if(checkCondition())
-                nextPC = nextPC + imm24;
+            if(checkCondition()) begin
+                address = nextPC + imm24;
+
+                updateNpc();
+            end
         endfunction
 
 
         function void execute_BrRgo();
-            if(checkCondition())
-                nextPC = regfile[sra] + imm19;
+            if(checkCondition()) begin
+                address = regfile[sra] + imm19;
+
+                updateNpc();
+            end
         endfunction
 
 
         function void execute_BrlPcr();
             if(checkCondition()) begin
-                operandA = nextPC;
-                operandB = imm24;
-                address = operandA + operandB;
+                address = nextPC + imm24;
 
-                regfile[LR] = nextPC;
-                nextPC = address;
+                updateLrNpc();
             end
         endfunction
 
 
         function void execute_BrlRgo();
             if(checkCondition()) begin
-                operandA = regfile[sra];
-                operandB = imm19;
-                address = operandA + operandB;
+                address = regfile[sra] + imm19;
 
-                regfile[LR] = nextPC;
-                nextPC = address;
+                updateLrNpc();
             end
         endfunction
 
 
         function void execute_StbPcr();
-            address = nextPC + imm21c;
+            address   = nextPC + imm21c;
+            resultLow = regfile[srb];
 
-            case(address[1:0])
-                2'd0: memory[address[11:2]][31:24] = regfile[srb][7:0];
-                2'd1: memory[address[11:2]][23:16] = regfile[srb][7:0];
-                2'd2: memory[address[11:2]][15:8]  = regfile[srb][7:0];
-                2'd3: memory[address[11:2]][7:0]   = regfile[srb][7:0];
-            endcase
+            updateByteMemory();
         endfunction
 
 
         function void execute_StwPcr();
-            address = nextPC + imm21c;
+            address   = nextPC + imm21c;
+            resultLow = regfile[srb];
 
-            case(address[1])
-                1'd0: memory[address[11:2]][31:16] = regfile[srb][15:0];
-                1'd1: memory[address[11:2]][15:0]  = regfile[srb][15:0];
-            endcase
+            updateWordMemory();
         endfunction
 
 
         function void execute_StdPcr();
-            address = nextPC + imm21c;
+            address   = nextPC + imm21c;
+            resultLow = regfile[srb];
 
-            memory[address[11:2]] = regfile[srb];
+            updateDwordMemory();
         endfunction
 
 
         function void execute_StbRgo();
-            address = regfile[sra] + imm16b;
+            address   = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
 
-            case(address[1:0])
-                2'd0: memory[address[11:2]][31:24] = regfile[srb][7:0];
-                2'd1: memory[address[11:2]][23:16] = regfile[srb][7:0];
-                2'd2: memory[address[11:2]][15:8]  = regfile[srb][7:0];
-                2'd3: memory[address[11:2]][7:0]   = regfile[srb][7:0];
-            endcase
+            updateByteMemory();
         endfunction
 
 
         function void execute_StwRgo();
-            address = regfile[sra] + imm16b;
+            address   = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
 
-            case(address[1])
-                1'd0: memory[address[11:2]][31:16] = regfile[srb][15:0];
-                1'd1: memory[address[11:2]][15:0]  = regfile[srb][15:0];
-            endcase
+            updateWordMemory();
         endfunction
 
 
         function void execute_StdRgo();
-            address = regfile[sra] + imm16b;
+            address   = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
 
-            memory[address[11:2]] = regfile[srb];
+            updateDwordMemory();
         endfunction
 
 
         function void execute_StbIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            resultLow = regfile[srb];
+            updateByteMemory();
+            address   = regfile[sra] + imm16b;
 
-            case(address[1:0])
-                2'd0: memory[address[11:2]][31:24] = regfile[srb][7:0];
-                2'd1: memory[address[11:2]][23:16] = regfile[srb][7:0];
-                2'd2: memory[address[11:2]][15:8]  = regfile[srb][7:0];
-                2'd3: memory[address[11:2]][7:0]   = regfile[srb][7:0];
-            endcase
-
-            address = regfile[sra] + imm16b;
-
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_StwIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            resultLow = regfile[srb];
+            updateWordMemory();
+            address   = regfile[sra] + imm16b;
 
-            case(address[1])
-                1'd0: memory[address[11:2]][31:16] = regfile[srb][15:0];
-                1'd1: memory[address[11:2]][15:0]  = regfile[srb][15:0];
-            endcase
-
-            address = regfile[sra] + imm16b;
-
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_StdIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            resultLow = regfile[srb];
+            updateDwordMemory();
+            address   = regfile[sra] + imm16b;
 
-            memory[address[11:2]] = regfile[srb];
-
-            address = regfile[sra] + imm16b;
-
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_StbIb();
             address = regfile[sra] + imm16b;
+            updateByteMemory();
 
-            case(address[1:0])
-                2'd0: memory[address[11:2]][31:24] = regfile[srb][7:0];
-                2'd1: memory[address[11:2]][23:16] = regfile[srb][7:0];
-                2'd2: memory[address[11:2]][15:8]  = regfile[srb][7:0];
-                2'd3: memory[address[11:2]][7:0]   = regfile[srb][7:0];
-            endcase
-
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_StwIb();
             address = regfile[sra] + imm16b;
+            updateWordMemory();
 
-            case(address[1])
-                1'd0: memory[address[11:2]][31:16] = regfile[srb][15:0];
-                1'd1: memory[address[11:2]][15:0]  = regfile[srb][15:0];
-            endcase
-
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_StdIb();
             address = regfile[sra] + imm16b;
+            updateDwordMemory();
 
-            memory[address[11:2]] = regfile[srb];
-            regfile[sra] = address[31:0];
+            updateSra();
         endfunction
 
 
         function void execute_LdbsPcr();
-            address = nextPC + imm21b;
+            address   = nextPC + imm21b;
+            getByteData();
+            resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {{24{result[7]}}, result[7:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdbuPcr();
-            address = nextPC + imm21b;
+            address   = nextPC + imm21b;
+            getByteData();
+            resultLow = {24'b0, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {24'b0, result[7:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdwsPcr();
-            address = nextPC + imm21b;
+            address   = nextPC + imm21b;
+            getWordData();
+            resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {{16{result[15]}}, result[15:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdwuPcr();
-            address = nextPC + imm21b;
+            address   = nextPC + imm21b;
+            getWordData();
+            resultLow = {16'b0, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {16'b0, result[15:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LddPcr();
-            address = nextPC + imm21b;
-            result = memory[address[11:2]];
+            address   = nextPC + imm21b;
+            getDwordData();
+            resultLow = memoryData;
 
-            regfile[drl] = result[31:0];
+            updateDrl();
         endfunction
 
 
         function void execute_LdbsRgo();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getByteData();
+            resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {{24{result[7]}}, result[7:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdbuRgo();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getByteData();
+            resultLow = {24'b0, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[drl] = {24'b0, result[7:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdwsRgo();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getWordData();
+            resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {{16{result[15]}}, result[15:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LdwuRgo();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getWordData();
+            resultLow = {16'b0, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[drl] = {16'b0, result[15:0]};
+            updateDrl();
         endfunction
 
 
         function void execute_LddRgo();
-            address = regfile[sra] + imm16a;
-            result = memory[address[11:2]];
+            address   = regfile[sra] + imm16a;
+            getDwordData();
+            resultLow = memoryData;
 
-            regfile[drl] = result[31:0];
+            updateDrl();
         endfunction
 
 
         function void execute_LdbsIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            getByteData();
+            resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
+            address   = regfile[sra] + imm16a;
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            address = regfile[sra] + imm16a;
-
-            regfile[sra] = address;
-            regfile[drl] = {{24{result[7]}}, result[7:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdbuIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            getByteData();
+            resultLow = {24'b0, memoryData[7:0]};
+            address   = regfile[sra] + imm16a;
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            address = regfile[sra] + imm16a;
-
-            regfile[sra] = address;
-            regfile[drl] = {24'b0, result[7:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdwsIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            getWordData();
+            resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
+            address   = regfile[sra] + imm16a;
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            address = regfile[sra] + imm16a;
-
-            regfile[sra] = address;
-            regfile[drl] = {{16{result[15]}}, result[15:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdwuIa();
-            address = regfile[sra];
+            address   = regfile[sra];
+            getWordData();
+            resultLow = {16'b0, memoryData[15:0]};
+            address   = regfile[sra] + imm16a;
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            address = regfile[sra] + imm16a;
-
-            regfile[sra] = address;
-            regfile[drl] = {16'b0, result[15:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LddIa();
-            address = regfile[sra];
-            result = memory[address[11:2]];
+            address   = regfile[sra];
+            getDwordData();
+            resultLow = memoryData;
+            address   = regfile[sra] + imm16a;
 
-            address = regfile[sra] + imm16a;
-
-            regfile[sra] = address;
-            regfile[drl] = result[31:0];
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdbsIb();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getByteData();
+            resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[sra] = address;
-            regfile[drl] = {{24{result[7]}}, result[7:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdbuIb();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getByteData();
+            resultLow = {24'b0, memoryData[7:0]};
 
-            case(address[1:0])
-                2'd0: result = memory[address[11:2]][31:24];
-                2'd1: result = memory[address[11:2]][23:16];
-                2'd2: result = memory[address[11:2]][15:8];
-                2'd3: result = memory[address[11:2]][7:0];
-            endcase
-
-            regfile[sra] = address;
-            regfile[drl] = {24'b0, result[7:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdwsIb();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getWordData();
+            resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[sra] = address;
-            regfile[drl] = {{16{result[15]}}, result[15:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LdwuIb();
-            address = regfile[sra] + imm16a;
+            address   = regfile[sra] + imm16a;
+            getWordData();
+            resultLow = {16'b0, memoryData[15:0]};
 
-            case(address[1])
-                1'd0: result = memory[address[11:2]][31:16];
-                1'd1: result = memory[address[11:2]][15:0];
-            endcase
-
-            regfile[sra] = address;
-            regfile[drl] = {16'b0, result[15:0]};
+            updateDrlSra();
         endfunction
 
 
         function void execute_LddIb();
-            address = regfile[sra] + imm16a;
-            result = memory[address[11:2]];
+            address   = regfile[sra] + imm16a;
+            getDwordData();
+            resultLow = memoryData;
 
-            regfile[sra] = address;
-            regfile[drl] = result[31:0];
+            updateDrlSra();
         endfunction
     endclass
 
