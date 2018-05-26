@@ -105,8 +105,7 @@ package disassembler;
                 LDWU_RO,
                 LDWU_IA,
                 LDWU_IB: str = "ld    ";
-                MOV_I,
-                MOV_R:   str = "mov   ";
+                MOV_I:   str = "mov   ";
                 MUI_I:   str = "mui   ";
                 NOP_R:   str = "nop   ";
                 NOT_R:   str = "not   ";
@@ -374,7 +373,6 @@ package disassembler;
                 BREAK_R,
                 NOP_R:   str = iTypeToString();
 
-                MOV_R,
                 NOT_R:   $sformat(str, "%s  %s, %s", iTypeToString(), regToString(drl), regToString(srb));
 
                 IRET_R:  $sformat(str, "%s  %s", iTypeToString(), regToString(sra));

@@ -72,7 +72,6 @@ package cpu32e2_modelPkg;
         logic       [31:0]  imm21b;
         logic       [31:0]  imm21c;
         logic       [31:0]  imm5;
-        logic       [5:0]   imm6;
         logic       [31:0]  imm19;
         logic       [31:0]  imm24;
 
@@ -102,9 +101,9 @@ package cpu32e2_modelPkg;
 
 
         function void run(
-            logic  [31:0]  instruction,
-            logic          interruptRequest,
-            logic  [3:0]   interrupt
+            logic  [31:0]  instruction//,
+            //logic          interruptRequest,
+            //logic  [3:0]   interrupt
             );
             // fetching is skipped because we are directly feeding an instruction in
             // always write regfile[srb] first so that if regfile[sra] writes the same address it will get final priority and overwrites the value
@@ -126,7 +125,6 @@ package cpu32e2_modelPkg;
             imm21b = {{11{instruction[20]}}, instruction[20:0]};                                              // bits[20:0] sign extended to bits[31:0]
             imm21c = {{11{instruction[25]}}, instruction[25:16], instruction[10:0]};                          // {bits[25:16], bits[10:0]} sign extended to bits[31:0]
             imm5   = {27'b0, instruction[10:6]};                                                              // bits[10:6] zero extended to bits[31:0]
-            imm6   = instruction[5:0];
             imm19  = {{13{instruction[25]}}, instruction[25:21], instruction[15:10], instruction[5:0], 2'b0}; // {bits[25:21], bits[15:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
             imm24  = {{8{instruction[25]}},  instruction[25:10], instruction[5:0], 2'b0};                     // {bits[25:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
 
@@ -261,14 +259,7 @@ package cpu32e2_modelPkg;
 
         function void calcAddFlags();
             zero     = ~|resultLow;
-            overflow = (operandA[31] & operandB[31] & ~resultLow[31]) | (~operandA[31] & ~operandB[31] & resultLow[31]);
-            negative = resultLow[31];
-        endfunction
-
-
-        function void calcSubFlags();
-            zero     = ~|resultLow;
-            overflow = (operandA[31] & ~operandB[31] & ~resultLow[31]) | (~operandA[31] & operandB[31] & resultLow[31]);
+            overflow = (~operandA[31] & ~operandB[31] & resultLow[31]) | (operandA[31] & operandB[31] & ~resultLow[31]);
             negative = resultLow[31];
         endfunction
 
@@ -305,6 +296,10 @@ package cpu32e2_modelPkg;
         endfunction
 
 
+        function void commit();
+
+        endfunction
+
         function void updateDrhDrl();
             regfile[drh] = resultHigh;
             regfile[drl] = resultLow;
@@ -322,8 +317,8 @@ package cpu32e2_modelPkg;
 
 
         function void updateDrlSra();
-            regfile[drl] = resultLow;
             regfile[sra] = address;
+            regfile[drl] = resultLow;
         endfunction
 
 
@@ -387,6 +382,18 @@ package cpu32e2_modelPkg;
             endcase
         endfunction
 
+
+        function void getWordData();
+            case(address[1])
+                1'd0: memoryData = memory[address[11:2]][31:16];
+                1'd1: memoryData = memory[address[11:2]][15:0];
+            endcase
+        endfunction
+
+
+        function void getDwordData();
+            memoryData = memory[address[11:2]];
+        endfunction
 
         function void execute_Unk();
             // if interrupts are enabled and unknown instruction exception is enabled
@@ -481,9 +488,9 @@ package cpu32e2_modelPkg;
 
         function void execute_SbbImm();
             operandA           = regfile[sra];
-            operandB           = imm16a;
-            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
-            calcSubFlags();
+            operandB           = ~imm16a;
+            {carry, resultLow} = (operandA + operandB) + carryFlag;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -491,9 +498,9 @@ package cpu32e2_modelPkg;
 
         function void execute_SbbReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + carryFlag;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -501,9 +508,9 @@ package cpu32e2_modelPkg;
 
         function void execute_SubImm();
             operandA           = regfile[sra];
-            operandB           = imm16a;
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~imm16a;
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -511,9 +518,9 @@ package cpu32e2_modelPkg;
 
         function void execute_SubReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -521,9 +528,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UsbbImm();
             operandA           = regfile[sra];
-            operandB           = imm16a;
-            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
-            calcSubFlags();
+            operandB           = ~imm16a;
+            {carry, resultLow} = (operandA + operandB) + carryFlag;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -531,9 +538,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UsbbReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + carryFlag;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + carryFlag;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -541,9 +548,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UsubImm();
             operandA           = regfile[sra];
-            operandB           = imm16a;
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~imm16a;
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -551,9 +558,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UsubReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateDrlFlags();
         endfunction
@@ -561,9 +568,9 @@ package cpu32e2_modelPkg;
 
         function void execute_CmpImm();
             operandA           = regfile[sra];
-            operandB           = imm21a;
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~imm21a;
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateFlags();
         endfunction
@@ -571,9 +578,9 @@ package cpu32e2_modelPkg;
 
         function void execute_CmpReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateFlags();
         endfunction
@@ -581,9 +588,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UcmpImm();
             operandA           = regfile[sra];
-            operandB           = imm21a;
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~imm21a;
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateFlags();
         endfunction
@@ -591,9 +598,9 @@ package cpu32e2_modelPkg;
 
         function void execute_UcmpReg();
             operandA           = regfile[sra];
-            operandB           = regfile[srb];
-            {carry, resultLow} = (operandA + ~operandB) + 1'b1;
-            calcSubFlags();
+            operandB           = ~regfile[srb];
+            {carry, resultLow} = (operandA + operandB) + 1'b1;
+            calcAddFlags();
 
             updateFlags();
         endfunction
@@ -901,7 +908,7 @@ package cpu32e2_modelPkg;
 
 
         function void execute_IntImm();
-            systemCall   = imm6; // written even when interrupts are disabled
+            systemCall = imm16a[5:0]; // written even when interrupts are disabled
         endfunction
 
 
@@ -1066,6 +1073,7 @@ package cpu32e2_modelPkg;
 
         function void execute_StbIb();
             address = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
             updateByteMemory();
 
             updateSra();
@@ -1074,6 +1082,7 @@ package cpu32e2_modelPkg;
 
         function void execute_StwIb();
             address = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
             updateWordMemory();
 
             updateSra();
@@ -1082,6 +1091,7 @@ package cpu32e2_modelPkg;
 
         function void execute_StdIb();
             address = regfile[sra] + imm16b;
+            resultLow = regfile[srb];
             updateDwordMemory();
 
             updateSra();

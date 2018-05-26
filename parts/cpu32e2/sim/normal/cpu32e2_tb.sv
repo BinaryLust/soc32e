@@ -225,15 +225,17 @@ module cpu32e2_tb();
 
         bit missMatch;
 
-        wait(debugOut.fetchCycle && read)
-        runInstruction(instruction);
-
-        wait(debugOut.machineCycleDone)
-        model.run(instructionData);
-
-        instructionDecoder.decode(instructionData);
+        // decode instruction into readable string
+        instructionDecoder.decode(instruction);
         instructionStr = instructionDecoder.toString();
 
+        // run instruction on simulated model
+        model.run(instruction);
+
+        // run instruction on actual hardware
+        runInstruction(instruction);
+
+        // do checks on make sure both models are the same
         missMatch = 1'b0;
 
         // register file check
@@ -303,6 +305,9 @@ module cpu32e2_tb();
         input  logic  [31:0]  instruction
         );
 
+        // wait for instruction cycle to start
+        wait(debugOut.fetchCycle && read);
+
         // random wait cycles
         #1 instructionWait = 1'b1;
         repeat($urandom_range(0, 3)) @(posedge clk);
@@ -317,6 +322,10 @@ module cpu32e2_tb();
         instructionData  = instruction;
         @(posedge clk);
         instructionValid = 1'b0;
+
+        // wait for instruction to complete
+        wait(debugOut.machineCycleDone);
+
     endtask
 
 
