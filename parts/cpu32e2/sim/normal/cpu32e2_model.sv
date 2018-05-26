@@ -1,17 +1,14 @@
 
+// at the end of on instruction before we commit the results to architectural state
+// we first check if an exception or interrupt has occured.
+// if an interrupt has occured we finish commiting results to architectural state or
+// if an exception has occured we cancel commiting results to architectural state then
 
-// exception handling in the full machine
-// go through each normal micro operation
-// figure out if each step triggers an exception if so flag it in the exceptionPending register
-// after all micro ops are done check for interrupt/exception if one is set find the highest priority one and start
-// the exception/interrupt special cycle and do the following
-//
-// reset pending exceptions
-// load cause register
-// if it was an interrupt ack the interrupt
-// load isr base address to next pc
-// clear interrupt enable flag
-// save current pc to epc
+// we clear the interrupt enable bit in the system registers
+// we load the cause register with the interrupt vector the caused the interrupt to occur
+// we save current next pc to the register file at register epc
+// we load isr base addres into next pc
+// clear triggered exception register if an exception occured.
 
 
 package cpu32e2_modelPkg;
@@ -46,14 +43,14 @@ package cpu32e2_modelPkg;
         logic       [31:0]  operandB;
         logic       [31:0]  resultLow;
         logic       [31:0]  resultHigh;
-        logic       [15:0]  result16;
-        logic       [7:0]   result8;
         logic       [31:0]  memoryData;
         logic       [31:0]  address;
         logic               carry;
         logic               zero;
         logic               overflow;
         logic               negative;
+        logic       [15:0]  exceptionTriggered;
+        logic       [3:0]   commitType;
 
         // instruction fields
         logic       [5:0]   opcode;
@@ -97,6 +94,9 @@ package cpu32e2_modelPkg;
             isrBaseAddress = 32'd4;
 
             memory         = {4096{32'b0}};
+
+            // hidden state
+            exceptionTriggered = 16'b0;
         endfunction
 
 
@@ -228,6 +228,23 @@ package cpu32e2_modelPkg;
                 XOR_R:   execute_XorReg();
                 default: execute_Unk();
             endcase
+
+            // commitment stage
+            if(exceptionTriggered) begin
+                logic [3:0] exceptionVector;
+                
+                // figure out the highest priority exception
+                for(exceptionVector = 4'd0; exceptionVector < 16; exceptionVector++)
+                    if(exceptionTriggered[exceptionVector]) break;
+
+                interruptEn        = 1'b0;                    // clear interrupt enable flag
+                cause              = {1'b0, exceptionVector}; // load cause register
+                regfile[EPC]       = nextPC;                  // save current pc to epc
+                nextPC             = isrBaseAddress;          // load isr base address to next pc
+                exceptionTriggered = 16'b0;                   // clear triggered exceptions
+            end else begin //else if(interruptRequest) begin
+                commit();
+            end
         endfunction
 
 
@@ -254,6 +271,13 @@ package cpu32e2_modelPkg;
             endcase
 
             return conditionResult;
+        endfunction
+
+
+        function void triggerException(input logic [3:0] number);
+            if(interruptEn && exceptionMask[number]) begin
+                exceptionTriggered[number] = 1'b1;
+            end
         endfunction
 
 
@@ -297,56 +321,78 @@ package cpu32e2_modelPkg;
 
 
         function void commit();
+            case(commitType)
+                4'd0: begin
+                    regfile[drh] = resultHigh;
+                    regfile[drl] = resultLow;
+                    carryFlag    = carry;
+                    zeroFlag     = zero;
+                    overflowFlag = overflow;
+                    negativeFlag = negative;
+                end
 
-        endfunction
+                4'd1: begin
+                    regfile[drh] = resultHigh;
+                    regfile[drl] = resultLow;
+                end
 
-        function void updateDrhDrl();
-            regfile[drh] = resultHigh;
-            regfile[drl] = resultLow;
-        endfunction
+                4'd2: begin
+                    regfile[drl] = resultLow;
+                end
 
+                4'd3: begin
+                    regfile[sra] = address;
+                end
 
-        function void updateDrl();
-            regfile[drl] = resultLow;
-        endfunction
+                4'd4: begin
+                    regfile[sra] = address;
+                    regfile[drl] = resultLow;
+                end
 
+                4'd5: begin
+                    regfile[drl] = resultLow;
+                    carryFlag    = carry;
+                    zeroFlag     = zero;
+                    overflowFlag = overflow;
+                    negativeFlag = negative;
+                end
 
-        function void updateSra();
-            regfile[sra] = address;
-        endfunction
+                4'd6: begin
+                    carryFlag    = carry;
+                    zeroFlag     = zero;
+                    overflowFlag = overflow;
+                    negativeFlag = negative;
+                end
 
+                4'd7: begin
+                    if(checkCondition()) begin
+                        regfile[LR] = nextPC;
+                        nextPC      = address;
+                    end
+                end
 
-        function void updateDrlSra();
-            regfile[sra] = address;
-            regfile[drl] = resultLow;
-        endfunction
+                4'd8: begin
+                    if(checkCondition())
+                        nextPC = address;
+                end
 
+                4'd9: begin
+                    case(drl)
+                        5'd0:    begin negativeFlag = resultLow[3]; overflowFlag = resultLow[2]; zeroFlag = resultLow[1]; carryFlag = resultLow[0]; end
+                        5'd1:    begin exceptionMask = resultLow[31:16]; interruptEn = resultLow[15]; end
+                        5'd2:    isrBaseAddress = resultLow[31:0];
+                        default: ; // nothing written
+                    endcase
+                end
 
-        function void updateDrlFlags();
-            regfile[drl] = resultLow;
-            carryFlag    = carry;
-            zeroFlag     = zero;
-            overflowFlag = overflow;
-            negativeFlag = negative;
-        endfunction
+                4'd10: begin
+                    nextPC      = resultLow;
+                    interruptEn = 1'b1;
+                end
 
-
-        function void updateFlags();
-            carryFlag    = carry;
-            zeroFlag     = zero;
-            overflowFlag = overflow;
-            negativeFlag = negative;
-        endfunction
-
-
-        function void updateLrNpc();
-            regfile[LR] = nextPC;
-            nextPC      = address;
-        endfunction
-
-
-        function void updateNpc();
-            nextPC      = address;
+                4'd15:   ; // do nothing
+                default: ; // do nothing
+            endcase
         endfunction
 
 
@@ -395,14 +441,11 @@ package cpu32e2_modelPkg;
             memoryData = memory[address[11:2]];
         endfunction
 
+
         function void execute_Unk();
-            // if interrupts are enabled and unknown instruction exception is enabled
-            if(interruptEn && exceptionMask[4]) begin
-                interruptEn  = 1'b0;           // clear interrupt enable flag
-                cause        = 5'd4;           // load cause register // unknown instruction - exception 4
-                regfile[EPC] = nextPC;         // save current pc to epc
-                nextPC       = isrBaseAddress; // load isr base address to next pc
-            end
+            triggerException(4'd4);
+
+            commitType = 4'd15;
         endfunction
 
 
@@ -411,8 +454,9 @@ package cpu32e2_modelPkg;
             operandB           = imm16a;
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -421,8 +465,9 @@ package cpu32e2_modelPkg;
             operandB           = regfile[srb];
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -431,8 +476,9 @@ package cpu32e2_modelPkg;
             operandB           = imm16a;
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -441,8 +487,9 @@ package cpu32e2_modelPkg;
             operandB           = regfile[srb];
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -452,7 +499,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -462,7 +509,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -472,7 +519,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -482,7 +529,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -491,8 +538,9 @@ package cpu32e2_modelPkg;
             operandB           = ~imm16a;
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -501,8 +549,9 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -511,8 +560,9 @@ package cpu32e2_modelPkg;
             operandB           = ~imm16a;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -521,8 +571,9 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -532,7 +583,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -542,7 +593,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -552,7 +603,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -562,7 +613,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -571,8 +622,9 @@ package cpu32e2_modelPkg;
             operandB           = ~imm21a;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -581,8 +633,9 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
+            if(overflow) triggerException(4'd1);
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -592,7 +645,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -602,7 +655,7 @@ package cpu32e2_modelPkg;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -612,8 +665,7 @@ package cpu32e2_modelPkg;
             {resultHigh, resultLow} = signed'(operandA) * signed'(operandB);
             calcMulFlags();
 
-            updateDrhDrl();
-            updateFlags;
+            commitType = 4'd0;
         endfunction
 
 
@@ -623,28 +675,35 @@ package cpu32e2_modelPkg;
             {resultHigh, resultLow} = unsigned'(operandA) * unsigned'(operandB);
             calcMulFlags();
 
-            updateDrhDrl();
-            updateFlags;
+            commitType = 4'd0;
         endfunction
 
 
         function void execute_SdivReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            resultHigh   = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
-            resultLow    = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
+            operandA = regfile[sra];
+            operandB = regfile[srb];
+            if(operandB != 32'b0) begin
+                resultHigh = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
+                resultLow  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
+            end else begin
+                triggerException(4'd0);
+            end
 
-            updateDrhDrl();
+            commitType = 4'd1;
         endfunction
 
 
         function void execute_UdivReg();
-            operandA     = regfile[sra];
-            operandB     = regfile[srb];
-            resultHigh   = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
-            resultLow    = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
+            operandA = regfile[sra];
+            operandB = regfile[srb];
+            if(operandB != 32'b0) begin
+                resultHigh = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
+                resultLow  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
+            end else begin
+                triggerException(4'd0);
+            end
 
-            updateDrhDrl();
+            commitType = 4'd1;
         endfunction
 
 
@@ -654,7 +713,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA & operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -664,7 +723,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA & operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -673,7 +732,7 @@ package cpu32e2_modelPkg;
             resultLow    = ~operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -683,7 +742,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA | operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -693,7 +752,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA | operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -703,7 +762,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA ^ operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -713,7 +772,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA ^ operandB;
             calcLogicFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -723,7 +782,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA ^ operandB;
             calcLogicFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -733,7 +792,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA ^ operandB;
             calcLogicFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -743,7 +802,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA & operandB;
             calcLogicFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -753,7 +812,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA & operandB;
             calcLogicFlags();
 
-            updateFlags();
+            commitType = 4'd6;
         endfunction
 
 
@@ -763,7 +822,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA << operandB[4:0];
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -773,7 +832,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA << operandB[4:0];
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -783,7 +842,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA >> operandB[4:0];
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -793,7 +852,7 @@ package cpu32e2_modelPkg;
             resultLow    = operandA >> operandB[4:0];
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -803,7 +862,7 @@ package cpu32e2_modelPkg;
             resultLow    = unsigned'(signed'(operandA) >>> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -813,7 +872,7 @@ package cpu32e2_modelPkg;
             resultLow    = unsigned'(signed'(operandA) >>> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -823,7 +882,7 @@ package cpu32e2_modelPkg;
             resultLow    = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -833,7 +892,7 @@ package cpu32e2_modelPkg;
             resultLow    = (operandA << operandB[4:0]) | (operandA >> (32-operandB[4:0]));
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -843,7 +902,7 @@ package cpu32e2_modelPkg;
             resultLow    = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -853,7 +912,7 @@ package cpu32e2_modelPkg;
             resultLow    = (operandA << (32-operandB[4:0])) | (operandA >> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -863,7 +922,7 @@ package cpu32e2_modelPkg;
             resultLow    = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0])); // 32 or 33 width???
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -873,7 +932,7 @@ package cpu32e2_modelPkg;
             resultLow    = ({carryFlag, operandA} << operandB[4:0]) | ({carryFlag, operandA} >> (33-operandB[4:0]));
             calcLShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -883,7 +942,7 @@ package cpu32e2_modelPkg;
             resultLow    = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
@@ -893,36 +952,41 @@ package cpu32e2_modelPkg;
             resultLow    = ({carryFlag, operandA} << (33-operandB[4:0])) | ({carryFlag, operandA} >> operandB[4:0]);
             calcRShiftFlags();
 
-            updateDrlFlags();
+            commitType = 4'd5;
         endfunction
 
 
         function void execute_NopReg();
-
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_Break();
+            triggerException(4'd2);
 
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_IntImm();
+            triggerException(4'd3);
             systemCall = imm16a[5:0]; // written even when interrupts are disabled
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_MovImm();
             resultLow    = imm21b;
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
         function void execute_MuiImm();
             resultLow    = {imm16c, regfile[srb][15:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -935,109 +999,103 @@ package cpu32e2_modelPkg;
                 default: resultLow = 32'b0;
             endcase
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
         function void execute_SsrReg();
             resultLow = regfile[srb];
 
-            case(drl)
-                5'd0:    begin negativeFlag = resultLow[3]; overflowFlag = resultLow[2]; zeroFlag = resultLow[1]; carryFlag = resultLow[0]; end
-                5'd1:    begin exceptionMask = resultLow[31:16]; interruptEn = resultLow[15]; end
-                5'd2:    isrBaseAddress = resultLow[31:0];
-                default: ; // nothing written
-            endcase
+            commitType = 4'd9;
         endfunction
 
 
         function void execute_IretReg();
-            nextPC      = regfile[sra];
-            interruptEn = 1'b1;
+            resultLow = regfile[sra];
+
+            commitType = 4'd10;
         endfunction
 
 
         function void execute_BrPcr();
-            if(checkCondition()) begin
-                address = nextPC + imm24;
+            address = nextPC + imm24;
 
-                updateNpc();
-            end
+            commitType = 4'd8;
         endfunction
 
 
         function void execute_BrRgo();
-            if(checkCondition()) begin
-                address = regfile[sra] + imm19;
+            address = regfile[sra] + imm19;
 
-                updateNpc();
-            end
+            commitType = 4'd8;
         endfunction
 
 
         function void execute_BrlPcr();
-            if(checkCondition()) begin
-                address = nextPC + imm24;
+            address = nextPC + imm24;
 
-                updateLrNpc();
-            end
+            commitType = 4'd7;
         endfunction
 
 
         function void execute_BrlRgo();
-            if(checkCondition()) begin
-                address = regfile[sra] + imm19;
+            address = regfile[sra] + imm19;
 
-                updateLrNpc();
-            end
+            commitType = 4'd7;
         endfunction
 
 
         function void execute_StbPcr();
             address   = nextPC + imm21c;
             resultLow = regfile[srb];
-
             updateByteMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_StwPcr();
             address   = nextPC + imm21c;
             resultLow = regfile[srb];
-
             updateWordMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_StdPcr();
             address   = nextPC + imm21c;
             resultLow = regfile[srb];
-
             updateDwordMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_StbRgo();
             address   = regfile[sra] + imm16b;
             resultLow = regfile[srb];
-
             updateByteMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_StwRgo();
             address   = regfile[sra] + imm16b;
             resultLow = regfile[srb];
-
             updateWordMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
         function void execute_StdRgo();
             address   = regfile[sra] + imm16b;
             resultLow = regfile[srb];
-
             updateDwordMemory();
+
+            commitType = 4'd15;
         endfunction
 
 
@@ -1047,7 +1105,7 @@ package cpu32e2_modelPkg;
             updateByteMemory();
             address   = regfile[sra] + imm16b;
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1057,7 +1115,7 @@ package cpu32e2_modelPkg;
             updateWordMemory();
             address   = regfile[sra] + imm16b;
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1067,7 +1125,7 @@ package cpu32e2_modelPkg;
             updateDwordMemory();
             address   = regfile[sra] + imm16b;
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1076,7 +1134,7 @@ package cpu32e2_modelPkg;
             resultLow = regfile[srb];
             updateByteMemory();
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1085,7 +1143,7 @@ package cpu32e2_modelPkg;
             resultLow = regfile[srb];
             updateWordMemory();
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1094,7 +1152,7 @@ package cpu32e2_modelPkg;
             resultLow = regfile[srb];
             updateDwordMemory();
 
-            updateSra();
+            commitType = 4'd3;
         endfunction
 
 
@@ -1103,7 +1161,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1112,7 +1170,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {24'b0, memoryData[7:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1121,7 +1179,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1130,7 +1188,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {16'b0, memoryData[15:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1139,7 +1197,7 @@ package cpu32e2_modelPkg;
             getDwordData();
             resultLow = memoryData;
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1148,7 +1206,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1157,7 +1215,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {24'b0, memoryData[7:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1166,7 +1224,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1175,7 +1233,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {16'b0, memoryData[15:0]};
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1184,7 +1242,7 @@ package cpu32e2_modelPkg;
             getDwordData();
             resultLow = memoryData;
 
-            updateDrl();
+            commitType = 4'd2;
         endfunction
 
 
@@ -1194,7 +1252,7 @@ package cpu32e2_modelPkg;
             resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
             address   = regfile[sra] + imm16a;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1204,7 +1262,7 @@ package cpu32e2_modelPkg;
             resultLow = {24'b0, memoryData[7:0]};
             address   = regfile[sra] + imm16a;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1214,7 +1272,7 @@ package cpu32e2_modelPkg;
             resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
             address   = regfile[sra] + imm16a;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1224,7 +1282,7 @@ package cpu32e2_modelPkg;
             resultLow = {16'b0, memoryData[15:0]};
             address   = regfile[sra] + imm16a;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1234,7 +1292,7 @@ package cpu32e2_modelPkg;
             resultLow = memoryData;
             address   = regfile[sra] + imm16a;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1243,7 +1301,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {{24{memoryData[7]}}, memoryData[7:0]};
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1252,7 +1310,7 @@ package cpu32e2_modelPkg;
             getByteData();
             resultLow = {24'b0, memoryData[7:0]};
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1261,7 +1319,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {{16{memoryData[15]}}, memoryData[15:0]};
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1270,7 +1328,7 @@ package cpu32e2_modelPkg;
             getWordData();
             resultLow = {16'b0, memoryData[15:0]};
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
 
 
@@ -1279,7 +1337,7 @@ package cpu32e2_modelPkg;
             getDwordData();
             resultLow = memoryData;
 
-            updateDrlSra();
+            commitType = 4'd4;
         endfunction
     endclass
 
