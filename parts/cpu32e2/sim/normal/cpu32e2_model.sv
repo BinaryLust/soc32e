@@ -323,7 +323,7 @@ package cpu32e2_modelPkg;
             carry    = 1'b0;
             zero     = ~|{resultHigh, resultLow};
             overflow = 1'b0;
-            negative = resultLow[31];
+            negative = resultHigh[31];
         endfunction
 
 
@@ -687,28 +687,22 @@ package cpu32e2_modelPkg;
 
 
         function void execute_SdivReg();
-            operandA = regfile[sra];
-            operandB = regfile[srb];
-            if(operandB != 32'b0) begin
-                resultHigh = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
-                resultLow  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
-            end else begin
-                triggerException(4'd0);
-            end
+            operandA   = regfile[sra];
+            operandB   = regfile[srb];
+            resultHigh = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
+            resultLow  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
+            if(operandB == 32'b0) triggerException(4'd0);
 
             commitType = 4'd1;
         endfunction
 
 
         function void execute_UdivReg();
-            operandA = regfile[sra];
-            operandB = regfile[srb];
-            if(operandB != 32'b0) begin
-                resultHigh = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
-                resultLow  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
-            end else begin
-                triggerException(4'd0);
-            end
+            operandA   = regfile[sra];
+            operandB   = regfile[srb];
+            resultHigh = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
+            resultLow  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
+            if(operandB == 32'b0) triggerException(4'd0);
 
             commitType = 4'd1;
         endfunction

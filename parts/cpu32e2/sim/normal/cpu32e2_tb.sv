@@ -121,8 +121,13 @@ module cpu32e2_tb();
     integer        seed = 129347;
     integer        i = 0;
 
+    // coverage variables
+    int            instructionsRan = 0;
+    int            cov_bins[127];
+    logic    [5:0] opcode;
+    logic    [5:0] rcode;
 
-    // disassbmler
+    // disassembler
     import disassembler::*;
 
     decoder        instructionDecoder;
@@ -171,6 +176,22 @@ module cpu32e2_tb();
     end
 
 
+    // simple instruction coverage
+    always begin
+        // sample instruction value when valid
+        @(posedge instructionValid);
+        instructionsRan++;
+
+        opcode = instructionData[31:26];
+        rcode  = instructionData[5:0];
+
+        if(opcode == 6'd0)
+            cov_bins[rcode+7'd0]++;
+        else
+            cov_bins[opcode+7'd63]++;
+    end
+
+
     // apply test stimulus
     // synopsys translate_off
     initial begin
@@ -192,8 +213,8 @@ module cpu32e2_tb();
         // make sure all exceptions work
         testExceptions();
 
-        // test 1 million random instructions
-        repeat(1000000) begin
+        // test 100k random instructions
+        repeat(100000) begin
             // 1 out of 10 cycles will end with an interrupt
             case($urandom_range(0, 9))//randcase
                 0,
@@ -204,15 +225,25 @@ module cpu32e2_tb();
                 5,
                 6,
                 7,
-                8: doTest($random, 1'b0, 4'd0);    // normal instruction cycle test
-                9: doTest($random, 1'b1, $random); // interrupt test
+                8: doTest(randInstruction(), 1'b0, 4'd0);    // normal instruction cycle test
+                9: doTest(randInstruction(), 1'b1, $random); // interrupt test
             endcase
+        end
+
+        // print out instruction coverage
+        $display("Instruction coverage info below------------------------------------------");
+        $display("Instructions ran: %d", instructionsRan);
+        for(int i = 0; i < 127; i++) begin
+            if(cov_bins[i] > 0)
+                $display("Instruction %d covered, %d times", i, cov_bins[i]);
+            else
+                $display("Instruction %d not covered", i);
         end
 
         // finish
         //$display("%d Errors", errorCount);
         $stop;
-     end
+    end
     // synopsys translate_on
 
 
@@ -354,7 +385,7 @@ module cpu32e2_tb();
         for(i = 0; i < 32; i++) begin
             if(debugOut.regfileState[i] != model.regfile[i]) begin
                 missMatch = 1'b1;
-                $warning("Register File Miss Match! - got: %h expected: %h - %s", debugOut.regfileState[i], model.regfile[i], instructionStr);
+                $warning("Register File Miss Match! - got: %h expected: %h at register: %d - %s", debugOut.regfileState[i], model.regfile[i], i, instructionStr);
             end
         end
 
@@ -404,7 +435,7 @@ module cpu32e2_tb();
         for(i = 0; i < 1024; i++) begin
             if(ramState[i] != model.memory[i]) begin
                 missMatch = 1'b1;
-                $warning("Memory Miss Match! - got: %h expected: %h - %s", ramState[i], model.memory[i], instructionStr);
+                $warning("Memory Miss Match! - got: %h expected: %h at address: %d- %s", ramState[i], model.memory[i], i, instructionStr);
             end
         end
 
@@ -457,12 +488,24 @@ module cpu32e2_tb();
     /*********************************************************************************************************************************************************/
 
 
+    function logic [31:0] randInstruction();
+        logic r;
+
+        r = $random();
+
+        case(r)
+            1'b0: return randImmInstruction();
+            1'b1: return randRegInstruction();
+        endcase
+    endfunction
+
+
     function logic [31:0] randImmInstruction();
         logic  [5:0]   opcode;
         logic  [25:0]  theRest;
 
         opcode  = $urandom_range(1, 63);
-        theRest = $urandom();
+        theRest = $random();
 
         return {opcode, theRest};
     endfunction
@@ -473,7 +516,7 @@ module cpu32e2_tb();
         );
         logic  [25:0]  theRest;
 
-        theRest = $urandom();
+        theRest = $random();
 
         return {opcode, theRest};
     endfunction
@@ -483,8 +526,8 @@ module cpu32e2_tb();
         logic    [5:0]   rcode;
         logic    [19:0]  theRest;
 
-        rcode   = $urandom_range(1, 63);
-        theRest = $urandom();
+        rcode   = $urandom_range(0, 63);
+        theRest = $random();
 
         return {6'd0, theRest, rcode};
     endfunction
@@ -497,7 +540,7 @@ module cpu32e2_tb();
         logic    [5:0]   opcode;
         logic    [19:0]  theRest;
 
-        theRest = $urandom();
+        theRest = $random();
 
         return {6'd0, theRest, rcode};
     endfunction
