@@ -116,12 +116,14 @@ module cpu32e2(
 
     // exception assignments
     assign triggerException =
-       {11'b0,                                    // unused              - exceptions 5-15
-        exceptionTriggerControl.unknownException, // unknown instruction - exception 4
-        exceptionTriggerControl.systemException,  // system interrupt    - exception 3
-        exceptionTriggerControl.breakException,   // break               - exception 2
-        overflowException,                        // overflow            - exception 1
-        dividerError};                            // divide by zero      - exception 0
+       {11'b0,                                                  // unused                - exceptions 7-15
+        exceptionTriggerControl.unknownException,               // unknown instruction   - exception 6
+        exceptionTriggerControl.systemException,                // system interrupt      - exception 5
+        exceptionTriggerControl.breakException,                 // break                 - exception 4
+        exceptionTriggerControl.dataAlignmentException,         // data alignment        - exception 3
+        overflowException,                                      // overflow              - exception 2
+        dividerError,                                           // divide by zero        - exception 1
+        exceptionTriggerControl.instructionAlignmentException}; // instruction alignment - exception 0
 
 
     // control unit

@@ -416,7 +416,7 @@ package disassembler;
 
                 MOV_I:   $sformat(str, "%s  %s, %9d", iTypeToString(), regToString(drl), imm21b);
 
-                MUI_I:   $sformat(str, "%s  %s, %9d, %s", iTypeToString(), regToString(drl), imm16c, regToString(srb));
+                MUI_I:   $sformat(str, "%s  %s, %s, %9d", iTypeToString(), regToString(drl), regToString(srb), imm16c);
 
                 LDBS_PR,
                 LDBU_PR,

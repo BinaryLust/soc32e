@@ -128,6 +128,8 @@ package cpu32e2_modelPkg;
             imm19  = {{13{instruction[25]}}, instruction[25:21], instruction[15:10], instruction[5:0], 2'b0}; // {bits[25:21], bits[15:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
             imm24  = {{8{instruction[25]}},  instruction[25:10], instruction[5:0], 2'b0};                     // {bits[25:10], bits[5:0]} sign extended to bits[31:2] and bits[1:0] filled with zero's
 
+            if(nextPC[1:0] != 2'b00) triggerException(4'd0); // instruction alignment exception
+
             // increment next pc
             nextPC += 32'd4;
 
@@ -414,6 +416,8 @@ package cpu32e2_modelPkg;
 
 
         function void updateWordMemory();
+            if(address[0] != 1'b0) triggerException(4'd3); // data alignment exception
+
             case(address[1])
                 1'd0: memory[address[11:2]][31:16] = resultLow[15:0];
                 1'd1: memory[address[11:2]][15:0]  = resultLow[15:0];
@@ -422,6 +426,8 @@ package cpu32e2_modelPkg;
 
 
         function void updateDwordMemory();
+            if(address[1:0] != 2'b00) triggerException(4'd3); // data alignment exception
+
             memory[address[11:2]] = resultLow;
         endfunction
 
@@ -437,6 +443,8 @@ package cpu32e2_modelPkg;
 
 
         function void getWordData();
+            if(address[0] != 1'b0) triggerException(4'd3); // data alignment exception
+
             case(address[1])
                 1'd0: memoryData = memory[address[11:2]][31:16];
                 1'd1: memoryData = memory[address[11:2]][15:0];
@@ -445,12 +453,14 @@ package cpu32e2_modelPkg;
 
 
         function void getDwordData();
+            if(address[1:0] != 2'b00) triggerException(4'd3); // data alignment exception
+
             memoryData = memory[address[11:2]];
         endfunction
 
 
         function void execute_Unk();
-            triggerException(4'd4);
+            triggerException(4'd6);
 
             commitType = 4'd15;
         endfunction
@@ -461,7 +471,7 @@ package cpu32e2_modelPkg;
             operandB           = imm16a;
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -472,7 +482,7 @@ package cpu32e2_modelPkg;
             operandB           = regfile[srb];
             {carry, resultLow} = operandA + operandB + carryFlag;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -483,7 +493,7 @@ package cpu32e2_modelPkg;
             operandB           = imm16a;
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -494,7 +504,7 @@ package cpu32e2_modelPkg;
             operandB           = regfile[srb];
             {carry, resultLow} = operandA + operandB;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -545,7 +555,7 @@ package cpu32e2_modelPkg;
             operandB           = ~imm16a;
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -556,7 +566,7 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + carryFlag;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -567,7 +577,7 @@ package cpu32e2_modelPkg;
             operandB           = ~imm16a;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -578,7 +588,7 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd5;
         endfunction
@@ -629,7 +639,7 @@ package cpu32e2_modelPkg;
             operandB           = ~imm21a;
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd6;
         endfunction
@@ -640,7 +650,7 @@ package cpu32e2_modelPkg;
             operandB           = ~regfile[srb];
             {carry, resultLow} = (operandA + operandB) + 1'b1;
             calcAddFlags();
-            if(overflow) triggerException(4'd1);
+            if(overflow) triggerException(4'd2);
 
             commitType = 4'd6;
         endfunction
@@ -691,7 +701,7 @@ package cpu32e2_modelPkg;
             operandB   = regfile[srb];
             resultHigh = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) % signed'(operandB));
             resultLow  = (operandB == 32'b0) ? 32'b0 : signed'(signed'(operandA) / signed'(operandB));
-            if(operandB == 32'b0) triggerException(4'd0);
+            if(operandB == 32'b0) triggerException(4'd1);
 
             commitType = 4'd1;
         endfunction
@@ -702,7 +712,7 @@ package cpu32e2_modelPkg;
             operandB   = regfile[srb];
             resultHigh = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) % unsigned'(operandB));
             resultLow  = (operandB == 32'b0) ? 32'b0 : unsigned'(unsigned'(operandA) / unsigned'(operandB));
-            if(operandB == 32'b0) triggerException(4'd0);
+            if(operandB == 32'b0) triggerException(4'd1);
 
             commitType = 4'd1;
         endfunction
@@ -963,14 +973,14 @@ package cpu32e2_modelPkg;
 
 
         function void execute_Break();
-            triggerException(4'd2);
+            triggerException(4'd4);
 
             commitType = 4'd15;
         endfunction
 
 
         function void execute_IntImm();
-            triggerException(4'd3);
+            triggerException(4'd5);
             systemCall = imm16a[5:0]; // written even when interrupts are disabled
 
             commitType = 4'd15;

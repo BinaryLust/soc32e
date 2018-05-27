@@ -273,7 +273,21 @@ module cpu32e2_tb();
 
 
     task testExceptions();
+        // test instruction alignment exception
+        // we should expand the test later to make sure this happens for all instructions
+        turnOnExceptions();
+        doTest(32'b011110_00000_000000000000000000001, 1'b0, 4'd0);   // mov r0, 1
+        doTest(32'b000101_00000_000000_0000_00000000000, 1'b0, 4'd0); // br [r0+0]
+        doTest(32'b011110_00000_000000000000000000001, 1'b0, 4'd0);   // mov r0, 1 // this gets skipped during the instruction alignment exception
+
+        // test data alignment exception
+        // we should expand the test later to make sure this happens for all load/store instructions
+        turnOnExceptions();
+        doTest(32'b011110_00000_000000000000000000001, 1'b0, 4'd0);   // mov r0, 1
+        doTest(32'b010011_00000_00000_0000000000000000, 1'b0, 4'd0);  // ld r0, [r0+0], dword
+
         // test unknown instruction exception
+        // we should expand the test later to make sure all unknown instructions generate an exception
         turnOnExceptions();
         doTest(32'b11111111111111111111111111111111, 1'b0, 4'd0);   // unknown instruction
 

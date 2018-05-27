@@ -263,6 +263,7 @@ module controller(
         .enable,
         .instruction,
         .state,
+        .dataSelectBits,
         .exceptionTriggerControl
     );
 
