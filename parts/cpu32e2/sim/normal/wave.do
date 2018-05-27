@@ -83,9 +83,9 @@ add wave -noupdate -expand -group RAM /cpu32e2_tb/testRam/ramState
 add wave -noupdate -expand -group RAM /cpu32e2_tb/testRam/ram
 add wave -noupdate -expand -group RAM /cpu32e2_tb/testRam/qReg
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {390760000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {692730000 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 225
+configure wave -namecolwidth 273
 configure wave -valuecolwidth 220
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -99,4 +99,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {8467996276 ps} {8468337039 ps}
+WaveRestoreZoom {0 ps} {11976271458 ps}

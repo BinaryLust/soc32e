@@ -118,7 +118,7 @@ module cpu32e2_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer        seed = 356;
+    integer        seed = 129347;
     integer        i = 0;
 
 
@@ -192,10 +192,21 @@ module cpu32e2_tb();
         // make sure all exceptions work
         testExceptions();
 
-        // test 100k random instructions
-        repeat(100000) begin
-            //doTest(randImmInstruction());
-            doTest($random);
+        // test 1 million random instructions
+        repeat(1000000) begin
+            // 1 out of 10 cycles will end with an interrupt
+            case($urandom_range(0, 9))//randcase
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8: doTest($random, 1'b0, 4'd0);    // normal instruction cycle test
+                9: doTest($random, 1'b1, $random); // interrupt test
+            endcase
         end
 
         // finish
@@ -224,102 +235,104 @@ module cpu32e2_tb();
 
     // enable interrupts and all exceptions
     task turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_11111_00000_11111111111);  // mui r0, r0, 0ffffh
-        doTest(32'b000000_00001_00000_00000_00000_100011); // ssr sys1, r0
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_11111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 0ffffh
+        doTest(32'b000000_00001_00000_00000_00000_100011, 1'b0, 4'd0); // ssr sys1, r0
     endtask
 
 
     task testExceptions();
         // test unknown instruction exception
         turnOnExceptions();
-        doTest(32'b11111111111111111111111111111111);   // unknown instruction
+        doTest(32'b11111111111111111111111111111111, 1'b0, 4'd0);   // unknown instruction
 
         // test int exception
         turnOnExceptions();
-        doTest(32'b001001_0000000000_0000000000000000); // int 0
+        doTest(32'b001001_0000000000_0000000000000000, 1'b0, 4'd0); // int 0
 
         // test break exception
         turnOnExceptions();
-        doTest(32'b000000_00000000000000000000_000100); // break
+        doTest(32'b000000_00000000000000000000_000100, 1'b0, 4'd0); // break
 
         // test overflow exception from adc reg
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b000000_00000_00000_00000_00000_000000); // adc r0, r0, r0
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b000000_00000_00000_00000_00000_000000, 1'b0, 4'd0); // adc r0, r0, r0
 
         // test overflow exception from adc imm
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b000001_00000_00000_0000000000000001);   // adc r0, r0, 1
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b000001_00000_00000_0000000000000001, 1'b0, 4'd0);   // adc r0, r0, 1
 
         // test overflow exception from add reg
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b000000_00000_00000_00000_00000_000001); // add r0, r0, r0
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b000000_00000_00000_00000_00000_000001, 1'b0, 4'd0); // add r0, r0, r0
 
         // test overflow exception from add imm
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b000010_00000_00000_0000000000000001);   // add r0, r0, 1
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b000010_00000_00000_0000000000000001, 1'b0, 4'd0);   // add r0, r0, 1
 
         // test overflow exception from sbb reg
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b011110_00001_111111111111111111110);    // mov r1, -2
-        doTest(32'b000000_00000_00000_00001_00000_011100); // sbb r0, r0, r1
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b011110_00001_111111111111111111110, 1'b0, 4'd0);    // mov r1, -2
+        doTest(32'b000000_00000_00000_00001_00000_011100, 1'b0, 4'd0); // sbb r0, r0, r1
 
         // test overflow exception from sbb imm
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b100001_00000_00000_1111111111111110);   // sbb r0, r0, -2
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b100001_00000_00000_1111111111111110, 1'b0, 4'd0);   // sbb r0, r0, -2
 
         // test overflow exception from sub reg
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b011110_00001_111111111111111111110);    // mov r1, -2
-        doTest(32'b000000_00000_00000_00001_00000_100111); // sub r0, r0, r1
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b011110_00001_111111111111111111110, 1'b0, 4'd0);    // mov r1, -2
+        doTest(32'b000000_00000_00000_00001_00000_100111, 1'b0, 4'd0); // sub r0, r0, r1
 
         // test overflow exception from sub imm
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b101110_00000_00000_1111111111111110);   // sub r0, r0, -2
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b101110_00000_00000_1111111111111110, 1'b0, 4'd0);   // sub r0, r0, -2
 
         // test overflow exception from cmp reg
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b011110_00001_111111111111111111110);    // mov r1, -2
-        doTest(32'b000000_00000_00000_00001_00000_000110); // cmp r0, r1
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b011110_00001_111111111111111111110, 1'b0, 4'd0);    // mov r1, -2
+        doTest(32'b000000_00000_00000_00001_00000_000110, 1'b0, 4'd0); // cmp r0, r1
 
         // test overflow exception from cmp imm
         turnOnExceptions();
-        doTest(32'b011110_00000_000001111111111111111);    // mov r0, 0ffffh
-        doTest(32'b011111_00000_01111_00000_11111111111);  // mui r0, r0, 07fffh
-        doTest(32'b001000_11111_00000_1111111111111110);   // cmp r0, -2
+        doTest(32'b011110_00000_000001111111111111111, 1'b0, 4'd0);    // mov r0, 0ffffh
+        doTest(32'b011111_00000_01111_00000_11111111111, 1'b0, 4'd0);  // mui r0, r0, 07fffh
+        doTest(32'b001000_11111_00000_1111111111111110, 1'b0, 4'd0);   // cmp r0, -2
 
         // test divide by zero exception from udiv
         turnOnExceptions();
-        doTest(32'b011110_00000_000000000000000000000);    // mov r0, 0
-        doTest(32'b000000_00000_00000_00000_00000_101101); // udiv r0, r0, r0, r0
+        doTest(32'b011110_00000_000000000000000000000, 1'b0, 4'd0);    // mov r0, 0
+        doTest(32'b000000_00000_00000_00000_00000_101101, 1'b0, 4'd0); // udiv r0, r0, r0, r0
 
         // test divide by zero exception from sdiv
         turnOnExceptions();
-        doTest(32'b011110_00000_000000000000000000000);    // mov r0, 0
-        doTest(32'b000000_00000_00000_00000_00000_011101); // sdiv r0, r0, r0, r0
+        doTest(32'b011110_00000_000000000000000000000, 1'b0, 4'd0);    // mov r0, 0
+        doTest(32'b000000_00000_00000_00000_00000_011101, 1'b0, 4'd0); // sdiv r0, r0, r0, r0
     endtask
 
 
     task doTest(
-        input  logic  [31:0]  instruction
+        input  logic  [31:0]  instruction,
+        input  logic          doInterrupt,
+        input  logic  [3:0]   interrupt
         );
 
         bit missMatch;
@@ -329,10 +342,10 @@ module cpu32e2_tb();
         instructionStr = instructionDecoder.toString();
 
         // run instruction on simulated model
-        model.run(instruction);
+        model.run(instruction, doInterrupt, interrupt);
 
         // run instruction on actual hardware
-        runInstruction(instruction);
+        runInstruction(instruction, doInterrupt, interrupt);
 
         // do checks on make sure both models are the same
         missMatch = 1'b0;
@@ -401,11 +414,17 @@ module cpu32e2_tb();
 
 
     task runInstruction(
-        input  logic  [31:0]  instruction
+        input  logic  [31:0]  instruction,
+        input  logic          doInterrupt,
+        input  logic  [3:0]   interrupt
         );
 
         // wait for instruction cycle to start
         wait(debugOut.fetchCycle && read);
+
+        // apply interrupt signals
+        interruptRequest = doInterrupt;
+        interruptIn      = interrupt;
 
         // random wait cycles
         #1 instructionWait = 1'b1;
@@ -424,6 +443,9 @@ module cpu32e2_tb();
 
         // wait for instruction to complete
         wait(debugOut.machineCycleDone);
+
+        // reset interrupt request singal
+        interruptRequest = 1'b0;
 
     endtask
 

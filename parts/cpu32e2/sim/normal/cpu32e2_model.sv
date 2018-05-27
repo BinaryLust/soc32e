@@ -101,9 +101,9 @@ package cpu32e2_modelPkg;
 
 
         function void run(
-            logic  [31:0]  instruction//,
-            //logic          interruptRequest,
-            //logic  [3:0]   interrupt
+            logic  [31:0]  instruction,
+            logic          doInterrupt,
+            logic  [3:0]   interrupt
             );
             // fetching is skipped because we are directly feeding an instruction in
             // always write regfile[srb] first so that if regfile[sra] writes the same address it will get final priority and overwrites the value
@@ -230,7 +230,7 @@ package cpu32e2_modelPkg;
             endcase
 
             // commitment stage
-            if(exceptionTriggered) begin
+            if(exceptionTriggered) begin // exception happened
                 logic [3:0] exceptionVector;
                 
                 // figure out the highest priority exception
@@ -242,7 +242,14 @@ package cpu32e2_modelPkg;
                 regfile[EPC]       = nextPC;                  // save current pc to epc
                 nextPC             = isrBaseAddress;          // load isr base address to next pc
                 exceptionTriggered = 16'b0;                   // clear triggered exceptions
-            end else begin //else if(interruptRequest) begin
+            end else if(doInterrupt && interruptEn) begin // interrupt happened
+                commit();
+
+                interruptEn        = 1'b0;                    // clear interrupt enable flag
+                cause              = {1'b1, interrupt};       // load cause register
+                regfile[EPC]       = nextPC;                  // save current pc to epc
+                nextPC             = isrBaseAddress;          // load isr base address to next pc
+            end else begin // normal cycle
                 commit();
             end
         endfunction
