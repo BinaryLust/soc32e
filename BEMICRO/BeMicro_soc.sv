@@ -532,6 +532,8 @@ module BeMicro_soc(
         .i2cRead,
         .i2cWrite,
         .i2cAddress,
+        .clk                    (clk100),
+        .reset                  (reset100),
         .address,
         .read,
         .write,

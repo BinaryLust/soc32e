@@ -15,15 +15,19 @@ module BeMicro_soc_tb();
     logic          clk;
     logic          reset;
     logic          rx;
-    logic          miso;
+    logic          dacMiso;
+    logic          sdCardMiso;
 
 
     // output wires
     logic  [7:0]   ioOut;
     logic          tx;
-    logic          mosi;
-    logic          sclk;
-    logic          ss;
+    logic          dacMosi;
+    logic          dacSclk;
+    logic          dacSs;
+    logic          sdCardMosi;
+    logic          sdCardSclk;
+    logic          sdCardSs;
     logic          pwmOut;
     logic  [11:0]  externalSdramAddress;
     logic  [1:0]   externalSdramBa;
@@ -34,10 +38,17 @@ module BeMicro_soc_tb();
     logic  [1:0]   externalSdramDqm;
     logic          externalSdramRas;
     logic          externalSdramWe;
+    logic          horizontalSync;
+    logic          verticalSync;
+    logic  [2:0]   red;
+    logic  [2:0]   green;
+    logic  [1:0]   blue;
 
 
     // inout wires
-    wire  [15:0]  externalSdramDq;
+    wire           scl;
+    wire           sda;
+    wire   [15:0]  externalSdramDq;
 
 
     /*********************************************************************************************************************************************************/
@@ -54,10 +65,16 @@ module BeMicro_soc_tb();
         .ioOut,
         .rx,
         .tx,
-        .miso,
-        .mosi,
-        .sclk,
-        .ss,
+        .dacMiso,
+        .dacMosi,
+        .dacSclk,
+        .dacSs,
+        .sdCardMiso,
+        .sdCardMosi,
+        .sdCardSclk,
+        .sdCardSs,
+        .scl,
+        .sda,
         .pwmOut,
         .externalSdramAddress,
         .externalSdramBa,
@@ -68,11 +85,16 @@ module BeMicro_soc_tb();
         .externalSdramDq,
         .externalSdramDqm,
         .externalSdramRas,
-        .externalSdramWe
+        .externalSdramWe,
+        .horizontalSync,
+        .verticalSync,
+        .red,
+        .green,
+        .blue
     );
 
 
-    assign miso = mosi; // echo back the data
+    //assign miso = mosi; // echo back the data
 
 
     /*********************************************************************************************************************************************************/
@@ -91,9 +113,10 @@ module BeMicro_soc_tb();
 
     // set initial values
     initial begin
-        reset = 1'b0;
-        rx    = 1'b1;
-        //miso  = 1'b0;
+        reset      = 1'b0;
+        rx         = 1'b1;
+        dacMiso    = 1'b0;
+        sdCardMiso = 1'b0;
     end
 
 

@@ -69,7 +69,6 @@
 ../../../parts/cpu32e2/rtl/controller/controller.sv
 ../../../parts/cpu32e2/rtl/cpu32e2.sv
 
-../../../parts/dataSelect/rtl/dataSelect.sv
 ../../../parts/io/rtl/io.sv
 ../../../parts/pll/rtl/pll.v
 ../../../parts/pll/rtl/pll2.v
@@ -82,6 +81,23 @@
 ../../../parts/uart/rtl/uartCore.sv
 ../../../parts/uart/rtl/uartReceiver.sv
 ../../../parts/uart/rtl/uartTransmitter.sv
+../../../parts/uart/rtl/uart2.sv
+../../../parts/uart/rtl/uartCore2.sv
+../../../parts/uart/rtl/uartFifoMemory.sv
+../../../parts/uart/rtl/uartFifo.sv
+../../../parts/uart/rtl/uartReceiver2.sv
+../../../parts/vga/rtl/lineBuffer.sv
+//../../../parts/vga/rtl/lineFetchController.sv
+//../../../parts/vga/rtl/sdramArbiterFifoMemory.sv
+//../../../parts/vga/rtl/sdramArbiterFifo.sv
+//../../../parts/vga/rtl/sdramArbiter.sv
+../../../parts/vga/rtl/vgaDriver.sv
+../../../parts/vga/rtl/vgaCore.sv
+//../../../parts/vga/rtl/vga.sv
+../../../parts/i2c/rtl/i2cClockUnit.sv
+../../../parts/i2c/rtl/i2cUnit.sv
+../../../parts/i2c/rtl/i2cCore.sv
+../../../parts/i2c/rtl/i2c.sv
 ../../../parts/random/rtl/randomCore.sv
 ../../../parts/random/rtl/random.sv
 ../../../parts/timer/rtl/timerUnit.sv
@@ -105,6 +121,10 @@
 ../../../parts/spi/rtl/spi.sv
 ../../../parts/spi/rtl/spiCore.sv
 ../../../parts/spi/rtl/spiUnit.sv
+../../../parts/spi/rtl/spiWithFifos.sv
+../../../parts/spi/rtl/spiCoreWithFifos.sv
+../../../parts/spi/rtl/spiFifo.sv
+../../../parts/spi/rtl/spiFifoMemory.sv
 ../../../parts/sound/rtl/buffer.sv
 ../../../parts/sound/rtl/bufferMemory.sv
 ../../../parts/sound/rtl/pwmUnit.sv
@@ -114,8 +134,8 @@
 
 ../../../parts/interrupt/rtl/interruptController.sv
 ../../../parts/interrupt/rtl/interruptState.sv
-../../../parts/addressMap/rtl/addressMap.sv
 
+../../BeMicro_soc_interconnect.sv
 ../../BeMicro_soc.sv
 BeMicro_soc_tb.sv
 

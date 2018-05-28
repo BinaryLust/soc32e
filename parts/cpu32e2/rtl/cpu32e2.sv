@@ -116,7 +116,7 @@ module cpu32e2(
 
     // exception assignments
     assign triggerException =
-       {11'b0,                                                  // unused                - exceptions 7-15
+       {9'b0,                                                   // unused                - exceptions 7-15
         exceptionTriggerControl.unknownException,               // unknown instruction   - exception 6
         exceptionTriggerControl.systemException,                // system interrupt      - exception 5
         exceptionTriggerControl.breakException,                 // break                 - exception 4

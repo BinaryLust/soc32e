@@ -558,6 +558,8 @@ module DECA_soc(
         .ocFlashWaitRequest,
         .ocFlashRead,
         .ocFlashAddress,
+        .clk                     (clk100),
+        .reset                   (reset100),
         .address,
         .read,
         .write,
