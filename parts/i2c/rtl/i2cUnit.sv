@@ -377,10 +377,6 @@ module i2cUnit
                     if(bitCounter == 4'd8) begin                    // ack bit
                         receiveValidRegNext = 1'b1;                 // send read valid signal // should be pipelined i think?
                         ackRegNext          = sdaIn;                // capture ack value in ack register
-                        sdaOutRegNext       = 1'b1;                 // set sda to high-z
-
-                        //if(commandReg == 2'b11)
-                            //sdaOutRegNext = 1'b1;                 // for rx set sda to high-z
 
                         // next state logic
                         nextState           = IDLE;

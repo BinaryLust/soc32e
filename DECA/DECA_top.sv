@@ -160,8 +160,8 @@ module DECA_top(
 
     input   logic          rx,
     output  logic          tx,
-    inout   wire   [1:0]   scl,
-    inout   wire   [1:0]   sda
+    inout   wire   [2:0]   scl,
+    inout   wire   [2:0]   sda
 );
 
 
@@ -195,7 +195,7 @@ module DECA_top(
     //assign RH_TEMP_I2C_SDA   = i2c_sda[5];
 
 
-    DECA_soc #(.LINES(2))
+    DECA_soc #(.LINES(3))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
         .reset         (~KEY[0]),
