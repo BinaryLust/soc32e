@@ -100,23 +100,6 @@
 // we need to check that the clock has actually gone high everytime we set it high.
 
 
-// it seems that i2c slave devices change the data on sda slightly after scl goes low
-// we should redo this controller to fit that pattern
-// maybe wait until the count on the 100mhz master clock has gone a few ticks before changing data
-// low should be the default state of clock when not transmitting i think
-
-// the bug turns out to stem from the fact that unlike in simulation the inout port in hardware acts like an output only, it
-// gets no input at all.
-
-// the new sequence should be like this
-// start should pull clock low
-// first cycle should be put data on line
-// second cycle should be raise clock
-// third cycle should be check that clock is high and capture data if it is
-// fourth cycle should be lower clock
-// after the ack bit is sent or receive we should also as a last step lower sda
-
-
 module i2cUnit
     #(parameter LINES = 1)(
     input   logic               clk,
@@ -128,7 +111,9 @@ module i2cUnit
     input   logic               transmitAck,    // the ack bit that we want to write to the slave after a receiving a byte
     output  logic               receiveAck,     // the ack bit from the slave after transmitting a byte
 
-    input   logic               cycleDone,      // this signals when a cycle is complete
+    input   logic               dataCycle,
+    input   logic               finalCycle,
+
     input   logic               transmitValid,  // this line tells this core when a command is ready to be processed
     output  logic               transmitReady,  // this signals when the write data has been used
     output  logic               receiveValid,   // this signals that the data on the read data lines is valid
@@ -139,18 +124,14 @@ module i2cUnit
     );
 
 
-    typedef  enum  logic  [3:0]
+    typedef  enum  logic  [2:0]
     {
-        IDLE   = 4'd0,
-        DECODE = 4'd1,
-        INIT1  = 4'd2,
-        INIT2  = 4'd3,
-        INIT3  = 4'd4,
-        INIT4  = 4'd5,
-        CYCLE1 = 4'd6,
-        CYCLE2 = 4'd7,
-        CYCLE3 = 4'd8,
-        CYCLE4 = 4'd9
+        IDLE   = 3'd0,
+        DECODE = 3'd1,
+        INIT1  = 3'd2,
+        INIT2  = 3'd3,
+        CYCLE1 = 3'd4,
+        CYCLE2 = 3'd5
     }   states;
 
 
@@ -158,6 +139,9 @@ module i2cUnit
     states         nextState;
     logic   [3:0]  bitCounter;
     logic   [3:0]  bitCounterNext;
+    logic          finalBit;
+    logic          dataServiced;
+    logic          dataServicedNext;
     logic   [1:0]  commandReg;
     logic   [1:0]  commandRegNext;
     logic   [7:0]  dataReg;
@@ -190,9 +174,18 @@ module i2cUnit
     // bit counter register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            bitCounter <= 4'd0;
+            bitCounter <= 4'd1;
         else
             bitCounter <= bitCounterNext;
+    end
+
+
+    // data serviced flag register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            dataServiced <= 1'd0;
+        else
+            dataServiced <= dataServicedNext;
     end
 
 
@@ -263,27 +256,29 @@ module i2cUnit
     assign receiveAck    = ackReg;
     assign transmitReady = transmitReadyReg;
     assign receiveValid  = receiveValidReg;
+    assign finalBit      = (bitCounter == 4'd9);
 
 
     // combinationial logic
     always_comb begin
         // defaults
-        nextState            = IDLE;       // go to idle
-        bitCounterNext       = bitCounter; // keep old value
-        commandRegNext       = commandReg; // keep old value
-        dataRegNext          = dataReg;    // keep old value
-        ackRegNext           = ackReg;     // keep old value
-        sclOutRegNext        = sclOutReg;  // keep old value
-        sdaOutRegNext        = sdaOutReg;  // keep old value
-        busy                 = 1'b1;       // signal busy
-        transmitReadyRegNext = 1'b0;       // signal not ready
-        receiveValidRegNext  = 1'b0;       // read not valid
+        nextState            = IDLE;         // go to idle
+        bitCounterNext       = bitCounter;   // keep old value
+        dataServicedNext     = dataServiced; // keep old value
+        commandRegNext       = commandReg;   // keep old value
+        dataRegNext          = dataReg;      // keep old value
+        ackRegNext           = ackReg;       // keep old value
+        sclOutRegNext        = sclOutReg;    // keep old value
+        sdaOutRegNext        = sdaOutReg;    // keep old value
+        busy                 = 1'b1;         // signal busy
+        transmitReadyRegNext = 1'b0;         // signal not ready
+        receiveValidRegNext  = 1'b0;         // read not valid
 
 
         case(state)
             IDLE: begin // reset counters, keep clock and data line high, and keep busy low
-                bitCounterNext = 4'd0;
-                busy        = 1'b0;
+                bitCounterNext = 4'd1;
+                busy           = 1'b0;
 
                 if(!reset && transmitValid) begin
                     transmitReadyRegNext = 1'b1;          // signal ready
@@ -309,100 +304,88 @@ module i2cUnit
             end
 
 
-            INIT1: begin // start/stop = pull clock low
-                if(cycleDone) sclOutRegNext = 1'b0;
-
-                // next state logic
-                nextState = (cycleDone) ? INIT2 : INIT1;
-            end
-
-            INIT2: begin // start = pull data high, stop = pull data low
-                if(cycleDone) begin
+            INIT1: begin
+                // for start - pull data high and clock high
+                // for stop  - pull data low and clock high
+                
+                if(dataCycle) begin
                     if(commandReg == 2'b00) sdaOutRegNext = 1'b1;
                     if(commandReg == 2'b01) sdaOutRegNext = 1'b0;
                 end
 
-                // next state logic
-                nextState = (cycleDone) ? INIT3 : INIT2;
-            end
-
-            INIT3: begin // start/stop = pull clock high
-                if(cycleDone) sclOutRegNext = 1'b1;
+                if(finalCycle) begin
+                    sclOutRegNext = 1'b1;
+                end
 
                 // next state logic
-                nextState = (cycleDone) ? INIT4 : INIT3;
+                nextState = (finalCycle) ? INIT2 : INIT1;
             end
 
-            INIT4: begin // start = pull data low, stop = pull data high
-                if(cycleDone) begin
+
+            INIT2: begin
+                // for start - pull data low and clock low
+                // for stop - pull data high
+
+                if(dataCycle) begin
                     if(commandReg == 2'b00) sdaOutRegNext = 1'b0;
                     if(commandReg == 2'b01) sdaOutRegNext = 1'b1;
                 end
 
-                // next state logic
-                nextState = (cycleDone) ? IDLE : INIT4;
-            end
-
-            CYCLE1: begin // TX/RX = pull clock low
-                if(cycleDone) sclOutRegNext = 1'b0;
+                if(finalCycle) begin
+                    if(commandReg == 2'b00) sclOutRegNext = 1'b0;
+                end
 
                 // next state logic
-                nextState = (cycleDone) ? CYCLE2 : CYCLE1;
+                nextState = (finalCycle) ? IDLE : INIT2;
             end
 
-            CYCLE2: begin // TX = put data on line, RX = wait for data to be put on line
-                if(cycleDone) begin
-                    if(bitCounter == 4'd8) begin // ack bit
+
+            CYCLE1: begin
+                if(dataCycle) begin
+                    if(finalBit) begin // ack bit
                         if(commandReg == 2'b10) sdaOutRegNext = 1'b1;       // for tx ack bits set sda to high-z
                         if(commandReg == 2'b11) sdaOutRegNext = ackReg;     // for rx ack bits set sda to ackReg value
                     end else begin               // normal bits
                         if(commandReg == 2'b10) sdaOutRegNext = dataReg[7]; // for tx bits set sda to msb of data
                         if(commandReg == 2'b11) sdaOutRegNext = 1'b1;       // for rx bits set sda to high-z
                     end
+
+                    dataServicedNext = 1'b0; // reset data serviced flag
                 end
 
-                // next state logic
-                nextState = (cycleDone) ? CYCLE3 : CYCLE2;
-            end
-
-            CYCLE3: begin // TX/RX = pull clock high
-                if(cycleDone) sclOutRegNext = 1'b1;
+                if(finalCycle) sclOutRegNext = 1'b1; // pull clock high at final cycle
 
                 // next state logic
-                nextState = (cycleDone) ? CYCLE4 : CYCLE3;
+                nextState = (finalCycle) ? CYCLE2 : CYCLE1;
             end
 
-            CYCLE4: begin // TX/RX = check that clock is acually high
-                if(cycleDone && (sclIn == 1'b1)) begin              // if the clock is high
-                    if(bitCounter == 4'd8) begin                    // ack bit
-                        receiveValidRegNext = 1'b1;                 // send read valid signal // should be pipelined i think?
-                        ackRegNext          = sdaIn;                // capture ack value in ack register
 
-                        // next state logic
-                        nextState           = IDLE;
+            CYCLE2: begin
+                if(dataCycle && (sclIn == 1'b1)) begin               // if the clock is high
+                    if(finalBit) begin                               // ack bit
+                        receiveValidRegNext = 1'b1;                  // send read valid signal
+                        ackRegNext          = sdaIn;                 // capture ack value in ack register
                     end else begin                                   // normal bits
-                        bitCounterNext      = bitCounter + 4'd1;     // increment bit count
                         dataRegNext         = {dataReg[6:0], sdaIn}; // capture data and left shift it // this works for both TX and RX
-
-                        // next state logic
-                        nextState           = CYCLE1;
                     end
+                    dataServicedNext = 1'b1; // set data serviced flag
+                end
+                
+                if(finalCycle && dataServiced) begin
+                    bitCounterNext = bitCounter + 4'd1; // increment bit count
+                    sclOutRegNext  = 1'b0;              // pull clock low at final cycle
+
+                    // next state logic
+                    nextState = (finalBit) ? IDLE : CYCLE1;
                 end else begin
                     // next state logic
-                    nextState = CYCLE4;
+                    nextState = CYCLE2;
                 end
             end
 
             //default:
         endcase
     end
-
-
-    // single open drain assignment
-    // assign scl   = (sclOutReg) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
-    // assign sclIn = scl;
-    // assign sda   = (sdaOutReg) ? 1'bz : 1'b0; // either high-z when we need a high state or pull low for low state
-    // assign sdaIn = sda;
 
 
     // multi open drain assignment (good for upto 32 lines)

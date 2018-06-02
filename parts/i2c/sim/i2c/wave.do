@@ -34,7 +34,8 @@ add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/receiveValid
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitReady
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/scl
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/sda
-add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/cycleDone
+add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/dataCycle
+add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/finalCycle
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitReadyWire
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/receiveValidWire
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/receiveDataWire
@@ -49,7 +50,8 @@ add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitDa
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveData
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitAck
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveAck
-add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/cycleDone
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataCycle
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/finalCycle
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitValid
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitReady
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValid
@@ -60,6 +62,8 @@ add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/state
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/nextState
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounter
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounterNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataServiced
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataServicedNext
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/commandReg
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/commandRegNext
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataReg
@@ -126,7 +130,7 @@ add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0E
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/MemoryByte0F
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/TimingCheckEnable
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {100114650 ps} 1} {{Cursor 2} {3103003580 ps} 0}
+WaveRestoreCursors {{Cursor 1} {100114650 ps} 1} {{Cursor 2} {89137020 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 311
 configure wave -valuecolwidth 210
@@ -142,4 +146,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {56198277870 ps} {104579280120 ps}
+WaveRestoreZoom {89028500 ps} {89339780 ps}
