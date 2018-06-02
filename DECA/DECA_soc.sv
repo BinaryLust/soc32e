@@ -1,13 +1,14 @@
 
 
-module DECA_soc(
-    input   logic          clk,
-    input   logic          reset,
+module DECA_soc
+    #(parameter LINES = 1)(
+    input   logic               clk,
+    input   logic               reset,
 
     // output  logic  [7:0]   ioOut,
 
-    input   logic          rx,
-    output  logic          tx,
+    input   logic               rx,
+    output  logic               tx,
 
     // input   logic          dacMiso,
     // output  logic          dacMosi,
@@ -19,8 +20,8 @@ module DECA_soc(
     // output  logic          sdCardSclk,
     // output  logic          sdCardSs,
 
-    inout   wire           scl,
-    inout   wire           sda
+    inout   wire   [LINES-1:0]  scl,
+    inout   wire   [LINES-1:0]  sda
 
     // output  logic          pwmOut,
 
@@ -464,7 +465,7 @@ module DECA_soc(
     // );
 
 
-    i2c
+    i2c #(.LINES(LINES))
     i2c(
        .clk                     (clk100),
        .reset                   (reset100),

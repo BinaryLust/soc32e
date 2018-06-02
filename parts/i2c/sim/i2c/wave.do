@@ -70,12 +70,12 @@ add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitRe
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitReadyRegNext
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValidReg
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveValidRegNext
-add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOutNext
-add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOut
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclIn
-add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOutNext
-add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOut
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOutReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sclOutRegNext
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaIn
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOutReg
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/sdaOutRegNext
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A0
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A1
 add wave -noupdate -expand -group EEPROM /i2c_tb/eeprom/A2
@@ -142,4 +142,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {85554241500 ps}
+WaveRestoreZoom {56198277870 ps} {104579280120 ps}

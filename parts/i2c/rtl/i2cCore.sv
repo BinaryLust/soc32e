@@ -4,24 +4,25 @@
 // ready is sent back to acknowledge that the data was actually consumed.
 
 
-module i2cCore(
-    input   logic          clk,
-    input   logic          reset,
+module i2cCore
+    #(parameter LINES = 1)(
+    input   logic               clk,
+    input   logic               reset,
 
-    input   logic  [1:0]   commandIn,       // data from the master interface
-    input   logic  [7:0]   transmitDataIn,  // data from the master interface
-    input   logic          transmitAckIn,   // data from the master interface
+    input   logic  [1:0]        commandIn,       // data from the master interface
+    input   logic  [7:0]        transmitDataIn,  // data from the master interface
+    input   logic               transmitAckIn,   // data from the master interface
 
-    input   logic          transmitDataLoadEn, // write enable from the master interface
-    input   logic          receiveDataReadReq, // read request from the master interface
+    input   logic               transmitDataLoadEn, // write enable from the master interface
+    input   logic               receiveDataReadReq, // read request from the master interface
 
-    output  logic  [7:0]   receiveData,     // visible state to the master interface
-    output  logic          receiveAck,      // visible state to the master interface
-    output  logic          receiveValid,    // visible state to the master interface
-    output  logic          transmitReady,   // visible state to the master interface
+    output  logic  [7:0]        receiveData,     // visible state to the master interface
+    output  logic               receiveAck,      // visible state to the master interface
+    output  logic               receiveValid,    // visible state to the master interface
+    output  logic               transmitReady,   // visible state to the master interface
 
-    inout   wire           scl,          // i2c clock
-    inout   wire           sda           // i2c data
+    inout   wire   [LINES-1:0]  scl,
+    inout   wire   [LINES-1:0]  sda
     );
 
 
@@ -125,7 +126,7 @@ module i2cCore(
     // master modules
 
 
-    i2cUnit
+    i2cUnit #(.LINES(LINES))
     i2cUnit(
         .clk,
         .reset,

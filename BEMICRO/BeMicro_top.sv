@@ -12,7 +12,7 @@
 
 `define ENABLE_CLOCK_INPUTS
 `define ENABLE_DAC_SPI_INTERFACE
-//`define ENABLE_TEMP_SENSOR
+`define ENABLE_TEMP_SENSOR
 //`define ENABLE_ACCELEROMETER
 `define ENABLE_SDRAM
 //`define ENABLE_SPI_FLASH
@@ -267,6 +267,8 @@ module BeMicro_top(
 
 
     logic  [7:0]  ioOut;
+    wire          scl;
+    wire          sda;
 
 
     BeMicro_soc
@@ -284,8 +286,8 @@ module BeMicro_top(
         .sdCardMosi             (PMOD_C[1]),
         .sdCardSclk             (PMOD_C[3]),
         .sdCardSs               (PMOD_C[0]),
-        .scl                    (GPIO_02),//(ADT7420_SCL),
-        .sda                    (GPIO_01),//(ADT7420_SDA),
+        .scl,
+        .sda,
         .pwmOut                 (PMOD_A[0]),
         .externalSdramAddress   (SDRAM_A[11:0]),
         .externalSdramBa        (SDRAM_BA),
@@ -303,6 +305,15 @@ module BeMicro_top(
         .green                  ({GPIO_J3_20, GPIO_J3_22, GPIO_J3_24}),
         .blue                   ({GPIO_J3_26, GPIO_J3_28})
     );
+
+    //assign GPIO_02 = scl; // scl
+    //assign GPIO_01 = sda;// sda
+
+    // i2c address 1001000 // registers at address 0 and 1 are the tempature data
+    //ADT7420_CT,
+    //ADT7420_INT,
+    assign ADT7420_SCL = scl;
+    assign ADT7420_SDA = sda;
 
 
     assign USER_LED = ~ioOut;

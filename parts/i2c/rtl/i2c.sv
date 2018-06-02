@@ -5,19 +5,23 @@
 // 1'd1: {30'd0, receiveValid, transmitReady}  // status register // read only
 
 
-module i2c(
-    input   logic          clk,
-    input   logic          reset,
-    input   logic          read,
-    input   logic          write,
-    input   logic          address,
-    input   logic  [31:0]  dataIn,
+// atleast one set of the top level i2c pins must also be named scl, and sda on the pin planner
+// otherwise the input buffers will get optimized out on quartus for some reason and that breaks
+// the entire controller.
+module i2c
+    #(parameter LINES = 1)(
+    input   logic               clk,
+    input   logic               reset,
+    input   logic               read,
+    input   logic               write,
+    input   logic               address,
+    input   logic  [31:0]       dataIn,
 
-    output  logic          readValid,
-    output  logic  [31:0]  dataOut,
+    output  logic               readValid,
+    output  logic  [31:0]       dataOut,
 
-    inout   wire           scl,             // i2c clock
-    inout   wire           sda              // i2c data
+    inout   wire   [LINES-1:0]  scl,
+    inout   wire   [LINES-1:0]  sda
     );
 
 
@@ -97,7 +101,7 @@ module i2c(
     assign receiveDataReadReq = ((addressReg == 1'd0) && readReg) ? 1'b1 : 1'b0;
 
 
-    i2cCore
+    i2cCore #(.LINES(LINES))
     i2cCore(
         .clk,
         .reset,
@@ -113,6 +117,7 @@ module i2c(
         .scl,
         .sda
     );
+
 
 endmodule
 

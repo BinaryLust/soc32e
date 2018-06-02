@@ -17,8 +17,8 @@ module DECA_top(
     // output  logic  [7:0]   LED,
 
     //////////// CapSense Button //////////
-    // inout   logic          CAP_SENSE_I2C_SCL,
-    // inout   logic          CAP_SENSE_I2C_SDA,
+    //inout   wire           CAP_SENSE_I2C_SCL,
+    //inout   wire           CAP_SENSE_I2C_SDA,
 
     //////////// Audio //////////
     // inout   logic          AUDIO_BCLK,
@@ -59,12 +59,12 @@ module DECA_top(
     // output  logic          FLASH_RESET_n,
 
     //////////// G-Sensor //////////
-    // output  logic          G_SENSOR_CS_n,
+    output  logic          G_SENSOR_CS_n, // set high for i2c mode, set low for spi mode
     // input   logic          G_SENSOR_INT1,
     // input   logic          G_SENSOR_INT2,
-    // inout   logic          G_SENSOR_SCLK,
-    // inout   logic          G_SENSOR_SDI,
-    // inout   logic          G_SENSOR_SDO,
+    //inout   logic          G_SENSOR_SCLK, // i2c scl
+    //inout   logic          G_SENSOR_SDI,  // i2c sda
+    inout   logic          G_SENSOR_SDO,  // i2c lsb of address
 
     //////////// HDMI-TX //////////
     // inout   logic          HDMI_I2C_SCL,
@@ -81,8 +81,8 @@ module DECA_top(
     // output  logic          HDMI_TX_VS,
 
     //////////// Light Sensor //////////
-    // output  logic          LIGHT_I2C_SCL,
-    // inout   logic          LIGHT_I2C_SDA,
+    //inout   wire           LIGHT_I2C_SCL,
+    //inout   wire           LIGHT_I2C_SDA,
     // inout   logic          LIGHT_INT,
 
     //////////// MIPI //////////
@@ -116,13 +116,13 @@ module DECA_top(
 
     // //////////// Power Monitor //////////
     // input   logic          PMONITOR_ALERT,
-    // output  logic          PMONITOR_I2C_SCL,
-    // inout   logic          PMONITOR_I2C_SDA,
+    //inout   wire           PMONITOR_I2C_SCL,
+    //inout   wire           PMONITOR_I2C_SDA,
 
     //////////// Humidity and Temperature Sensor //////////
     // input   logic          RH_TEMP_DRDY_n,
-    // output  logic          RH_TEMP_I2C_SCL,
-    // inout   logic          RH_TEMP_I2C_SDA,
+    //inout   wire           RH_TEMP_I2C_SCL,
+    //inout   wire           RH_TEMP_I2C_SDA,
 
     //////////// MicroSD Card //////////
     // output  logic          SD_CLK,
@@ -155,19 +155,54 @@ module DECA_top(
     //////////// BBB Conector //////////
     // input   logic          BBB_PWR_BUT,
     // input   logic          BBB_SYS_RESET_n,
-    inout   wire   [43:0]  GPIO0_D
+    //inout   wire   [43:0]  GPIO0_D
     //inout   logic  [22:0]  GPIO1_D
+
+    input   logic          rx,
+    output  logic          tx,
+    inout   wire   [1:0]   scl,
+    inout   wire   [1:0]   sda
 );
 
 
-    DECA_soc
+    //wire   [5:0]  i2c_scl;
+    //wire   [5:0]  i2c_sda;
+
+
+    //assign scl               = i2c_scl[0];
+    //assign sda               = i2c_sda[0];
+
+
+    //assign CAP_SENSE_I2C_SCL = i2c_scl[1];
+    //assign CAP_SENSE_I2C_SDA = i2c_sda[1];
+
+
+    assign G_SENSOR_CS_n     = 1'b1; // set high for i2c mode, set low for spi mode
+    //assign G_SENSOR_SCLK     = i2c_scl[2]; // i2c scl
+    //assign G_SENSOR_SDI      = i2c_sda[2];  // i2c sda
+    assign G_SENSOR_SDO      = 1'b0;  // i2c lsb of address
+
+
+    //assign LIGHT_I2C_SCL     = i2c_scl[3];
+    //assign LIGHT_I2C_SDA     = i2c_sda[3];
+
+
+    //assign PMONITOR_I2C_SCL  = i2c_scl[4];
+    //assign PMONITOR_I2C_SDA  = i2c_sda[4];
+
+
+    //assign RH_TEMP_I2C_SCL   = i2c_scl[5];
+    //assign RH_TEMP_I2C_SDA   = i2c_sda[5];
+
+
+    DECA_soc #(.LINES(2))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
         .reset         (~KEY[0]),
-        .rx            (GPIO0_D[0]),
-        .tx            (GPIO0_D[1]),
-        .scl           (GPIO0_D[2]),
-        .sda           (GPIO0_D[3])
+        .rx,
+        .tx,
+        .scl,
+        .sda
     );
 
 
