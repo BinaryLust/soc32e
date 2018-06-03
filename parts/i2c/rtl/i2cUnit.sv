@@ -111,6 +111,7 @@ module i2cUnit
     input   logic               transmitAck,    // the ack bit that we want to write to the slave after a receiving a byte
     output  logic               receiveAck,     // the ack bit from the slave after transmitting a byte
 
+    input   logic               firstCycle,
     input   logic               dataCycle,
     input   logic               finalCycle,
 
@@ -280,7 +281,7 @@ module i2cUnit
                 bitCounterNext = 4'd1;
                 busy           = 1'b0;
 
-                if(!reset && transmitValid) begin
+                if(!reset && transmitValid && firstCycle) begin
                     transmitReadyRegNext = 1'b1;          // signal ready
                     commandRegNext       = command;       // set command reg to input command
                     dataRegNext          = transmitData;  // set data reg to input data

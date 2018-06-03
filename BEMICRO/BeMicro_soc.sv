@@ -1,45 +1,46 @@
 
 
-module BeMicro_soc(
-    input   logic          clk,
-    input   logic          reset,
+module BeMicro_soc
+    #(parameter LINES = 1)(
+    input   logic               clk,
+    input   logic               reset,
 
-    output  logic  [7:0]   ioOut,
+    output  logic  [7:0]        ioOut,
 
-    input   logic          rx,
-    output  logic          tx,
+    input   logic               rx,
+    output  logic               tx,
 
-    input   logic          dacMiso,
-    output  logic          dacMosi,
-    output  logic          dacSclk,
-    output  logic          dacSs,
+    input   logic               dacMiso,
+    output  logic               dacMosi,
+    output  logic               dacSclk,
+    output  logic               dacSs,
 
-    input   logic          sdCardMiso,
-    output  logic          sdCardMosi,
-    output  logic          sdCardSclk,
-    output  logic          sdCardSs,
+    input   logic               sdCardMiso,
+    output  logic               sdCardMosi,
+    output  logic               sdCardSclk,
+    output  logic               sdCardSs,
 
-    inout   wire           scl,
-    inout   wire           sda,
+    inout   wire   [LINES-1:0]  scl,
+    inout   wire   [LINES-1:0]  sda,
 
-    output  logic          pwmOut,
+    output  logic               pwmOut,
 
-    output  logic  [11:0]  externalSdramAddress,
-    output  logic  [1:0]   externalSdramBa,
-    output  logic          externalSdramCas,
-    output  logic          externalSdramCke,
-    output  logic          externalSdramClk,
-    output  logic          externalSdramCs,
-    inout   wire   [15:0]  externalSdramDq,
-    output  logic  [1:0]   externalSdramDqm,
-    output  logic          externalSdramRas,
-    output  logic          externalSdramWe,
+    output  logic  [11:0]       externalSdramAddress,
+    output  logic  [1:0]        externalSdramBa,
+    output  logic               externalSdramCas,
+    output  logic               externalSdramCke,
+    output  logic               externalSdramClk,
+    output  logic               externalSdramCs,
+    inout   wire   [15:0]       externalSdramDq,
+    output  logic  [1:0]        externalSdramDqm,
+    output  logic               externalSdramRas,
+    output  logic               externalSdramWe,
 
-    output  logic          horizontalSync,
-    output  logic          verticalSync,
-    output  logic  [2:0]   red,
-    output  logic  [2:0]   green,
-    output  logic  [1:0]   blue
+    output  logic               horizontalSync,
+    output  logic               verticalSync,
+    output  logic  [2:0]        red,
+    output  logic  [2:0]        green,
+    output  logic  [1:0]        blue
     );
 
 
@@ -456,7 +457,7 @@ module BeMicro_soc(
     );
 
 
-    i2c
+    i2c #(.LINES(LINES))
     i2c(
        .clk                     (clk100),
        .reset                   (reset100),

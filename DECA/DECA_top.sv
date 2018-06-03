@@ -160,42 +160,19 @@ module DECA_top(
 
     input   logic          rx,
     output  logic          tx,
-    inout   wire   [2:0]   scl,
-    inout   wire   [2:0]   sda
+    inout   wire   [4:0]   scl,
+    inout   wire   [4:0]   sda
 );
 
-
-    //wire   [5:0]  i2c_scl;
-    //wire   [5:0]  i2c_sda;
-
-
-    //assign scl               = i2c_scl[0];
-    //assign sda               = i2c_sda[0];
-
-
-    //assign CAP_SENSE_I2C_SCL = i2c_scl[1];
-    //assign CAP_SENSE_I2C_SDA = i2c_sda[1];
+    // the humidity/tempature sensor and the power meter can't both be connected
+    // at the same time because they share the same i2c address
 
 
     assign G_SENSOR_CS_n     = 1'b1; // set high for i2c mode, set low for spi mode
-    //assign G_SENSOR_SCLK     = i2c_scl[2]; // i2c scl
-    //assign G_SENSOR_SDI      = i2c_sda[2];  // i2c sda
     assign G_SENSOR_SDO      = 1'b0;  // i2c lsb of address
 
 
-    //assign LIGHT_I2C_SCL     = i2c_scl[3];
-    //assign LIGHT_I2C_SDA     = i2c_sda[3];
-
-
-    //assign PMONITOR_I2C_SCL  = i2c_scl[4];
-    //assign PMONITOR_I2C_SDA  = i2c_sda[4];
-
-
-    //assign RH_TEMP_I2C_SCL   = i2c_scl[5];
-    //assign RH_TEMP_I2C_SDA   = i2c_sda[5];
-
-
-    DECA_soc #(.LINES(3))
+    DECA_soc #(.LINES(5))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
         .reset         (~KEY[0]),

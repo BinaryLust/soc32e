@@ -27,6 +27,7 @@ module i2cCore
 
 
     // wires
+    logic         firstCycle;
     logic         dataCycle;
     logic         finalCycle;
     logic         transmitReadyWire;
@@ -136,6 +137,7 @@ module i2cCore
         .receiveData          (receiveDataWire),
         .transmitAck,
         .receiveAck           (receiveAckWire),
+        .firstCycle,
         .dataCycle,
         .finalCycle,
         .transmitValid        (~transmitReady),
@@ -151,6 +153,7 @@ module i2cCore
     i2cClockUnit(
         .clk,
         .reset,
+        .firstCycle,
         .dataCycle,
         .finalCycle
     );

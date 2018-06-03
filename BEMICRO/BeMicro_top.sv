@@ -48,8 +48,8 @@ module BeMicro_top(
     // Voltage Level 2.5V
     input  logic  ADT7420_CT,
     input  logic  ADT7420_INT,
-    inout  logic  ADT7420_SCL,
-    inout  logic  ADT7420_SDA,
+    //inout  logic  ADT7420_SCL,
+    //inout  logic  ADT7420_SDA,
 `endif
 
 `ifdef ENABLE_ACCELEROMETER
@@ -171,8 +171,8 @@ module BeMicro_top(
 `ifdef ENABLE_HEADERS
     /* Expansion headers (pair of 40-pin headers) */
     // Voltage Level 2.5V
-    inout  wire   GPIO_01, // used to be // inout  logic  GPIO_01,
-    inout  wire   GPIO_02, // used to be // inout  logic  GPIO_02,
+    //inout  wire   GPIO_01, // used to be // inout  logic  GPIO_01,
+    //inout  wire   GPIO_02, // used to be // inout  logic  GPIO_02,
     inout  logic  GPIO_03,
     inout  logic  GPIO_04,
     inout  logic  GPIO_05,
@@ -261,17 +261,18 @@ module BeMicro_top(
     inout [3:0] PMOD_A,
     inout [3:0] PMOD_B,
     inout [3:0] PMOD_C, // change these to discrete inputs and outputs later
-    inout [3:0] PMOD_D
+    inout [3:0] PMOD_D,
 `endif
+
+    inout   wire   [1:0]   scl,
+    inout   wire   [1:0]   sda
 );
 
 
     logic  [7:0]  ioOut;
-    wire          scl;
-    wire          sda;
 
 
-    BeMicro_soc
+    BeMicro_soc #(.LINES(2))
     BeMicro_soc(
         .clk                    (SYS_CLK),
         .reset                  (~PB[1]),
@@ -312,8 +313,8 @@ module BeMicro_top(
     // i2c address 1001000 // registers at address 0 and 1 are the tempature data
     //ADT7420_CT,
     //ADT7420_INT,
-    assign ADT7420_SCL = scl;
-    assign ADT7420_SDA = sda;
+    //assign ADT7420_SCL = scl;
+    //assign ADT7420_SDA = sda;
 
 
     assign USER_LED = ~ioOut;

@@ -34,6 +34,7 @@ add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/receiveValid
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitReady
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/scl
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/sda
+add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/firstCycle
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/dataCycle
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/finalCycle
 add wave -noupdate -expand -group i2cCore /i2c_tb/dut/i2cCore/transmitReadyWire
@@ -50,6 +51,7 @@ add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitDa
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveData
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitAck
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/receiveAck
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/firstCycle
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataCycle
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/finalCycle
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/transmitValid
@@ -62,6 +64,7 @@ add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/state
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/nextState
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounter
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/bitCounterNext
+add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/finalBit
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataServiced
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/dataServicedNext
 add wave -noupdate -expand -group i2cUnit /i2c_tb/dut/i2cCore/i2cUnit/commandReg
@@ -146,4 +149,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {89028500 ps} {89339780 ps}
+WaveRestoreZoom {5448524290 ps} {5448835570 ps}

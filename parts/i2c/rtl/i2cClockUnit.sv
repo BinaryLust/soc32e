@@ -5,6 +5,7 @@ module i2cClockUnit(
     input   logic          clk,
     input   logic          reset,
 
+    output  logic          firstCycle,
     output  logic          dataCycle,
     output  logic          finalCycle
     );
@@ -24,6 +25,7 @@ module i2cClockUnit(
 
 
     // combinationial logic
+    assign firstCycle        = (cycleCounter == 9'd1);
     assign dataCycle         = (cycleCounter == 9'd100);
     assign finalCycle        = (cycleCounter >= 9'd500);
     assign cycleCounterValue = (finalCycle) ?  9'd1 : cycleCounter + 9'd1;
