@@ -44,8 +44,8 @@ module ethernetSmiUnit(
     states          nextState;
     logic   [5:0]   bitCounter;
     logic   [5:0]   bitCounterNext;
-    logic   [5:0]   idleCounter;
-    logic   [5:0]   idleCounterNext;
+    logic   [2:0]   idleCounter;
+    logic   [2:0]   idleCounterNext;
     logic   [15:0]  upperDataReg;
     logic   [15:0]  upperDataRegNext;
     logic   [15:0]  lowerDataReg;
@@ -86,7 +86,7 @@ module ethernetSmiUnit(
     // idle counter register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            idleCounter <= 6'd1;
+            idleCounter <= 3'd1;
         else
             idleCounter <= idleCounterNext;
     end
@@ -189,7 +189,7 @@ module ethernetSmiUnit(
         case(state)
             IDLE: begin
                 bitCounterNext  = 6'd1;
-                idleCounterNext = 6'd1;
+                idleCounterNext = 3'd1;
                 busy            = 1'b0;
 
                 if(!reset && transmitValid && finalCycle) begin
@@ -207,7 +207,7 @@ module ethernetSmiUnit(
             end
 
 
-            // lower clock and set data
+            // lower clock and set/capture data
             CYCLE1: begin
                 if(finalCycle) begin
                     mdcNext = 1'b0; // lower clock
@@ -218,8 +218,10 @@ module ethernetSmiUnit(
                             mdioOutEnRegNext = 1'b1;             // enable output
                             mdioOutRegNext   = upperDataReg[15]; // output a new bit
                         end
-                        if(bitCounter <= 6'd16)
-                            upperDataRegNext = {upperDataReg[14:0], upperDataReg[15]}; // rotate data
+                        if(bitCounter < 6'd17)
+                            upperDataRegNext = {upperDataReg[14:0], upperDataReg[15]}; // rotate output data
+                        else
+                            lowerDataRegNext = {lowerDataReg[14:0], mdioIn};           // capture input data
                     end else begin                               // if opcode is not 10 then we are doing a write so set new data to the line here
                         mdioOutRegNext   = upperDataReg[15];     // output a new bit
                         mdioOutEnRegNext = 1'b1;                 // enable output
@@ -237,11 +239,6 @@ module ethernetSmiUnit(
                 if(finalCycle) begin
                     mdcNext = 1'b1; // raise clock
 
-                    if(opcodeReg == 2'b10) begin
-                        if(bitCounter > 6'd16)
-                            lowerDataRegNext = {lowerDataReg[14:0], mdioIn}; // capture data
-                    end
-
                     if(bitCounter == 6'd32) begin
                         if(opcodeReg == 2'b10)
                             receiveValidRegNext = 1'b1;     // send read valid signal
@@ -258,17 +255,17 @@ module ethernetSmiUnit(
             end
 
 
-            // lower clock for the last time
+            // toggle clock a few times to give the bus some idle cycles
             FINISH: begin
                 if(finalCycle) begin
                     //mdcNext          = 1'b0; // lower clock
                     mdcNext          = ~mdc; // toggle clock
                     mdioOutEnRegNext = 1'b0; // disable output
-                    idleCounterNext  = idleCounter + 6'd1;
+                    idleCounterNext  = idleCounter + 3'd1;
                 end
 
                 // next state logic
-                nextState = (finalCycle && (idleCounter == 6'd3)) ? IDLE : FINISH;
+                nextState = (finalCycle && (idleCounter == 6'd5)) ? IDLE : FINISH;
             end
 
 
