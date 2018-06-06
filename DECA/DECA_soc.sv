@@ -21,7 +21,10 @@ module DECA_soc
     // output  logic          sdCardSs,
 
     inout   wire   [LINES-1:0]  scl,
-    inout   wire   [LINES-1:0]  sda
+    inout   wire   [LINES-1:0]  sda,
+
+    output  logic               mdc,
+    inout   wire                mdio
 
     // output  logic          pwmOut,
 
@@ -166,6 +169,12 @@ module DECA_soc
     logic          ocFlashValid;
     logic  [31:0]  ocFlashData;
 
+    //logic          ethernetSmiChipEnable;
+    logic          ethernetSmiRead;
+    logic          ethernetSmiWrite;
+    logic          ethernetSmiAddress;
+    logic          ethernetSmiValid;
+    logic  [31:0]  ethernetSmiData;
 
     // interrupt wires
     logic  [15:0]  triggerInterrupt;
@@ -493,6 +502,21 @@ module DECA_soc
 	);
 
 
+    ethernetSmi
+    ethernetSmi(
+        .clk                     (clk100),
+        .reset                   (reset100),
+        .read                    (ethernetSmiRead),
+        .write                   (ethernetSmiWrite),
+        .address                 (ethernetSmiAddress),
+        .dataIn                  (dataOut),
+        .readValid               (ethernetSmiValid),
+        .dataOut                 (ethernetSmiData),
+        .mdc,
+        .mdio
+    );
+
+
     DECA_soc_interconnect
     DECA_soc_interconnect(
         .ramData,
@@ -559,6 +583,11 @@ module DECA_soc
         .ocFlashWaitRequest,
         .ocFlashRead,
         .ocFlashAddress,
+        .ethernetSmiData,
+        .ethernetSmiValid,
+        .ethernetSmiRead,
+        .ethernetSmiWrite,
+        .ethernetSmiAddress,
         .clk                     (clk100),
         .reset                   (reset100),
         .address,

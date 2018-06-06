@@ -102,10 +102,10 @@ module DECA_top(
     //////////// Ethernet //////////
     // input   logic          NET_COL,
     // input   logic          NET_CRS,
-    // output  logic          NET_MDC,
-    // inout   logic          NET_MDIO,
-    // output  logic          NET_PCF_EN,
-    // output  logic          NET_RESET_n,
+    output  logic          NET_MDC,
+    inout   wire           NET_MDIO,
+    output  logic          NET_PCF_EN, // if high respond to phy control frames
+    output  logic          NET_RESET_n,
     // input   logic          NET_RX_CLK,
     // input   logic          NET_RX_DV,
     // input   logic          NET_RX_ER,
@@ -161,7 +161,9 @@ module DECA_top(
     input   logic          rx,
     output  logic          tx,
     inout   wire   [4:0]   scl,
-    inout   wire   [4:0]   sda
+    inout   wire   [4:0]   sda//,
+    //output  logic          mdc,
+    //inout   wire           mdio
 );
 
     // the humidity/tempature sensor and the power meter can't both be connected
@@ -172,6 +174,12 @@ module DECA_top(
     assign G_SENSOR_SDO      = 1'b0;  // i2c lsb of address
 
 
+    //assign NET_MDC,
+    //assign NET_MDIO,
+    assign NET_PCF_EN = 1'b0;
+    assign NET_RESET_n = 1'b1;
+
+
     DECA_soc #(.LINES(5))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
@@ -179,8 +187,11 @@ module DECA_top(
         .rx,
         .tx,
         .scl,
-        .sda
+        .sda,
+        .mdc           (NET_MDC),
+        .mdio          (NET_MDIO)
     );
 
 
 endmodule
+

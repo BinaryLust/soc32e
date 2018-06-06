@@ -1,35 +1,37 @@
 
 
 // the base address the device will be mapped to
-`define RAM_BASE       32'h00000000
-`define UART_BASE      32'h00004010
-`define RANDOM_BASE    32'h00005000
-`define TIMER_BASE     32'h00005100
-//`define SDRAM_BASE     32'h01000000
-//`define SEQUENCER_BASE 32'h02000000
-//`define SAMPLE_BASE    32'h02001000
-//`define IO_BASE        32'h03000000
-//`define DACSPI_BASE    32'h03001000
-//`define SOUND_BASE     32'h03002000
-//`define SDCARDSPI_BASE 32'h03003000
-`define I2C_BASE       32'h03004000
-`define OCFLASH_BASE   32'h04000000
+`define RAM_BASE         32'h00000000
+`define UART_BASE        32'h00004010
+`define RANDOM_BASE      32'h00005000
+`define TIMER_BASE       32'h00005100
+//`define SDRAM_BASE       32'h01000000
+//`define SEQUENCER_BASE   32'h02000000
+//`define SAMPLE_BASE      32'h02001000
+//`define IO_BASE          32'h03000000
+//`define DACSPI_BASE      32'h03001000
+//`define SOUND_BASE       32'h03002000
+//`define SDCARDSPI_BASE   32'h03003000
+`define I2C_BASE         32'h03004000
+`define OCFLASH_BASE     32'h04000000
+`define ETHERNETSMI_BASE 32'h05000000
 
 
 // the device address space size in bytes
-`define RAM_SIZE       32'h4000
-`define UART_SIZE      32'h10
-`define RANDOM_SIZE    32'h4
-`define TIMER_SIZE     32'h20
-//`define SDRAM_SIZE     32'h800000
-//`define SEQUENCER_SIZE 32'h8
-//`define SAMPLE_SIZE    32'h0200
-//`define IO_SIZE        32'h4
-//`define DACSPI_SIZE    32'h10
-//`define SOUND_SIZE     32'h10
-//`define SDCARDSPI_SIZE 32'h10
-`define I2C_SIZE       32'h8
-`define OCFLASH_SIZE   32'h10000
+`define RAM_SIZE         32'h4000
+`define UART_SIZE        32'h10
+`define RANDOM_SIZE      32'h4
+`define TIMER_SIZE       32'h20
+//`define SDRAM_SIZE       32'h800000
+//`define SEQUENCER_SIZE   32'h8
+//`define SAMPLE_SIZE      32'h0200
+//`define IO_SIZE          32'h4
+//`define DACSPI_SIZE      32'h10
+//`define SOUND_SIZE       32'h10
+//`define SDCARDSPI_SIZE   32'h10
+`define I2C_SIZE         32'h8
+`define OCFLASH_SIZE     32'h10000
+`define ETHERNETSMI_SIZE 32'h8
 
 
 module DECA_soc_interconnect(
@@ -150,6 +152,15 @@ module DECA_soc_interconnect(
     output  logic  [13:0]  ocFlashAddress,
 
 
+    input   logic  [31:0]  ethernetSmiData,
+    input   logic          ethernetSmiValid,
+    //input   logic          ethernetSmiWaitRequest,
+    //output  logic          ethernetSmiChipEnable,
+    output  logic          ethernetSmiRead,
+    output  logic          ethernetSmiWrite,
+    output  logic          ethernetSmiAddress,
+
+
     input   logic          clk,
     input   logic          reset,
     input   logic  [31:0]  address,
@@ -165,10 +176,10 @@ module DECA_soc_interconnect(
     logic         defaultRead;
     logic         defaultReadReg;
     logic         defaultValid;
-    logic  [5:0]  chipEnable;
-    logic  [5:0]  readEnable;
-    logic  [5:0]  writeEnable;
-    logic  [5:0]  validBus;
+    logic  [6:0]  chipEnable;
+    logic  [6:0]  readEnable;
+    logic  [6:0]  writeEnable;
+    logic  [6:0]  validBus;
 
 
     // default read valid register
@@ -187,9 +198,9 @@ module DECA_soc_interconnect(
     always_comb begin
         // default values
         waitRequest = 1'b0;
-        chipEnable  = 6'b0;
-        readEnable  = 6'b0;
-        writeEnable = 6'b0;
+        chipEnable  = 7'b0;
+        readEnable  = 7'b0;
+        writeEnable = 7'b0;
 
         // static ram
         if((address >= `RAM_BASE) && (address <= (`RAM_BASE + (`RAM_SIZE - 1)))) begin
@@ -321,6 +332,16 @@ module DECA_soc_interconnect(
         //ocFlashWrite   = writeEnable[5];
         ocFlashAddress = address[15:2];
 
+        // ethernet smi controller
+        if((address >= `ETHERNETSMI_BASE) && (address <= (`ETHERNETSMI_BASE + (`ETHERNETSMI_SIZE - 1)))) begin
+            chipEnable[6]  = 1'b1;
+            readEnable[6]  = read;  // chipEnable && read;
+            writeEnable[6] = write; // chipEnable && write;
+        end
+        ethernetSmiRead    = readEnable[6];
+        ethernetSmiWrite   = writeEnable[6];
+        ethernetSmiAddress = address[2];
+
 
         // default signal
         defaultRead = read & ~|chipEnable;
@@ -341,13 +362,14 @@ module DECA_soc_interconnect(
                     //soundValid,
                     //sdCardSpiValid,
                     i2cValid,
-                    ocFlashValid};
+                    ocFlashValid,
+                    ethernetSmiValid};
 
         case(validBus)
-            6'b100000: dataIn = ramData;
-            6'b010000: dataIn = randomData;
-            6'b001000: dataIn = timerData;
-            6'b000100: dataIn = uartData;
+            7'b1000000: dataIn = ramData;
+            7'b0100000: dataIn = randomData;
+            7'b0010000: dataIn = timerData;
+            7'b0001000: dataIn = uartData;
             //12'b000010000000: dataIn = sdramData;
             //12'b000001000000: dataIn = sequencerData;
             //12'b000000100000: dataIn = sampleData;
@@ -355,9 +377,10 @@ module DECA_soc_interconnect(
             //12'b000000001000: dataIn = dacSpiData;
             //12'b000000000100: dataIn = soundData;
             //12'b000010: dataIn = sdCardSpiData;
-            6'b000010: dataIn = i2cData;
-            6'b000001: dataIn = ocFlashData;
-            default:   dataIn = 32'b0; // default data return value
+            7'b0000100: dataIn = i2cData;
+            7'b0000010: dataIn = ocFlashData;
+            7'b0000001: dataIn = ethernetSmiData;
+            default:    dataIn = 32'b0; // default data return value
         endcase
 
         readValid = |validBus | defaultValid;
