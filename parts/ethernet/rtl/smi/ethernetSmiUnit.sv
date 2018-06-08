@@ -9,7 +9,8 @@
 
 // it appears for some reason when receiving the postive edge of clk changes the value and we are supposed to latch the value
 // on the negative edge...
-// also we need the clock to constantly run
+
+// we should change this later to have 1 idle cycle before data is sent and 1 idle cycle after data is sent
 
 
 module ethernetSmiUnit(

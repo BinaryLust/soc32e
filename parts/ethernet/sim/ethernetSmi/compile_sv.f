@@ -2,8 +2,8 @@
 
 -sv 
 
-../../rtl/ethernetSmiUnit.sv
-../../rtl/ethernetSmiClockUnit.sv
-../../rtl/ethernetSmiCore.sv
-../../rtl/ethernetSmi.sv
+../../rtl/smi/ethernetSmiUnit.sv
+../../rtl/smi/ethernetSmiClockUnit.sv
+../../rtl/smi/ethernetSmiCore.sv
+../../rtl/smi/ethernetSmi.sv
 ethernetSmi_tb.sv
