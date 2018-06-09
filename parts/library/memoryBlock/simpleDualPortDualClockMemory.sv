@@ -1,8 +1,8 @@
 
 
-module asyncFifoMemory
+module simpleDualPortDualClockMemory
     #(parameter DATAWIDTH    = 8,
-      parameter DATADEPTH    = 8,
+      parameter DATADEPTH    = 1024,
       parameter ADDRESSWIDTH = $clog2(DATADEPTH))(
 
     input   logic                      readClk,
@@ -16,6 +16,14 @@ module asyncFifoMemory
 
 
     logic  [DATAWIDTH-1:0]  memoryBlock[DATADEPTH-1:0];
+
+
+    // initialize to all 0's for simulation
+    initial begin : INIT
+        integer i;
+        for(i = 0; i < DATADEPTH; i++)
+            memoryBlock[i] = {DATAWIDTH{1'b0}};
+    end
 
 
     always_ff @(posedge writeClk) begin

@@ -1,6 +1,6 @@
 
 
-module spiFifoMemory
+module singlePortMemory
     #(parameter DATAWIDTH    = 8,
       parameter DATADEPTH    = 1024,
       parameter ADDRESSWIDTH = $clog2(DATADEPTH))(
@@ -8,8 +8,7 @@ module spiFifoMemory
     input   logic                      clk,
     input   logic                      writeEn,
     input   logic  [DATAWIDTH-1:0]     dataIn,
-    input   logic  [ADDRESSWIDTH-1:0]  readAddress,
-    input   logic  [ADDRESSWIDTH-1:0]  writeAddress,
+    input   logic  [ADDRESSWIDTH-1:0]  address,
     output  logic  [DATAWIDTH-1:0]     dataOut
     );
 
@@ -17,11 +16,19 @@ module spiFifoMemory
     logic  [DATAWIDTH-1:0]  memoryBlock[DATADEPTH-1:0];
 
 
+    // initialize to all 0's for simulation
+    initial begin : INIT
+        integer i;
+        for(i = 0; i < DATADEPTH; i++)
+            memoryBlock[i] = {DATAWIDTH{1'b0}};
+    end
+
+
     always_ff @(posedge clk) begin
         if (writeEn)
-            memoryBlock[writeAddress] <= dataIn;
+            memoryBlock[address] <= dataIn;
 
-        dataOut <= memoryBlock[readAddress];
+        dataOut <= memoryBlock[address];
     end
 
 

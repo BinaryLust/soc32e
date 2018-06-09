@@ -15,50 +15,28 @@ module regfileBank(
 
     // data shows up in memory 1 cycle after we is asserted
     // and on the output 2 cycles after we is asserted
-    regfileMemoryBlock2 #(.DATA_WIDTH(32), .ADDR_WIDTH(5))
+    simpleDualPortMemory #(.DATAWIDTH(32), .DATADEPTH(32))
     regfileMemoryBlockA(
-        .clk        (clk),
-        .data       (writeData),
-        .read_addr  (readAddressA),
-        .write_addr (writeAddress),
-        .we         (writeEnable),
-        .q          (readDataA)
+        .clk,
+        .writeEn        (writeEnable),
+        .dataIn         (writeData),
+        .readAddress    (readAddressA),
+        .writeAddress   (writeAddress),
+        .dataOut        (readDataA)
     );
 
 
     // data shows up in memory 1 cycle after we is asserted
     // and on the output 2 cycles after we is asserted
-    regfileMemoryBlock2 #(.DATA_WIDTH(32), .ADDR_WIDTH(5))
+    simpleDualPortMemory #(.DATAWIDTH(32), .DATADEPTH(32))
     regfileMemoryBlockB(
-        .clk        (clk),
-        .data       (writeData),
-        .read_addr  (readAddressB),
-        .write_addr (writeAddress),
-        .we         (writeEnable),
-        .q          (readDataB)
+        .clk,
+        .writeEn        (writeEnable),
+        .dataIn         (writeData),
+        .readAddress    (readAddressB),
+        .writeAddress   (writeAddress),
+        .dataOut        (readDataB)
     );
-
-
-    /*regfileMemoryBlock
-    regfileMemoryBlockA(
-        .clock      (clk),
-        .data       (writeData),
-        .rdaddress  (readAddressA),
-        .wraddress  (writeAddress),
-        .wren       (writeEnable),
-        .q          (readDataA)
-    );
-
-
-    regfileMemoryBlock
-    regfileMemoryBlockB(
-        .clock      (clk),
-        .data       (writeData),
-        .rdaddress  (readAddressB),
-        .wraddress  (writeAddress),
-        .wren       (writeEnable),
-        .q          (readDataB)
-    );*/
 
 
 endmodule

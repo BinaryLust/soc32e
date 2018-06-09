@@ -1,10 +1,11 @@
 
 
-module i2cFifo #(
-    parameter DATAWIDTH    = 8,
-    parameter DATADEPTH    = 1024,
-    parameter ADDRESSWIDTH = $clog2(DATADEPTH)
-    )(
+
+
+module singleClockFifo
+    #(parameter DATAWIDTH    = 8,
+      parameter DATADEPTH    = 1024,
+      parameter ADDRESSWIDTH = $clog2(DATADEPTH))(
     input   logic                      clk,
     input   logic                      reset,
     input   logic                      writeEn,
@@ -72,16 +73,14 @@ module i2cFifo #(
     end*/
 
 
-    i2cFifoMemory #(
-        .DATAWIDTH(DATAWIDTH),
-        .DATADEPTH(DATADEPTH)
-    )i2cFifoMemory(
+    simpleDualPortMemory #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(DATADEPTH))
+    simpleDualPortMemory(
         .clk,
         .writeEn,
         .dataIn,
-        .readAddress     (readPointer),
-        .writeAddress    (writePointer),
-        .dataOut         //(dataOutWire)
+        .readAddress    (readPointer),
+        .writeAddress   (writePointer),
+        .dataOut        //(dataOutWire)
     );
 
 

@@ -130,7 +130,7 @@ module uartCore2(
     end*/
 
 
-    uartFifo
+    singleClockFifo #(.DATAWIDTH(8), .DATADEPTH(1024))
     uartReceiveFifo(
         .clk,
         .reset,
@@ -139,7 +139,8 @@ module uartCore2(
         .dataIn         (rxDataWire),
         .dataOut        (rxData),
         .wordCount,
-        .empty          (rxFifoEmpty)
+        .empty          (rxFifoEmpty),
+        .full           ()
     );
 
 

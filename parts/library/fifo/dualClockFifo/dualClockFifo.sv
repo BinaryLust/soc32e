@@ -2,7 +2,7 @@
 
 // the gray pointers have an extra bit to detect full and empty
 
-module asyncFifo
+module dualClockFifo
     #(parameter DATAWIDTH    = 8,
       parameter DATADEPTH    = 8,
       parameter ADDRESSWIDTH = $clog2(DATADEPTH))(
@@ -64,8 +64,8 @@ module asyncFifo
 
     synchronizer #(.WIDTH(ADDRESSWIDTH+1))
     syncedReadPointer(
-        .clk,
-        .reset,
+        .clk      (writeClk),
+        .reset    (writeReset),
         .in       (readPtrGray),
         .out      (syncedReadPtrGray)
     );
@@ -73,15 +73,15 @@ module asyncFifo
 
     synchronizer #(.WIDTH(ADDRESSWIDTH+1))
     syncedWritePointer(
-        .clk,
-        .reset,
+        .clk      (readClk),
+        .reset    (readReset),
         .in       (writePtrGray),
         .out      (syncedWritePtrGray)
     );
 
 
-    asyncFifoMemory #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(DATADEPTH))
-    asyncFifoMemory(
+    simpleDualPortDualClockMemory #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(DATADEPTH))
+    simpleDualPortDualClockMemory(
         .readClk,
         .writeClk,
         .writeEn, // or (!full && writeEn) if we want to really ensure that it isn't written to when full

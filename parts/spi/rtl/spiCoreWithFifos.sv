@@ -107,7 +107,7 @@ module spiCoreWithFifos
 
 
     // transmit fifo
-    spiFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(TRANSMITDEPTH))
+    singleClockFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(TRANSMITDEPTH))
     spiTransmitFifo(
         .clk,
         .reset,
@@ -122,7 +122,7 @@ module spiCoreWithFifos
 
 
     // receive fifo
-    spiFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(RECEIVEDEPTH))
+    singleClockFifo #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(RECEIVEDEPTH))
     spiReceiveFifo(
         .clk,
         .reset,

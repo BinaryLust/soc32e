@@ -62,7 +62,7 @@ module buffer(
     end
 
 
-    bufferMemory
+    simpleDualPortMemory #(.DATAWIDTH(8), .DATADEPTH(1024))
     bufferMemory(
         .clk,
         .writeEn,
