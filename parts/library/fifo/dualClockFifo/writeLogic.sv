@@ -15,6 +15,7 @@ module writeLogic
 
     logic  [WIDTH-1:0]  writePtrBinaryReg;
     logic  [WIDTH-1:0]  writePtrBinaryRegNext;
+    logic  [WIDTH-1:0]  writePtrGrayNext;
     logic               fullNext;
 
 
@@ -46,7 +47,7 @@ module writeLogic
 
 
     // combinational logic
-    assign writePtrBinaryRegNext = (writeEn) ? writePtrBinaryReg + {WIDTH-1{1'b0}, 1'b1} : writePtrBinaryReg;
+    assign writePtrBinaryRegNext = (writeEn) ? writePtrBinaryReg + {{WIDTH-1{1'b0}}, 1'b1} : writePtrBinaryReg;
     assign writePtrGrayNext      = (writePtrBinaryRegNext >> 1) ^ writePtrBinaryRegNext; // binary to gray code
     assign fullNext              = (writePtrGrayNext[WIDTH-1] != syncedReadPtrGray[WIDTH-1]) &&
                                    (writePtrGrayNext[WIDTH-2] != syncedReadPtrGray[WIDTH-2]) &&

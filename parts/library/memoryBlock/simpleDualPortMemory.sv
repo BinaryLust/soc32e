@@ -26,7 +26,7 @@ module simpleDualPortMemory
 
 
     always_ff @(posedge clk) begin
-        if (writeEn)
+        if(writeEn)
             memoryBlock[writeAddress] <= dataIn;
 
         dataOut <= memoryBlock[readAddress];

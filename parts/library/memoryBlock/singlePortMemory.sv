@@ -13,7 +13,8 @@ module singlePortMemory
     );
 
 
-    logic  [DATAWIDTH-1:0]  memoryBlock[DATADEPTH-1:0];
+    logic  [DATAWIDTH-1:0]     memoryBlock[DATADEPTH-1:0];
+    logic  [ADDRESSWIDTH-1:0]  addressReg;
 
 
     // initialize to all 0's for simulation
@@ -25,11 +26,15 @@ module singlePortMemory
 
 
     always_ff @(posedge clk) begin
-        if (writeEn)
+        if(writeEn)
             memoryBlock[address] <= dataIn;
 
-        dataOut <= memoryBlock[address];
+        addressReg <= address;
     end
+
+
+    // return new data
+    assign dataOut = memoryBlock[addressReg];
 
 
 endmodule

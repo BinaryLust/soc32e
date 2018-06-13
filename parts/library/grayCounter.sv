@@ -11,6 +11,10 @@ module grayCounter
     );
 
 
+    logic  [WIDTH-1:0]  binaryCountNext;
+    logic  [WIDTH-1:0]  grayCountNext;
+
+
     // binary count register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
@@ -30,7 +34,7 @@ module grayCounter
 
 
     // combinational logic
-    assign binaryCountNext = (inc) ? binaryCount + {WIDTH-1{1'b0}, 1'b1} : binaryCount;
+    assign binaryCountNext = (inc) ? binaryCount + {{WIDTH-1{1'b0}}, 1'b1} : binaryCount;
     assign grayCountNext   = (binaryCountNext >> 1) ^ binaryCountNext; // binary to gray code
 
 

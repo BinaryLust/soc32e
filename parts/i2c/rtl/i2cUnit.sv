@@ -390,9 +390,9 @@ module i2cUnit
 
 
     // multi open drain assignment (good for upto 32 lines)
-    assign scl   = (sclOutReg) ? 32'bz : 32'b0; // either high-z when we need a high state or pull low for low state
+    assign scl   = (sclOutReg) ? {LINES-1{1'bz}} : {LINES-1{1'b0}}; // either high-z when we need a high state or pull low for low state
     assign sclIn = &scl;
-    assign sda   = (sdaOutReg) ? 32'bz : 32'b0; // either high-z when we need a high state or pull low for low state
+    assign sda   = (sdaOutReg) ? {LINES-1{1'bz}} : {LINES-1{1'b0}}; // either high-z when we need a high state or pull low for low state
     assign sdaIn = &sda;
 
 

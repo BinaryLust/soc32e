@@ -27,7 +27,7 @@ module simpleDualPortDualClockMemory
 
 
     always_ff @(posedge writeClk) begin
-        if (writeEn)
+        if(writeEn)
             memoryBlock[writeAddress] <= dataIn;
     end
 

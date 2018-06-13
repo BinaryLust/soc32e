@@ -1,5 +1,8 @@
 
 
+// change the write instructions to write to memory at the writeback stage only, this will allow for proper memory exceptions to happen without destorying the machine state.
+
+
 `include "G:/My Code/on git/systemverilog/soc32e/parts/cpu32e2/rtl/globals.sv"
 
 

@@ -19,11 +19,11 @@ module dualClockFifo
     );
 
 
-    logic  [ADDRESSWIDTH-1:0]  readPtrBinary,
-    logic  [ADDRESSWIDTH:0]    readPtrGray,
+    logic  [ADDRESSWIDTH-1:0]  readPtrBinary;
+    logic  [ADDRESSWIDTH:0]    readPtrGray;
     logic  [ADDRESSWIDTH:0]    syncedReadPtrGray;
-    logic  [ADDRESSWIDTH-1:0]  writePtrBinary,
-    logic  [ADDRESSWIDTH:0]    writePtrGray,
+    logic  [ADDRESSWIDTH-1:0]  writePtrBinary;
+    logic  [ADDRESSWIDTH:0]    writePtrGray;
     logic  [ADDRESSWIDTH:0]    syncedWritePtrGray;
 
 

@@ -42,5 +42,16 @@ module ram(
     );
 
 
+    // systemRamBlock
+    // systemRamBlock(
+    //     .clk,
+    //     .writeEn    (write),
+    //     .bwe,
+    //     .dataIn,
+    //     .address,
+    //     .dataOut
+    // );
+
+
 endmodule
 

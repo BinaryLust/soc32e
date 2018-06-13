@@ -15,6 +15,7 @@ module readLogic
 
     logic  [WIDTH-1:0]  readPtrBinaryReg;
     logic  [WIDTH-1:0]  readPtrBinaryRegNext;
+    logic  [WIDTH-1:0]  readPtrGrayNext;
     logic               emptyNext;
 
 
@@ -46,7 +47,7 @@ module readLogic
 
 
     // combinational logic
-    assign readPtrBinaryRegNext = (readReq) ? readPtrBinaryReg + {WIDTH-1{1'b0}, 1'b1} : readPtrBinaryReg;
+    assign readPtrBinaryRegNext = (readReq) ? readPtrBinaryReg + {{WIDTH-1{1'b0}}, 1'b1} : readPtrBinaryReg;
     assign readPtrGrayNext      = (readPtrBinaryRegNext >> 1) ^ readPtrBinaryRegNext; // binary to gray code
     assign emptyNext            = (syncedWritePtrGray == readPtrGrayNext);
     assign readPtrBinary        = readPtrBinaryReg[WIDTH-2:0]; // chop off the msb
