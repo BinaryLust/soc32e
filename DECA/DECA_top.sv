@@ -21,18 +21,16 @@ module DECA_top(
     //inout   wire           CAP_SENSE_I2C_SDA,
 
     //////////// Audio //////////
-    // inout   logic          AUDIO_BCLK,
-    // output  logic          AUDIO_DIN_MFP1,
-    // input   logic          AUDIO_DOUT_MFP2,
+    input   logic          AUDIO_BCLK,
+    output  logic          AUDIO_DIN_MFP1,
+    input   logic          AUDIO_DOUT_MFP2,
     // inout   logic          AUDIO_GPIO_MFP5,
-    // output  logic          AUDIO_MCLK,
+    output  logic          AUDIO_MCLK,
     // input   logic          AUDIO_MISO_MFP4,
-    // inout   logic          AUDIO_RESET_n,
-    // output  logic          AUDIO_SCL_SS_n,
+    inout   logic          AUDIO_RESET_n,
     // output  logic          AUDIO_SCLK_MFP3,
-    // inout   logic          AUDIO_SDA_MOSI,
-    // output  logic          AUDIO_SPI_SELECT,
-    // inout   logic          AUDIO_WCLK,
+    output  logic          AUDIO_SPI_SELECT,
+    input   logic          AUDIO_WCLK,
 
     //////////// SDRAM //////////
     // output  logic  [14:0]  DDR3_A,
@@ -160,8 +158,8 @@ module DECA_top(
 
     input   logic          rx,
     output  logic          tx,
-    inout   wire   [4:0]   scl,
-    inout   wire   [4:0]   sda//,
+    inout   wire   [5:0]   scl,
+    inout   wire   [5:0]   sda//,
     //output  logic          mdc,
     //inout   wire           mdio
 );
@@ -180,7 +178,11 @@ module DECA_top(
     assign NET_RESET_n = 1'b1;
 
 
-    DECA_soc #(.LINES(5))
+    assign AUDIO_RESET_n    = 1'b1;
+    assign AUDIO_SPI_SELECT = 1'b0; // select i2c mode
+
+
+    DECA_soc #(.LINES(6))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
         .reset         (~KEY[0]),
@@ -189,7 +191,12 @@ module DECA_top(
         .scl,
         .sda,
         .mdc           (NET_MDC),
-        .mdio          (NET_MDIO)
+        .mdio          (NET_MDIO),
+        .mclk          (AUDIO_MCLK),
+        .wclk          (AUDIO_WCLK),
+        .bclk          (AUDIO_BCLK),
+        .sdin          (AUDIO_DOUT_MFP2),
+        .sdout         (AUDIO_DIN_MFP1)
     );
 
 

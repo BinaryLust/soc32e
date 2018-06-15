@@ -60,8 +60,6 @@ set_location_assignment PIN_P14 -to AUDIO_MCLK
 set_location_assignment PIN_N21 -to AUDIO_MISO_MFP4
 set_location_assignment PIN_M21 -to AUDIO_RESET_n
 set_location_assignment PIN_P19 -to AUDIO_SCLK_MFP3
-set_location_assignment PIN_P20 -to AUDIO_SCL_SS_n
-set_location_assignment PIN_P21 -to AUDIO_SDA_MOSI
 set_location_assignment PIN_N22 -to AUDIO_SPI_SELECT
 set_location_assignment PIN_R15 -to AUDIO_WCLK
 
@@ -487,8 +485,6 @@ set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_MCLK
 set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_MISO_MFP4
 set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_RESET_n
 set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SCLK_MFP3
-set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SCL_SS_n
-set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SDA_MOSI
 set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SPI_SELECT
 set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_WCLK
 set_instance_assignment -name IO_STANDARD "SSTL-15 CLASS I" -to DDR3_A[0]
@@ -701,6 +697,11 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[3]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[3]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[4]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[4]
+set_location_assignment PIN_P20 -to scl[5]
+set_instance_assignment -name IO_STANDARD "1.5 V" -to scl[5]
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlaveUnit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlaveCore.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlave.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/ram/rtl/systemRamBlock.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/synchronizer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/grayToBinary.sv
@@ -838,5 +839,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/fifo/dualClockFi
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortMemory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortDualClockMemory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/singlePortByteEnMemory.sv
+set_location_assignment PIN_P21 -to sda[5]
+set_instance_assignment -name IO_STANDARD "1.5 V" -to sda[5]
 set_global_assignment -name SLD_FILE db/debug_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
