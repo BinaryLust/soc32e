@@ -5,7 +5,7 @@
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M50DAF484C6GES
 set_global_assignment -name TOP_LEVEL_ENTITY DECA_top
-set_global_assignment -name ORIGINAL_QUARTUS_VERSION "14.1"
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1
 set_global_assignment -name LAST_QUARTUS_VERSION "17.1.0 Lite Edition"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "21:41:11 MAY 14,2018"
 set_global_assignment -name DEVICE_FILTER_PACKAGE FBGA
@@ -350,8 +350,8 @@ set_location_assignment PIN_Y10 -to scl[0]
 set_location_assignment PIN_AA10 -to sda[0]
 set_location_assignment PIN_Y19 -to scl[1]
 set_location_assignment PIN_AA17 -to sda[1]
-set_location_assignment PIN_B5 -to scl[2]
-set_location_assignment PIN_C6 -to sda[2]
+set_location_assignment PIN_P20 -to scl[2]
+set_location_assignment PIN_P21 -to sda[2]
 set_location_assignment PIN_AB2 -to scl[3]
 set_location_assignment PIN_AB3 -to sda[3]
 set_location_assignment PIN_Y8 -to scl[4]
@@ -691,14 +691,12 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[0]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[0]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[1]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[1]
-set_instance_assignment -name IO_STANDARD "1.2 V" -to scl[2]
-set_instance_assignment -name IO_STANDARD "1.2 V" -to sda[2]
+set_instance_assignment -name IO_STANDARD "1.5 V" -to scl[2]
+set_instance_assignment -name IO_STANDARD "1.5 V" -to sda[2]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[3]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[3]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[4]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[4]
-set_location_assignment PIN_P20 -to scl[5]
-set_instance_assignment -name IO_STANDARD "1.5 V" -to scl[5]
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlaveUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlaveCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sSlave/rtl/i2sSlave.sv
@@ -766,7 +764,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/divi
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/divider2/rtl/divider2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/divider2/rtl/dividendState.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/multiplier/rtl/multiplier.sv
-set_global_assignment -name VERILOG_FILE ../parts/cpu32e2/rtl/execute/multiplier/rtl/dspMultiplier.v
 set_global_assignment -name QIP_FILE ../parts/cpu32e2/rtl/execute/multiplier/rtl/dspMultiplier.qip
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shifter/rtl/shifterPkg.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shifter/rtl/shifter.sv
@@ -789,9 +786,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/interrupt/rtl/interruptC
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/io/rtl/io.sv
 set_global_assignment -name VERILOG_FILE ../parts/pll/rtl/pll2.v
 set_global_assignment -name QIP_FILE ../parts/pll/rtl/pll2.qip
-set_global_assignment -name VERILOG_FILE ../parts/pll/rtl/pll.v
 set_global_assignment -name QIP_FILE ../parts/pll/rtl/pll.qip
-set_global_assignment -name VERILOG_FILE ../parts/ram/rtl/systemRam.v
 set_global_assignment -name QIP_FILE ../parts/ram/rtl/systemRam.qip
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/ram/rtl/ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/random/rtl/randomCore.sv
@@ -839,7 +834,5 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/fifo/dualClockFi
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortMemory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortDualClockMemory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/singlePortByteEnMemory.sv
-set_location_assignment PIN_P21 -to sda[5]
-set_instance_assignment -name IO_STANDARD "1.5 V" -to sda[5]
 set_global_assignment -name SLD_FILE db/debug_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

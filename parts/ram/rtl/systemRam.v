@@ -182,5 +182,5 @@ endmodule
 // Retrieval info: GEN_FILE: TYPE_NORMAL systemRam.cmp FALSE
 // Retrieval info: GEN_FILE: TYPE_NORMAL systemRam.bsf FALSE
 // Retrieval info: GEN_FILE: TYPE_NORMAL systemRam_inst.v FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL systemRam_bb.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL systemRam_bb.v FALSE
 // Retrieval info: LIB_FILE: altera_mf

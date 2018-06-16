@@ -27,7 +27,7 @@ module DECA_top(
     // inout   logic          AUDIO_GPIO_MFP5,
     output  logic          AUDIO_MCLK,
     // input   logic          AUDIO_MISO_MFP4,
-    inout   logic          AUDIO_RESET_n,
+    output  logic          AUDIO_RESET_n,
     // output  logic          AUDIO_SCLK_MFP3,
     output  logic          AUDIO_SPI_SELECT,
     input   logic          AUDIO_WCLK,
@@ -57,12 +57,12 @@ module DECA_top(
     // output  logic          FLASH_RESET_n,
 
     //////////// G-Sensor //////////
-    output  logic          G_SENSOR_CS_n, // set high for i2c mode, set low for spi mode
+    ////output  logic          G_SENSOR_CS_n, // set high for i2c mode, set low for spi mode
     // input   logic          G_SENSOR_INT1,
     // input   logic          G_SENSOR_INT2,
     //inout   logic          G_SENSOR_SCLK, // i2c scl
     //inout   logic          G_SENSOR_SDI,  // i2c sda
-    inout   logic          G_SENSOR_SDO,  // i2c lsb of address
+    ////inout   logic          G_SENSOR_SDO,  // i2c lsb of address
 
     //////////// HDMI-TX //////////
     // inout   logic          HDMI_I2C_SCL,
@@ -158,18 +158,19 @@ module DECA_top(
 
     input   logic          rx,
     output  logic          tx,
-    inout   wire   [5:0]   scl,
-    inout   wire   [5:0]   sda//,
+    inout   wire   [4:0]   scl,
+    inout   wire   [4:0]   sda//,
     //output  logic          mdc,
     //inout   wire           mdio
-);
+    );
+
 
     // the humidity/tempature sensor and the power meter can't both be connected
     // at the same time because they share the same i2c address
 
 
-    assign G_SENSOR_CS_n     = 1'b1; // set high for i2c mode, set low for spi mode
-    assign G_SENSOR_SDO      = 1'b0;  // i2c lsb of address
+    //assign G_SENSOR_CS_n     = 1'b1; // set high for i2c mode, set low for spi mode
+    //assign G_SENSOR_SDO      = 1'b0;  // i2c lsb of address
 
 
     //assign NET_MDC,
@@ -182,7 +183,7 @@ module DECA_top(
     assign AUDIO_SPI_SELECT = 1'b0; // select i2c mode
 
 
-    DECA_soc #(.LINES(6))
+    DECA_soc #(.LINES(5))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
         .reset         (~KEY[0]),

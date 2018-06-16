@@ -61,6 +61,7 @@ module DECA_soc
     logic          clk100;
     //logic          clk10;
     logic          clk25;
+    logic          clk16;
 
 
     // reset lines
@@ -221,7 +222,7 @@ module DECA_soc
     assign triggerInterrupt[15] = 1'b0;                 // interrupt 15 // unused
 
 
-    assign mclk = clk25;
+    assign mclk = clk16;
 
 
     pll
@@ -231,6 +232,7 @@ module DECA_soc
         .c0                     (clk100),
         .c1                     (),//(externalSdramClk),
         .c2                     (clk25),
+        .c3                     (clk16),
         .locked                 ()
     );
 
