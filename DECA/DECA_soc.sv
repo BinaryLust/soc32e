@@ -27,8 +27,8 @@ module DECA_soc
     inout   wire                mdio,
 
     output  logic               mclk,
-    input   logic               wclk,
-    input   logic               bclk,
+    output  logic               wclk,
+    output  logic               bclk,
     input   logic               sdin,
     output  logic               sdout
 
@@ -59,14 +59,16 @@ module DECA_soc
 
     // clock lines
     logic          clk100;
-    //logic          clk10;
+    logic          clk10;
     logic          clk25;
     logic          clk16;
+    logic          clk295;
 
 
     // reset lines
     logic          reset100;
     logic          reset25;
+    logic          reset295;
 
 
     // cpu wires
@@ -183,19 +185,19 @@ module DECA_soc
     logic          ethernetSmiValid;
     logic  [31:0]  ethernetSmiData;
 
-    //logic          i2sSlaveChipEnable;
-    logic          i2sSlaveRead;
-    logic          i2sSlaveWrite;
-    logic  [1:0]   i2sSlaveAddress;
-    logic          i2sSlaveValid;
-    logic  [31:0]  i2sSlaveData;
+    //logic          i2sMasterChipEnable;
+    logic          i2sMasterRead;
+    logic          i2sMasterWrite;
+    logic  [1:0]   i2sMasterAddress;
+    logic          i2sMasterValid;
+    logic  [31:0]  i2sMasterData;
 
     // interrupt wires
     logic  [15:0]  triggerInterrupt;
     logic          rxIrq;
     logic          txIrq;
     logic  [2:0]   timerIrq;
-    logic          i2sSlaveIrq;
+    logic          i2sMasterIrq;
     // logic          dacSpiReceiveIrq;
     // logic          dacSpiTransmitIrq;
     // logic          soundIrq;
@@ -211,7 +213,7 @@ module DECA_soc
     assign triggerInterrupt[4]  = txIrq;                // interrupt 4  // uart transmit
     assign triggerInterrupt[5]  = 1'b0; //dacSpiReceiveIrq;     // interrupt 5  // unused
     assign triggerInterrupt[6]  = 1'b0; //dacSpiTransmitIrq;    // interrupt 6  // unused
-    assign triggerInterrupt[7]  = i2sSlaveIrq; //soundIrq;      // interrupt 7  // unused
+    assign triggerInterrupt[7]  = i2sMasterIrq; //soundIrq;     // interrupt 7  // unused
     assign triggerInterrupt[8]  = 1'b0; //sdCardSpiReceiveIrq;  // interrupt 8  // unused
     assign triggerInterrupt[9]  = 1'b0; //sdCardSpiTransmitIrq; // interrupt 9  // unused
     assign triggerInterrupt[10] = 1'b0;                 // interrupt 10 // unused
@@ -220,9 +222,6 @@ module DECA_soc
     assign triggerInterrupt[13] = 1'b0;                 // interrupt 13 // unused
     assign triggerInterrupt[14] = 1'b0;                 // interrupt 14 // unused
     assign triggerInterrupt[15] = 1'b0;                 // interrupt 15 // unused
-
-
-    assign mclk = clk16;
 
 
     pll
@@ -237,13 +236,14 @@ module DECA_soc
     );
 
 
-    // pll2
-    // pll2(
-    //     .areset                 (1'b0),      //(reset),
-    //     .inclk0                 (clk),
-    //     .c0                     (clk10),
-    //     .locked                 ()//(pllLocked)
-    // );
+    pll2
+    pll2(
+        .areset                 (1'b0),      //(reset),
+        .inclk0                 (clk),
+        .c0                     (clk10),
+        .c1                     (clk295),
+        .locked                 ()//(pllLocked)
+    );
 
 
     resetCore
@@ -252,8 +252,10 @@ module DECA_soc
         .clk,
         .clk100,
         .clk25,
+        .clk295,
         .reset100,
-        .reset25
+        .reset25,
+        .reset295
     );
 
 
@@ -536,17 +538,20 @@ module DECA_soc
     );
 
 
-    i2sSlave
-    i2sSlave(
+    i2sMaster
+    i2sMaster(
         .clk                     (clk100),
         .reset                   (reset100),
-        .read                    (i2sSlaveRead),
-        .write                   (i2sSlaveWrite),
-        .address                 (i2sSlaveAddress),
+        .synthClk                (clk295),
+        .synthReset              (reset295),
+        .read                    (i2sMasterRead),
+        .write                   (i2sMasterWrite),
+        .address                 (i2sMasterAddress),
         .dataIn                  (dataOut),
-        .readValid               (i2sSlaveValid),
-        .dataOut                 (i2sSlaveData),
-        .soundIrq                (i2sSlaveIrq),
+        .readValid               (i2sMasterValid),
+        .dataOut                 (i2sMasterData),
+        .soundIrq                (i2sMasterIrq),
+        .mclk,
         .wclk,
         .bclk,
         .sdin,
@@ -625,11 +630,11 @@ module DECA_soc
         .ethernetSmiRead,
         .ethernetSmiWrite,
         .ethernetSmiAddress,
-        .i2sSlaveData,
-        .i2sSlaveValid,
-        .i2sSlaveRead,
-        .i2sSlaveWrite,
-        .i2sSlaveAddress,
+        .i2sMasterData,
+        .i2sMasterValid,
+        .i2sMasterRead,
+        .i2sMasterWrite,
+        .i2sMasterAddress,
         .clk                     (clk100),
         .reset                   (reset100),
         .address,

@@ -15,7 +15,7 @@
 `define I2C_BASE         32'h03004000
 `define OCFLASH_BASE     32'h04000000
 `define ETHERNETSMI_BASE 32'h05000000
-`define I2SSLAVE_BASE    32'h05100000
+`define I2SMASTER_BASE    32'h05100000
 
 
 // the device address space size in bytes
@@ -33,7 +33,7 @@
 `define I2C_SIZE         32'h8
 `define OCFLASH_SIZE     32'h10000
 `define ETHERNETSMI_SIZE 32'h8
-`define I2SSLAVE_SIZE    32'h16
+`define I2SMASTER_SIZE    32'h16
 
 
 module DECA_soc_interconnect(
@@ -163,13 +163,13 @@ module DECA_soc_interconnect(
     output  logic          ethernetSmiAddress,
 
 
-    input   logic  [31:0]  i2sSlaveData,
-    input   logic          i2sSlaveValid,
-    //input   logic          i2sSlaveWaitRequest,
-    //output  logic          i2sSlaveChipEnable,
-    output  logic          i2sSlaveRead,
-    output  logic          i2sSlaveWrite,
-    output  logic  [1:0]   i2sSlaveAddress,
+    input   logic  [31:0]  i2sMasterData,
+    input   logic          i2sMasterValid,
+    //input   logic          i2sMasterWaitRequest,
+    //output  logic          i2sMasterChipEnable,
+    output  logic          i2sMasterRead,
+    output  logic          i2sMasterWrite,
+    output  logic  [1:0]   i2sMasterAddress,
 
 
     input   logic          clk,
@@ -354,15 +354,15 @@ module DECA_soc_interconnect(
         ethernetSmiAddress = address[2];
 
 
-        // i2s slave controller
-        if((address >= `I2SSLAVE_BASE) && (address <= (`I2SSLAVE_BASE + (`I2SSLAVE_SIZE - 1)))) begin
+        // i2s master controller
+        if((address >= `I2SMASTER_BASE) && (address <= (`I2SMASTER_BASE + (`I2SMASTER_SIZE - 1)))) begin
             chipEnable[7]  = 1'b1;
             readEnable[7]  = read;  // chipEnable && read;
             writeEnable[7] = write; // chipEnable && write;
         end
-        i2sSlaveRead    = readEnable[7];
-        i2sSlaveWrite   = writeEnable[7];
-        i2sSlaveAddress = address[3:2];
+        i2sMasterRead    = readEnable[7];
+        i2sMasterWrite   = writeEnable[7];
+        i2sMasterAddress = address[3:2];
 
 
         // default signal
@@ -386,7 +386,7 @@ module DECA_soc_interconnect(
                     i2cValid,
                     ocFlashValid,
                     ethernetSmiValid,
-                    i2sSlaveValid};
+                    i2sMasterValid};
 
         case(validBus)
             8'b10000000: dataIn = ramData;
@@ -403,7 +403,7 @@ module DECA_soc_interconnect(
             8'b00001000: dataIn = i2cData;
             8'b00000100: dataIn = ocFlashData;
             8'b00000010: dataIn = ethernetSmiData;
-            8'b00000001: dataIn = i2sSlaveData;
+            8'b00000001: dataIn = i2sMasterData;
             default:    dataIn = 32'b0; // default data return value
         endcase
 

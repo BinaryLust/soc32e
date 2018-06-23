@@ -32,7 +32,7 @@ module singleClockFifo
         if(reset)
             writePointer <= 0;
         else if(writeEn)
-            writePointer <= writePointer + {{DATAWIDTH-1{1'b0}}, 1'b1};
+            writePointer <= writePointer + {{ADDRESSWIDTH-1{1'b0}}, 1'b1};
         else
             writePointer <= writePointer;
     end
@@ -43,7 +43,7 @@ module singleClockFifo
         if(reset)
             readPointer <= 0;
         else if(readReq)
-            readPointer <= readPointer + {{DATAWIDTH-1{1'b0}}, 1'b1};
+            readPointer <= readPointer + {{ADDRESSWIDTH-1{1'b0}}, 1'b1};
         else
             readPointer <= readPointer;
     end
@@ -54,9 +54,9 @@ module singleClockFifo
         if(reset)
             wordCount <= 0;
         else if(readReq && !writeEn)
-            wordCount <= wordCount - {{DATAWIDTH-1{1'b0}}, 1'b1}; // read but no write
+            wordCount <= wordCount - {{ADDRESSWIDTH-1{1'b0}}, 1'b1}; // read but no write
         else if(writeEn && !readReq)
-            wordCount <= wordCount + {{DATAWIDTH-1{1'b0}}, 1'b1}; // write but no read
+            wordCount <= wordCount + {{ADDRESSWIDTH-1{1'b0}}, 1'b1}; // write but no read
         else
             wordCount <= wordCount;         // no change if read and write at the same time or no activity
     end

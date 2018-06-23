@@ -21,7 +21,7 @@ module DECA_top(
     //inout   wire           CAP_SENSE_I2C_SDA,
 
     //////////// Audio //////////
-    input   logic          AUDIO_BCLK,
+    output  logic          AUDIO_BCLK,
     output  logic          AUDIO_DIN_MFP1,
     input   logic          AUDIO_DOUT_MFP2,
     // inout   logic          AUDIO_GPIO_MFP5,
@@ -30,7 +30,7 @@ module DECA_top(
     output  logic          AUDIO_RESET_n,
     // output  logic          AUDIO_SCLK_MFP3,
     output  logic          AUDIO_SPI_SELECT,
-    input   logic          AUDIO_WCLK,
+    output  logic          AUDIO_WCLK,
 
     //////////// SDRAM //////////
     // output  logic  [14:0]  DDR3_A,
@@ -159,9 +159,14 @@ module DECA_top(
     input   logic          rx,
     output  logic          tx,
     inout   wire   [4:0]   scl,
-    inout   wire   [4:0]   sda//,
+    inout   wire   [4:0]   sda,//,
     //output  logic          mdc,
     //inout   wire           mdio
+
+    output  logic          mclk,
+    output  logic          bclk,
+    output  logic          wclk,
+    output  logic          sdout
     );
 
 
@@ -181,6 +186,12 @@ module DECA_top(
 
     assign AUDIO_RESET_n    = 1'b1;
     assign AUDIO_SPI_SELECT = 1'b0; // select i2c mode
+
+
+    assign mclk  = AUDIO_MCLK;
+    assign bclk  = AUDIO_BCLK;
+    assign wclk  = AUDIO_WCLK;
+    assign sdout = AUDIO_DIN_MFP1;
 
 
     DECA_soc #(.LINES(5))

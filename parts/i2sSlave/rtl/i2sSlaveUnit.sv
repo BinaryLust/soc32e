@@ -42,7 +42,7 @@ module i2sSlaveUnit(
     logic          wclkFell;
     logic          syncBclk;
     logic          bclkReg;
-    logic          bclkPrevReg;
+    //logic          bclkPrevReg;
     logic          bclkRose;
     logic          bclkFell;
     logic          sdoutNext;
@@ -120,10 +120,10 @@ module i2sSlaveUnit(
     always_ff @(posedge clk or posedge reset) begin
         if(reset) begin
             bclkReg     <= 1'b0;
-            bclkPrevReg <= 1'b0;
+            //bclkPrevReg <= 1'b0;
         end else begin
             bclkReg     <= syncBclk;
-            bclkPrevReg <= bclkReg;
+            //bclkPrevReg <= bclkReg;
         end
     end
 
@@ -143,8 +143,10 @@ module i2sSlaveUnit(
 
 
     // detect rising and falling edge of bclk
-    assign bclkRose = ( bclkReg && !bclkPrevReg);
-    assign bclkFell = (!bclkReg &&  bclkPrevReg);
+    //assign bclkRose = ( bclkReg && !bclkPrevReg);
+    //assign bclkFell = (!bclkReg &&  bclkPrevReg);
+    assign bclkRose = ( syncBclk && !bclkReg);
+    assign bclkFell = (!syncBclk &&  bclkReg);
 
 
     assign readReq = readReqReg;

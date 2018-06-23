@@ -5,9 +5,11 @@ module resetCore(
     input   logic  clk,        // primary clock strait from the crystal
     input   logic  clk100,     // secondary clock from the pll
     input   logic  clk25,
+    input   logic  clk295,
 
     output  logic  reset100,    // synchronized secondary reset signal
-    output  logic  reset25
+    output  logic  reset25,
+    output  logic  reset295
     );
 
 
@@ -38,6 +40,15 @@ module resetCore(
         .clk           (clk25),
         .masterReset,
         .syncedReset   (reset25)
+    );
+
+
+    // secondary reset synchronizer
+    resetSync
+    resetSync295(
+        .clk           (clk295),
+        .masterReset,
+        .syncedReset   (reset295)
     );
 
 
