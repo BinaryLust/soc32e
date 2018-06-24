@@ -15,10 +15,10 @@ module DECA_soc
     // output  logic          dacSclk,
     // output  logic          dacSs,
 
-    // input   logic          sdCardMiso,
-    // output  logic          sdCardMosi,
-    // output  logic          sdCardSclk,
-    // output  logic          sdCardSs,
+    input   logic               sdCardMiso,
+    output  logic               sdCardMosi,
+    output  logic               sdCardSclk,
+    output  logic               sdCardSs,
 
     inout   wire   [LINES-1:0]  scl,
     inout   wire   [LINES-1:0]  sda,
@@ -156,12 +156,12 @@ module DECA_soc
     // logic          soundValid;
     // logic  [31:0]  soundData;
 
-    // //logic          sdCardSpiChipEnable;
-    // logic          sdCardSpiRead;
-    // logic          sdCardSpiWrite;
-    // logic  [1:0]   sdCardSpiAddress;
-    // logic          sdCardSpiValid;
-    // logic  [31:0]  sdCardSpiData;
+    //logic          sdCardSpiChipEnable;
+    logic          sdCardSpiRead;
+    logic          sdCardSpiWrite;
+    logic  [1:0]   sdCardSpiAddress;
+    logic          sdCardSpiValid;
+    logic  [31:0]  sdCardSpiData;
 
     //logic          i2cChipEnable;
     logic          i2cRead;
@@ -201,8 +201,8 @@ module DECA_soc
     // logic          dacSpiReceiveIrq;
     // logic          dacSpiTransmitIrq;
     // logic          soundIrq;
-    // logic          sdCardSpiReceiveIrq;
-    // logic          sdCardSpiTransmitIrq;
+    logic          sdCardSpiReceiveIrq;
+    logic          sdCardSpiTransmitIrq;
 
 
     // interrupt mapping
@@ -214,8 +214,8 @@ module DECA_soc
     assign triggerInterrupt[5]  = 1'b0; //dacSpiReceiveIrq;     // interrupt 5  // unused
     assign triggerInterrupt[6]  = 1'b0; //dacSpiTransmitIrq;    // interrupt 6  // unused
     assign triggerInterrupt[7]  = i2sMasterIrq; //soundIrq;     // interrupt 7  // unused
-    assign triggerInterrupt[8]  = 1'b0; //sdCardSpiReceiveIrq;  // interrupt 8  // unused
-    assign triggerInterrupt[9]  = 1'b0; //sdCardSpiTransmitIrq; // interrupt 9  // unused
+    assign triggerInterrupt[8]  = sdCardSpiReceiveIrq;  // interrupt 8  // unused
+    assign triggerInterrupt[9]  = sdCardSpiTransmitIrq; // interrupt 9  // unused
     assign triggerInterrupt[10] = 1'b0;                 // interrupt 10 // unused
     assign triggerInterrupt[11] = 1'b0;                 // interrupt 11 // unused
     assign triggerInterrupt[12] = 1'b0;                 // interrupt 12 // unused
@@ -476,23 +476,23 @@ module DECA_soc
     // );
 
 
-    // spiWithFifos #(.DATAWIDTH(8), .TRANSMITDEPTH(1024), .RECEIVEDEPTH(1024))
-    // sdCardSpi(
-    //     .clk                    (clk100),
-    //     .reset                  (reset100),
-    //     .read                   (sdCardSpiRead),
-    //     .write                  (sdCardSpiWrite),
-    //     .address                (sdCardSpiAddress),
-    //     .dataIn                 (dataOut),
-    //     .readValid              (sdCardSpiValid),
-    //     .dataOut                (sdCardSpiData),
-    //     .transmitIrq            (sdCardSpiTransmitIrq),
-    //     .receiveIrq             (sdCardSpiReceiveIrq),
-    //     .miso                   (sdCardMiso),
-    //     .mosi                   (sdCardMosi),
-    //     .sclk                   (sdCardSclk),
-    //     .ss                     (sdCardSs)
-    // );
+    spiWithFifos #(.DATAWIDTH(8), .TRANSMITDEPTH(1024), .RECEIVEDEPTH(1024))
+    sdCardSpi(
+        .clk                    (clk100),
+        .reset                  (reset100),
+        .read                   (sdCardSpiRead),
+        .write                  (sdCardSpiWrite),
+        .address                (sdCardSpiAddress),
+        .dataIn                 (dataOut),
+        .readValid              (sdCardSpiValid),
+        .dataOut                (sdCardSpiData),
+        .transmitIrq            (sdCardSpiTransmitIrq),
+        .receiveIrq             (sdCardSpiReceiveIrq),
+        .miso                   (sdCardMiso),
+        .mosi                   (sdCardMosi),
+        .sclk                   (sdCardSclk),
+        .ss                     (sdCardSs)
+    );
 
 
     i2c #(.LINES(LINES))
@@ -610,11 +610,11 @@ module DECA_soc
         // .soundRead,
         // .soundWrite,
         // .soundAddress,
-        // .sdCardSpiData,
-        // .sdCardSpiValid,
-        // .sdCardSpiRead,
-        // .sdCardSpiWrite,
-        // .sdCardSpiAddress,
+        .sdCardSpiData,
+        .sdCardSpiValid,
+        .sdCardSpiRead,
+        .sdCardSpiWrite,
+        .sdCardSpiAddress,
         .i2cData,
         .i2cValid,
         .i2cRead,
