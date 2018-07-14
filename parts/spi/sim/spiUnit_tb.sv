@@ -18,13 +18,14 @@ module spiUnit_tb();
     logic          clockPolarity;
     logic          clockPhase;
     logic          dataDirection;
+    logic          ssEnable;
     logic          transmitValid;
-    logic  [11:0]  dataRegIn;
+    logic  [7:0]   dataRegIn;
     logic          miso;
 
 
     // output wires
-    logic  [11:0]  dataReg;
+    logic  [7:0]   dataReg;
     logic          transmitReady;
     logic          receiveValid;
     logic          mosi;
@@ -38,7 +39,7 @@ module spiUnit_tb();
     /*                                                                                                                                                       */
     /*********************************************************************************************************************************************************/
 
-    spiUnit #(.DATAWIDTH(12))
+    spiUnit #(.DATAWIDTH(8))
     dut(
         .clk,
         .reset,
@@ -46,6 +47,7 @@ module spiUnit_tb();
         .clockPolarity,
         .clockPhase,
         .dataDirection,
+        .ssEnable,
         .transmitValid,
         .dataRegIn,
         .dataReg,
@@ -85,7 +87,8 @@ module spiUnit_tb();
         clockPolarity  = 1'b1;
         clockPhase     = 1'b1;
         dataDirection  = 1'b1;
-        transmitValid  = 1'b1;
+        ssEnable       = 1'b0;
+        transmitValid  = 1'b0;
         dataRegIn      = 8'haa;
         //miso           = 1'b1;
     end
@@ -125,6 +128,8 @@ module spiUnit_tb();
             read(32'd5);
         end*/
 
+        transmitValid  = 1'b1;
+
         repeat(10) begin
             @(posedge transmitReady);
             dataRegIn = $urandom();
@@ -134,6 +139,7 @@ module spiUnit_tb();
         transmitValid = 1'b0;
         repeat(500) @(posedge clk);
         transmitValid = 1'b1;
+        ssEnable      = 1'b1;
 
         repeat(10) begin
             @(posedge transmitReady);
