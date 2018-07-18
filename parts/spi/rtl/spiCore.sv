@@ -1,6 +1,9 @@
 
 
-module spiCore #(parameter DATAWIDTH = 8)(
+module spiCore
+    #(parameter DATAWIDTH    = 8,
+      parameter BUFFERDEPTH  = 1024,
+      parameter ADDRESSWIDTH = $clog2(BUFFERDEPTH))(
     input   logic                   clk,
     input   logic                   reset,
 
@@ -10,6 +13,7 @@ module spiCore #(parameter DATAWIDTH = 8)(
     input   logic                   clockPhaseIn,       // data from the master interface
     input   logic                   dataDirectionIn,    // data from the master interface
     input   logic                   ssEnableIn,         // data from the master interface
+    input   logic  [1:0]            ssNumberIn,         // data from the master interface
     input   logic                   receiveIreIn,       // data from the master interface
     input   logic                   transmitIreIn,      // data from the master interface
 
@@ -17,15 +21,16 @@ module spiCore #(parameter DATAWIDTH = 8)(
     input   logic                   configLoadEn,       // write enable from the master interface
     input   logic                   receiveDataReadReq, // read request from the master interface
 
-    output  logic  [DATAWIDTH-1:0]  transmitData,       // visible state to the master interface
     output  logic  [DATAWIDTH-1:0]  receiveData,        // visible state to the master interface
     output  logic                   receiveValid,       // visible state to the master interface
     output  logic                   transmitReady,      // visible state to the master interface
+    output  logic                   idle,               // visible state to the master interface
     output  logic  [15:0]           clocksPerCycle,     // visible state to the master interface
     output  logic                   clockPolarity,      // visible state to the master interface
     output  logic                   clockPhase,         // visible state to the master interface
     output  logic                   dataDirection,      // visible state to the master interface
     output  logic                   ssEnable,           // visible state to the master interface
+    output  logic  [1:0]            ssNumber,           // visible state tot he master interface
     output  logic                   receiveIre,         // visible state to the master interface
     output  logic                   transmitIre,        // visible state to the master interface
 
@@ -35,20 +40,23 @@ module spiCore #(parameter DATAWIDTH = 8)(
     input   logic                   miso,
     output  logic                   mosi,
     output  logic                   sclk,
-    output  logic                   ss
+    output  logic  [3:0]            ss
     );
 
 
     // wires
-    logic                   transmitReadyWire;  // from the transmitter
-    logic                   receiveDataValid;   // from the receiver
-    logic  [DATAWIDTH-1:0]  receiveDataWire;    // from the receiver
-    logic                   transmitDataValid;  // to the the transmitter
+    logic  [DATAWIDTH-1:0]  coreIn;
+    logic  [DATAWIDTH-1:0]  coreOut;
+    logic                   coreRead;
+    logic                   coreWrite;
+    logic                   transmitDataReady;
+    logic                   finalCycle;
+    logic  [3:0]            ssNext;
 
 
     // interrupt detection registers
-    logic                   transmitIrePre;
-    logic                   transmitDataValidPre;
+    //logic                   transmitIrePre;
+    //logic                   transmitDataReadyPre;
 
 
     //------------------------------------------------
@@ -59,81 +67,53 @@ module spiCore #(parameter DATAWIDTH = 8)(
 
 
     // transmit interrupt request logic
-    // if transmitDataValid is not valid and we detect transmitIre changing from disabled to enabled
-    // or if transmitIre is enabled and we detect transmitDataValid changing from valid to not valid
-    always_ff @(posedge clk or posedge reset) begin
+    // if transmitDataReady is not valid and we detect transmitIre changing from disabled to enabled
+    // or if transmitIre is enabled and we detect transmitDataReady changing from valid to not valid
+    /*always_ff @(posedge clk or posedge reset) begin
         if(reset) begin
             transmitIrq          <= 1'b0;
             transmitIrePre       <= 1'b0;
-            transmitDataValidPre <= 1'b0;
+            transmitDataReadyPre <= 1'b0;
         end else begin
-            transmitIrq          <= (!transmitDataValid && (!transmitIrePre && transmitIre)) | (transmitIre && (transmitDataValidPre && !transmitDataValid));
+            transmitIrq          <= (!transmitDataReady && (!transmitIrePre && transmitIre)) | (transmitIre && (transmitDataReadyPre && !transmitDataReady));
             transmitIrePre       <= transmitIre;
-            transmitDataValidPre <= transmitDataValid;
+            transmitDataReadyPre <= transmitDataReady;
         end
     end
 
 
     // receive interrupt request logic
-    // if receive interrupt request enable is set and receiveDataValid is asserted
+    // if receive interrupt request enable is set and coreWrite is asserted
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
             receiveIrq <= 1'b0;
         else
-            receiveIrq <= receiveIre & receiveDataValid;
+            receiveIrq <= receiveIre & coreWrite;
+    end*/
+
+
+    // use greater than/less than comparator to monitor fifo fill level and trigger interrupt
+    assign transmitIrq = 1'b0;
+    assign receiveIrq  = 1'b0;
+
+
+    // active slave select line decoder logic
+    always_comb begin
+       if(ssEnableIn) begin
+           case(ssNumberIn)
+               2'd0: ssNext = 4'b1110;
+               2'd1: ssNext = 4'b1101;
+               2'd2: ssNext = 4'b1011;
+               2'd3: ssNext = 4'b0111;
+           endcase
+       end else begin
+           ssNext = 4'b1111; // active no lines because enable is false
+       end
     end
 
 
     //------------------------------------------------
     // visible registers
-
-
-    // transmitData register
-    always_ff @(posedge clk or posedge reset) begin
-        if(reset)
-            transmitData <= 0;
-        else if(transmitDataLoadEn)
-            transmitData <= transmitDataIn;
-        else
-            transmitData <= transmitData;
-    end
-
-
-    // receiveData register
-    always_ff @(posedge clk or posedge reset) begin
-        if(reset)
-            receiveData <= 0;
-        else if(receiveDataValid)
-            receiveData <= receiveDataWire;
-        else
-            receiveData <= receiveData;
-    end
-
-
-    // receiveValid register
-    always_ff @(posedge clk or posedge reset) begin
-        if(reset)
-            receiveValid <= 1'b0; // reset valid
-        else if(receiveDataValid)
-            receiveValid <= 1'b1; // set valid (this gets priority if the condition below is active at the same time)
-        else if(receiveDataReadReq)
-            receiveValid <= 1'b0; // reset valid
-        else
-            receiveValid <= receiveValid;
-    end
-
-
-    // transmitReady register
-    always_ff @(posedge clk or posedge reset) begin
-        if(reset)
-            transmitReady <= 1'b1; // set ready
-        else if(transmitDataLoadEn)
-            transmitReady <= 1'b0; // reset ready when writting transmitData byte (this gets priority if the condition below is active at the same time)
-        else if(transmitDataValid && transmitReadyWire)
-            transmitReady <= 1'b1; // set ready if data is already valid and transmitter reads the stored byte
-        else
-            transmitReady <= transmitReady;
-    end
 
 
     // cycles per clock register
@@ -191,6 +171,17 @@ module spiCore #(parameter DATAWIDTH = 8)(
     end
 
 
+    // slave select number register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            ssNumber <= 2'd0;
+        else if(configLoadEn)
+            ssNumber <= ssNumberIn;
+        else
+            ssNumber <= ssNumber;
+    end
+
+
     // receive interrupt request enable register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
@@ -217,41 +208,79 @@ module spiCore #(parameter DATAWIDTH = 8)(
     // hidden registers
 
 
-    // transmitDataValid register
+    // slave select lines
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            transmitDataValid <= 1'b0; // set not valid
-        else if(transmitDataLoadEn)
-            transmitDataValid <= 1'b1; // set ready if another byte is written (this gets priority if the condition below is active at the same time)
-        else if(transmitReadyWire)
-            transmitDataValid <= 1'b0; // reset ready when the transmitter reads the data
+            ss <= 4'b1111;
+        else if(configLoadEn)
+            ss <= ssNext;
         else
-            transmitDataValid <= transmitDataValid;
+            ss <= ss;
     end
 
 
-    //------------------------------------------------
-    // transmit and receive modules
+    // previous word count registers
+    /*always_ff @(posedge clk or posedge reset) begin
+        if(reset) begin
+            wordCountP1 <= 1'd0;
+            wordCountP2 <= 1'd0;
+        end else if(rxDataValid) begin  // update the count when the buffer is written to
+            wordCountP1 <= wordCount;   // last cycle
+            wordCountP2 <= wordCountP1; // two cycles ago
+        end
+    end*/
+
+
+    //-------------------------------------------------
+    // modules
+
+
+    spiClockUnit
+    spiClockUnit(
+        .clk,
+        .reset,
+        .clocksPerCycle,
+        .finalCycle
+    );
 
 
     spiUnit  #(.DATAWIDTH(DATAWIDTH))
     spiUnit(
         .clk,
         .reset,
-        .clocksPerCycle,
         .clockPolarity,
         .clockPhase,
         .dataDirection,
-        .ssEnable,
-        .transmitValid     (transmitDataValid),
-        .dataRegIn         (transmitData),
-        .dataReg           (receiveDataWire),
-        .transmitReady     (transmitReadyWire),
-        .receiveValid      (receiveDataValid),
+        .finalCycle,
+        .dataRegIn         (coreOut),
+        .dataReg           (coreIn),
+        .transmitReady     (transmitDataReady),
+        .coreRead,
+        .coreWrite,
+        .idle,
         .miso,
         .mosi,
-        .sclk,
-        .ss
+        .sclk
+    );
+
+
+    spiRingBuffer #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(BUFFERDEPTH))
+    spiRingBuffer(
+        .clk,
+        .reset,
+        .dataIn              (transmitDataIn),
+        .dataOut             (receiveData),
+        .dataWrite           (transmitDataLoadEn),
+        .dataRead            (receiveDataReadReq),
+        .dataWordCount       (),
+        .transmitReady,
+        .receiveValid,
+        .coreIn,
+        .coreOut,
+        .coreWrite,
+        .coreRead,
+        .coreWordCount    (),
+        .transmitDataReady
     );
 
 

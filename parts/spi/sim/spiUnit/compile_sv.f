@@ -2,5 +2,5 @@
 
 -sv 
 
-../rtl/spiUnit.sv
+../../rtl/spiUnit.sv
 spiUnit_tb.sv

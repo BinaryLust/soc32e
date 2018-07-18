@@ -14,23 +14,22 @@ module spiUnit_tb();
     // input wires
     logic          clk;
     logic          reset;
-    logic  [15:0]  clocksPerCycle;
     logic          clockPolarity;
     logic          clockPhase;
     logic          dataDirection;
-    logic          ssEnable;
-    logic          transmitValid;
+    logic          finalCycle;
     logic  [7:0]   dataRegIn;
+    logic          transmitReady;
     logic          miso;
 
 
     // output wires
     logic  [7:0]   dataReg;
-    logic          transmitReady;
-    logic          receiveValid;
+    logic          coreWrite;
+    logic          coreRead;
+    logic          idle;
     logic          mosi;
     logic          sclk;
-    logic          ss;
 
 
     /*********************************************************************************************************************************************************/
@@ -39,24 +38,24 @@ module spiUnit_tb();
     /*                                                                                                                                                       */
     /*********************************************************************************************************************************************************/
 
+
     spiUnit #(.DATAWIDTH(8))
     dut(
         .clk,
         .reset,
-        .clocksPerCycle,
         .clockPolarity,
         .clockPhase,
         .dataDirection,
-        .ssEnable,
-        .transmitValid,
+        .finalCycle,
         .dataRegIn,
         .dataReg,
         .transmitReady,
-        .receiveValid,
+        .coreWrite,
+        .coreRead,
+        .idle,
         .miso,
         .mosi,
-        .sclk,
-        .ss
+        .sclk
     );
 
 
@@ -83,13 +82,12 @@ module spiUnit_tb();
     // set initial values
     initial begin
         reset          = 1'b0;
-        clocksPerCycle = 16'd8;
-        clockPolarity  = 1'b1;
-        clockPhase     = 1'b1;
-        dataDirection  = 1'b1;
-        ssEnable       = 1'b0;
-        transmitValid  = 1'b0;
+        clockPolarity  = 1'b0;
+        clockPhase     = 1'b0;
+        dataDirection  = 1'b0;
+        finalCycle     = 1'b0;
         dataRegIn      = 8'haa;
+        transmitReady  = 1'b0;
         //miso           = 1'b1;
     end
 
@@ -100,6 +98,14 @@ module spiUnit_tb();
         clk = 1'b0;
         #5;
         clk = 1'b1;
+    end
+
+
+    always begin
+        repeat(10) @(posedge clk);
+        finalCycle = 1'b1;
+        @(posedge clk);
+        finalCycle = 1'b0;
     end
 
 
@@ -115,41 +121,41 @@ module spiUnit_tb();
         // reset the system
         hardwareReset();
 
-        /*for(i = 0; i < 512; i = i + 1) begin
-           write(32'hff, 32'd4);
-        end*/
-
-        /*for(i = 0; i < 512; i = i + 1) begin
-        //   read(32'd3);
-        //	while(data_out && 32'b10) begin
-        //	   read(32'd3);
-        //	end
-
-            read(32'd5);
-        end*/
-
-        transmitValid  = 1'b1;
-
-        repeat(10) begin
-            @(posedge transmitReady);
-            dataRegIn = $urandom();
-            //@(posedge clk);
-        end
-
-        transmitValid = 1'b0;
+        clockPolarity = 1'b0; clockPhase = 1'b0; dataDirection = 1'b0;
+        repeat(10) transceive($urandom());
         repeat(500) @(posedge clk);
-        transmitValid = 1'b1;
-        ssEnable      = 1'b1;
 
-        repeat(10) begin
-            @(posedge transmitReady);
-            dataRegIn = $urandom();
-            //@(posedge clk);
-        end
+        clockPolarity = 1'b0; clockPhase = 1'b0; dataDirection = 1'b1;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b0; clockPhase = 1'b1; dataDirection = 1'b0;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b0; clockPhase = 1'b1; dataDirection = 1'b1;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b1; clockPhase = 1'b0; dataDirection = 1'b0;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b1; clockPhase = 1'b0; dataDirection = 1'b1;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b1; clockPhase = 1'b1; dataDirection = 1'b0;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
+
+        clockPolarity = 1'b1; clockPhase = 1'b1; dataDirection = 1'b1;
+        repeat(10) transceive($urandom());
+        repeat(500) @(posedge clk);
 
         //$display("%d Errors", errorCount);
         $stop;
-     end
+    end
     // synopsys translate_on
 
 
@@ -170,27 +176,13 @@ module spiUnit_tb();
     endtask
 
 
-    /*task write;
-        input [31:0] data;
-        input [31:0] address;
-        begin
-           @(posedge iclk); // wait for clk edge
-            #1 ce_in = 1'b1; mem_in = 1'b1; write_in = 1'b1; address_in = (address << 2); bwe_in = 4'b1111;
-            @(posedge iclk); // wait for clk edge
-            #1 data_in = data; ce_in = 1'b0; mem_in = 1'b0; write_in = 1'b0; address_in = 32'b0; bwe_in = 4'b0;
-        end
-    endtask*/
-
-
-    /*task read;
-        input [31:0] address;
-        begin
-           @(posedge iclk); // wait for clk edge
-            #1 ce_in = 1'b1; mem_in = 1'b1; read_in = 1'b1; address_in = (address << 2);
-            @(posedge iclk); // wait for clk edge
-            #1 ce_in = 1'b0; mem_in = 1'b0; read_in = 1'b0; address_in = 32'b0;
-        end
-    endtask*/
+    task transceive(input logic [7:0] data);
+        wait(idle);
+        dataRegIn     = data;
+        transmitReady = 1'b1;
+        wait(!idle);
+        transmitReady = 1'b0;
+    endtask
 
 
 endmodule
