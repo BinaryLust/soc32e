@@ -13,12 +13,12 @@ module BeMicro_soc
     input   logic               dacMiso,
     output  logic               dacMosi,
     output  logic               dacSclk,
-    output  logic               dacSs,
+    output  logic  [3:0]        dacSs,
 
     input   logic               sdCardMiso,
     output  logic               sdCardMosi,
     output  logic               sdCardSclk,
-    output  logic               sdCardSs,
+    output  logic  [3:0]        sdCardSs,
 
     inout   wire   [LINES-1:0]  scl,
     inout   wire   [LINES-1:0]  sda,
@@ -390,7 +390,7 @@ module BeMicro_soc
     );
 
 
-    spi  #(.DATAWIDTH(8))
+    spi #(.DATAWIDTH(8), .BUFFERDEPTH(1024))
     dacSpi(
         .clk                    (clk100),
         .reset                  (reset100),
@@ -438,7 +438,7 @@ module BeMicro_soc
     );
 
 
-    spiWithFifos #(.DATAWIDTH(8), .TRANSMITDEPTH(1024), .RECEIVEDEPTH(1024))
+    spi #(.DATAWIDTH(8), .BUFFERDEPTH(1024))
     sdCardSpi(
         .clk                    (clk100),
         .reset                  (reset100),

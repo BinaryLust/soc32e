@@ -270,6 +270,12 @@ module BeMicro_top(
 
 
     logic  [7:0]  ioOut;
+    logic  [3:0]  ss1;
+    logic  [3:0]  ss2;
+
+
+    assign PMOD_C[0]     = ss1[0];
+    assign AD5681R_SYNCn = ss2[0];
 
 
     BeMicro_soc #(.LINES(2))
@@ -282,11 +288,11 @@ module BeMicro_top(
         .dacMiso                (1'b0),              // not used
         .dacMosi                (AD5681R_SDA),
         .dacSclk                (AD5681R_SCL),
-        .dacSs                  (AD5681R_SYNCn),
+        .dacSs                  (ss2),
         .sdCardMiso             (PMOD_C[2]),
         .sdCardMosi             (PMOD_C[1]),
         .sdCardSclk             (PMOD_C[3]),
-        .sdCardSs               (PMOD_C[0]),
+        .sdCardSs               (ss1),
         .scl,
         .sda,
         .pwmOut                 (PMOD_A[0]),

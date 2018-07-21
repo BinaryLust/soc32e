@@ -174,6 +174,9 @@ module DECA_top(
     );
 
 
+    logic  [3:0]  ss;
+
+
     // the humidity/tempature sensor and the power meter can't both be connected
     // at the same time because they share the same i2c address
 
@@ -198,6 +201,9 @@ module DECA_top(
     assign sdout = AUDIO_DIN_MFP1;
 
 
+    assign sdCardSs = ss[0];
+
+
     DECA_soc #(.LINES(5))
     DECA_soc(
         .clk           (MAX10_CLK1_50),
@@ -207,7 +213,7 @@ module DECA_top(
         .sdCardMiso,
         .sdCardMosi,
         .sdCardSclk,
-        .sdCardSs,
+        .sdCardSs      (ss),
         .scl,
         .sda,
         .mdc           (NET_MDC),

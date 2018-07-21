@@ -18,7 +18,7 @@ module DECA_soc
     input   logic               sdCardMiso,
     output  logic               sdCardMosi,
     output  logic               sdCardSclk,
-    output  logic               sdCardSs,
+    output  logic  [3:0]        sdCardSs,
 
     inout   wire   [LINES-1:0]  scl,
     inout   wire   [LINES-1:0]  sda,
@@ -476,7 +476,7 @@ module DECA_soc
     // );
 
 
-    spiWithFifos #(.DATAWIDTH(8), .TRANSMITDEPTH(1024), .RECEIVEDEPTH(1024))
+    spi #(.DATAWIDTH(8), .BUFFERDEPTH(1024))
     sdCardSpi(
         .clk                    (clk100),
         .reset                  (reset100),

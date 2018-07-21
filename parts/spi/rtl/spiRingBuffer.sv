@@ -6,6 +6,10 @@
 // receive full if ((coreWritePointer[ADDRESSWIDTH] != dataReadPointer[ADDRESSWIDTH]) && (coreWritePointer[ADDRESSWIDTH-1:0] == dataReadPointer[ADDRESSWIDTH-1:0]))
 
 
+// since the output status lines are registered this will probably cause errors if a device pulls this on every cycle
+// it will only work correctly if you read the status flags every 2-3 cycles to account for the latency.
+
+
 module spiRingBuffer
     #(parameter DATAWIDTH    = 8,
       parameter DATADEPTH    = 1024,
@@ -37,15 +41,37 @@ module spiRingBuffer
     logic  [ADDRESSWIDTH:0]    coreWritePointer;
     logic  [ADDRESSWIDTH:0]    coreReadPointer;
     logic  [ADDRESSWIDTH-1:0]  corePointer;
+    logic                      transmitReadyNext;
+    logic                      receiveValidNext;
+    logic                      transmitDataReadyNext;
 
 
     /* data read/write pointer logic section *********************************************************************************************/
 
+
+    // transmitReady register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            transmitReady <= 1'b0;
+        else
+            transmitReady <= transmitReadyNext;
+    end
+
+
+    // receiveValid register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            receiveValid <= 1'b0;
+        else
+            receiveValid <= receiveValidNext;
+    end
+
+
     // this is the same as transmit not full
-    assign transmitReady = !((dataWritePointer[ADDRESSWIDTH] != dataReadPointer[ADDRESSWIDTH]) && (dataWritePointer[ADDRESSWIDTH-1:0] == dataReadPointer[ADDRESSWIDTH-1:0]));
+    assign transmitReadyNext = !((dataWritePointer[ADDRESSWIDTH] != dataReadPointer[ADDRESSWIDTH]) && (dataWritePointer[ADDRESSWIDTH-1:0] == dataReadPointer[ADDRESSWIDTH-1:0]));
 
     // this is the same as receive not empty
-    assign receiveValid  = !(dataReadPointer == coreWritePointer);
+    assign receiveValidNext  = !(dataReadPointer == coreWritePointer);
 
 
     // data write pointer
@@ -96,8 +122,18 @@ module spiRingBuffer
 
     /* other pointers logic section *******************************************************************************************************/
 
+
+    // transmitDataReady register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            transmitDataReady <= 1'b0;
+        else
+            transmitDataReady <= transmitDataReadyNext;
+    end
+
+
     // this is the same as transmit not empty
-    assign transmitDataReady = !(coreReadPointer == dataWritePointer);
+    assign transmitDataReadyNext = !(coreReadPointer == dataWritePointer);
 
 
     // core write pointer

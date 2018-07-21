@@ -111,53 +111,63 @@ module spi_tb();
         // reset the system
         hardwareReset();
 
-        writeData(2'd3, {16'd5, 1'b0, 1'b0, 1'b0, 1'b1, 2'd0, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+        repeat(1000) begin
+            writeData(2'd3, {16'd5, 1'b0, 1'b0, 1'b0, 1'b1, 2'd0, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b0, 1'b0, 1'b1, 1'b1, 2'd1, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b0, 1'b0, 1'b1, 1'b1, 2'd1, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b0, 1'b1, 1'b0, 1'b1, 2'd2, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b0, 1'b1, 1'b0, 1'b1, 2'd2, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b0, 1'b1, 1'b1, 1'b1, 2'd3, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b0, 1'b1, 1'b1, 1'b1, 2'd3, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b1, 1'b0, 1'b0, 1'b1, 2'd0, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b1, 1'b0, 1'b0, 1'b1, 2'd0, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b1, 1'b0, 1'b1, 1'b1, 2'd1, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b1, 1'b0, 1'b1, 1'b1, 2'd1, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b1, 1'b1, 1'b0, 1'b1, 2'd2, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b1, 1'b1, 1'b0, 1'b1, 2'd2, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
 
-        writeData(2'd3, {16'd5, 1'b1, 1'b1, 1'b1, 1'b1, 2'd3, 8'b0, 1'b0, 1'b0}); // configure the controller
-        doTest();                                                                 // test it
+            writeData(2'd3, {16'd5, 1'b1, 1'b1, 1'b1, 1'b1, 2'd3, 8'b0, 1'b0, 1'b0}); // configure the controller
+            doTest();                                                                 // do normal test
+            doIdleTest();                                                             // do idle test
 
-        // wait some time
-        repeat(1000) @(posedge clk);
+            // wait some time
+            repeat(1000) @(posedge clk);
+        end
 
         //$display("%d Errors", errorCount);
         $stop;
@@ -213,6 +223,16 @@ module spi_tb();
     endtask
 
 
+    task idletx(input logic [31:0] _data);
+        begin
+            do begin
+                readData(2'd2);            // check idle flag
+            end while(dataOut[2] == 1'b0); // wait for it to be set
+            writeData(2'd0, _data);        // write the data
+        end
+    endtask
+
+
     task rx();
         begin
             do begin
@@ -241,7 +261,35 @@ module spi_tb();
         repeat(16) begin
             rx(); // read data and ack bit
 
-            $info("we wrote: %h and read: %h", tdata[taddress[3:0]], dataOut[7:0]);
+            //$info("we wrote: %h and read: %h", tdata[taddress[3:0]], dataOut[7:0]);
+
+            if(tdata[taddress[3:0]] != dataOut[7:0])
+                $fatal("Data missmatch! - we wrote: %h and read: %h", tdata[taddress[3:0]], dataOut[7:0]);
+
+            taddress++; // inrement the address
+        end
+    endtask
+
+
+    task doIdleTest();
+        // reset address
+        taddress = 0;
+
+        // transmit data
+        repeat(16) begin
+            tdata[taddress[3:0]] = $urandom();
+            idletx(tdata[taddress[3:0]]); // send data
+            taddress++; // inrement the address
+        end
+
+        // reset address
+        taddress = 0;
+
+        // receive data
+        repeat(16) begin
+            rx(); // read data and ack bit
+
+            //$info("we wrote: %h and read: %h", tdata[taddress[3:0]], dataOut[7:0]);
 
             if(tdata[taddress[3:0]] != dataOut[7:0])
                 $fatal("Data missmatch! - we wrote: %h and read: %h", tdata[taddress[3:0]], dataOut[7:0]);

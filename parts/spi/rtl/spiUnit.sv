@@ -175,7 +175,7 @@ module spiUnit
                 sclkNext        = clockPolarity; // reset clock to default value
 
                 if(finalCycle && transmitReady) begin
-                    dataRegNext    = dataRegIn;  // load new data
+                    dataRegNext  = dataRegIn;    // load new data
                     coreReadNext = 1'b1;         // read from current point in buffer
                 end
 
