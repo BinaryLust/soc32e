@@ -1,7 +1,7 @@
 `timescale 1ns / 100ps
 
 
-module spiUnit_tb();
+module spiController_tb();
 
 
     /*********************************************************************************************************************************************************/
@@ -18,13 +18,13 @@ module spiUnit_tb();
     logic          clockPhase;
     logic          dataDirection;
     logic          finalCycle;
-    logic  [7:0]   dataRegIn;
-    logic          transmitReady;
+    logic  [7:0]   dataIn;
+    logic          coreTxEmpty;
     logic          miso;
 
 
     // output wires
-    logic  [7:0]   dataReg;
+    logic  [7:0]   dataOut;
     logic          coreWrite;
     logic          coreRead;
     logic          idle;
@@ -39,7 +39,7 @@ module spiUnit_tb();
     /*********************************************************************************************************************************************************/
 
 
-    spiUnit #(.DATAWIDTH(8))
+    spiController #(.DATAWIDTH(8))
     dut(
         .clk,
         .reset,
@@ -47,9 +47,9 @@ module spiUnit_tb();
         .clockPhase,
         .dataDirection,
         .finalCycle,
-        .dataRegIn,
-        .dataReg,
-        .transmitReady,
+        .dataIn,
+        .dataOut,
+        .coreTxEmpty,
         .coreWrite,
         .coreRead,
         .idle,
@@ -69,7 +69,7 @@ module spiUnit_tb();
     /*********************************************************************************************************************************************************/
 
 
-    integer        seed = 125376;
+    integer seed = 125376;
 
 
     /*********************************************************************************************************************************************************/
@@ -86,8 +86,8 @@ module spiUnit_tb();
         clockPhase     = 1'b0;
         dataDirection  = 1'b0;
         finalCycle     = 1'b0;
-        dataRegIn      = 8'haa;
-        transmitReady  = 1'b0;
+        dataIn         = 8'haa;
+        coreTxEmpty    = 1'b1;
         //miso           = 1'b1;
     end
 
@@ -178,10 +178,10 @@ module spiUnit_tb();
 
     task transceive(input logic [7:0] data);
         wait(idle);
-        dataRegIn     = data;
-        transmitReady = 1'b1;
+        dataIn = data;
+        coreTxEmpty = 1'b0;
         wait(!idle);
-        transmitReady = 1'b0;
+        coreTxEmpty = 1'b1;
     endtask
 
 

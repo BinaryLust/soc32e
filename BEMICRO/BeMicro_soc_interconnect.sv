@@ -25,9 +25,9 @@
 `define SEQUENCER_SIZE 32'h8
 `define SAMPLE_SIZE    32'h0200
 `define IO_SIZE        32'h4
-`define DACSPI_SIZE    32'h10
+`define DACSPI_SIZE    32'h20
 `define SOUND_SIZE     32'h10
-`define SDCARDSPI_SIZE 32'h10
+`define SDCARDSPI_SIZE 32'h20
 `define I2C_SIZE       32'h8
 //`define OCFLASH_SIZE   32'h10000
 
@@ -111,7 +111,7 @@ module BeMicro_soc_interconnect(
     //output  logic          dacSpiChipEnable,
     output  logic          dacSpiRead,
     output  logic          dacSpiWrite,
-    output  logic  [1:0]   dacSpiAddress,
+    output  logic  [2:0]   dacSpiAddress,
 
 
     input   logic  [31:0]  soundData,
@@ -129,7 +129,7 @@ module BeMicro_soc_interconnect(
     //output  logic          sdCardSpiChipEnable,
     output  logic          sdCardSpiRead,
     output  logic          sdCardSpiWrite,
-    output  logic  [1:0]   sdCardSpiAddress,
+    output  logic  [2:0]   sdCardSpiAddress,
 
 
     input   logic  [31:0]  i2cData,
@@ -278,7 +278,7 @@ module BeMicro_soc_interconnect(
         end
         dacSpiRead    = readEnable[8];
         dacSpiWrite   = writeEnable[8];
-        dacSpiAddress = address[3:2];
+        dacSpiAddress = address[4:2];
 
         // pwm sound
         if((address >= `SOUND_BASE) && (address <= (`SOUND_BASE + (`SOUND_SIZE - 1)))) begin
@@ -298,7 +298,7 @@ module BeMicro_soc_interconnect(
         end
         sdCardSpiRead    = readEnable[10];
         sdCardSpiWrite   = writeEnable[10];
-        sdCardSpiAddress = address[3:2];
+        sdCardSpiAddress = address[4:2];
 
         // i2c controller
         if((address >= `I2C_BASE) && (address <= (`I2C_BASE + (`I2C_SIZE - 1)))) begin

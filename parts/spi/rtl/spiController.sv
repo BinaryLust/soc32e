@@ -18,8 +18,6 @@
 
 // the only difference between the two is toggling or not toggling the clock on the first cycle
 
-// received data will always end up in dataReg
-
 // polarity = 0, phase = 0: initially setup data half cycle early with no clock toggle, sample on the first clock edge (positive edge) and toggle clock, setup new data on second clock edge (falling edge) and toggle clock
 // polarity = 0, phase = 1: setup data on first clock edge (positive edge) and toggle clock, sample on second clock edge (negative edge) and toggle clock
 // polarity = 1, phase = 0: initially setup data half cycle early with no clock toggle, sample on the first clock edge (negative edge) and toggle clock, setup new data on second clock edge (rising edge) and toggle clock
@@ -29,7 +27,7 @@
 // so we must make sure the states here only do one or the other per cycle
 
 
-module spiUnit
+module spiController
     #(parameter DATAWIDTH       = 8,
       parameter BITCOUNTERWIDTH = $clog2(DATAWIDTH))(
     input   logic                   clk,
@@ -40,9 +38,9 @@ module spiUnit
 
     input   logic                   finalCycle,
 
-    input   logic  [DATAWIDTH-1:0]  dataRegIn,
-    output  logic  [DATAWIDTH-1:0]  dataReg,
-    input   logic                   transmitReady,
+    input   logic  [DATAWIDTH-1:0]  dataIn,
+    output  logic  [DATAWIDTH-1:0]  dataOut,
+    input   logic                   coreTxEmpty,
     output  logic                   coreWrite,
     output  logic                   coreRead,
     output  logic                   idle,
@@ -68,7 +66,7 @@ module spiUnit
     states                       nextState;
     logic   [BITCOUNTERWIDTH:0]  bitCounter;
     logic   [BITCOUNTERWIDTH:0]  bitCounterValue;
-    logic   [DATAWIDTH-1:0]      dataRegNext;
+    logic   [DATAWIDTH-1:0]      dataOutNext;
     logic                        finalBit;
     logic                        mosiNext;
     logic                        sclkNext;
@@ -98,9 +96,9 @@ module spiUnit
     // data register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            dataReg <= {DATAWIDTH{1'b0}};
+            dataOut <= {DATAWIDTH{1'b0}};
         else
-            dataReg <= dataRegNext;
+            dataOut <= dataOutNext;
     end
 
 
@@ -157,7 +155,7 @@ module spiUnit
         // defaults
         nextState       = IDLE;       // go to idle
         bitCounterValue = bitCounter; // keep old value
-        dataRegNext     = dataReg;    // keep old data
+        dataOutNext     = dataOut;    // keep old data
         sclkNext        = sclk;       // keep old value
         coreWriteNext   = 1'b0;       // don't write to current point in buffer
         coreReadNext    = 1'b0;       // don't read from current point in buffer
@@ -174,13 +172,13 @@ module spiUnit
                 bitCounterValue = 1;             // reset the bit counter
                 sclkNext        = clockPolarity; // reset clock to default value
 
-                if(finalCycle && transmitReady) begin
-                    dataRegNext  = dataRegIn;    // load new data
+                if(finalCycle && !coreTxEmpty) begin
+                    dataOutNext  = dataIn;       // load new data
                     coreReadNext = 1'b1;         // read from current point in buffer
                 end
 
                 // next state logic
-                nextState = (finalCycle && transmitReady) ? START : IDLE;
+                nextState = (finalCycle && !coreTxEmpty) ? START : IDLE;
             end
 
             START: begin // send a new data bit to mosi line, and toggle clock if necessary
@@ -189,8 +187,8 @@ module spiUnit
                         sclkNext = !sclk; // toggle clock
 
                     case(dataDirection)
-                        1'b0: mosiNext = dataReg[0];           // load mosi (lsb first)
-                        1'b1: mosiNext = dataReg[DATAWIDTH-1]; // load mosi (msb first)
+                        1'b0: mosiNext = dataOut[0];           // load mosi (lsb first)
+                        1'b1: mosiNext = dataOut[DATAWIDTH-1]; // load mosi (msb first)
                     endcase
                 end
 
@@ -203,8 +201,8 @@ module spiUnit
                     sclkNext = !sclk; // toggle clock
 
                     case(dataDirection)
-                        1'b0: mosiNext = dataReg[0];           // load mosi (lsb first)
-                        1'b1: mosiNext = dataReg[DATAWIDTH-1]; // load mosi (msb first)
+                        1'b0: mosiNext = dataOut[0];           // load mosi (lsb first)
+                        1'b1: mosiNext = dataOut[DATAWIDTH-1]; // load mosi (msb first)
                     endcase
                 end
 
@@ -216,8 +214,8 @@ module spiUnit
                 if(finalCycle) begin
                     sclkNext        = !sclk;          // toggle clock
                     case(dataDirection)
-                        1'b0: dataRegNext = {miso, dataReg[DATAWIDTH-1:1]}; // right shift new data in
-                        1'b1: dataRegNext = {dataReg[DATAWIDTH-2:0], miso}; // left shift new data in
+                        1'b0: dataOutNext = {miso, dataOut[DATAWIDTH-1:1]}; // right shift new data in
+                        1'b1: dataOutNext = {dataOut[DATAWIDTH-2:0], miso}; // left shift new data in
                     endcase
                     if(finalBit) begin
                         bitCounterValue = 1;              // reset bit count
@@ -239,13 +237,13 @@ module spiUnit
             // before we store the value
 
             CHECK: begin // check if there is more data to transmit and read it in if so
-                if(transmitReady) begin
-                    dataRegNext  = dataRegIn; // load new data
-                    coreReadNext = 1'b1;      // read from current point in buffer
+                if(!coreTxEmpty) begin
+                    dataOutNext  = dataIn; // load new data
+                    coreReadNext = 1'b1;   // read from current point in buffer
                 end
 
                 // next state logic
-                nextState = (transmitReady) ? OUTPUT : STOP;
+                nextState = (!coreTxEmpty) ? OUTPUT : STOP;
             end
 
             // finish off the 2nd half of the spi cycle here before going to idle state

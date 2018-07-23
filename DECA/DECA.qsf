@@ -608,8 +608,8 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdCardSs
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdCardSclk
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdCardMosi
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdCardMiso
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiUnit.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiRingBuffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiController.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCircularBuffer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiClockUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spi.sv

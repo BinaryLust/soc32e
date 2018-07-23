@@ -801,6 +801,29 @@ set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[3]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[2]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[1]
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[0]
+set_location_assignment PIN_B1 -to scl[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to scl[0]
+set_location_assignment PIN_B2 -to sda[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to sda[0]
+set_location_assignment PIN_W13 -to scl[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to scl[1]
+set_location_assignment PIN_R13 -to sda[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to sda[1]
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/fifo/singleClockFifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/trueDualPortDualClockMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/singlePortMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/simpleDualPortMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/simpleDualPortDualClockMemory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCore.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiController.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiClockUnit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCircularBuffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spi.sv
 set_global_assignment -name SYSTEMVERILOG_FILE BeMicro_soc_interconnect.sv
 set_global_assignment -name SDC_FILE ../parts/adc/rtl/altera_modular_adc_control.sdc
 set_global_assignment -name MIF_FILE program.mif
@@ -876,7 +899,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shif
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shifter/rtl/shift4.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shifter/rtl/shift2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/execute/shifter/rtl/shift1.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileMemoryBlock2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileLiveValueTable.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileInputRegisters.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/cpu32e2/rtl/regfile/rtl/regfileDebug.sv
@@ -908,23 +930,13 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/soundCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/sound.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/sigmaDeltaUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/pwmUnit.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/bufferMemory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sound/rtl/buffer.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiWithFifos.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiUnit.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiFifoMemory.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiFifo.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCoreWithFifos.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spiCore.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/spi/rtl/spi.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/timer/rtl/timerUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/timer/rtl/timerCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/timer/rtl/timer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartTransmitter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartReceiver2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartReceiver.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartFifoMemory.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartFifo.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartCore2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uartCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/uart/rtl/uart2.sv
@@ -937,16 +949,4 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/vga/rtl/sdramArbiterFifo
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/vga/rtl/sdramArbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/vga/rtl/lineFetchController.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/vga/rtl/lineBuffer.sv
-set_location_assignment PIN_B1 -to scl[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to scl[0]
-set_location_assignment PIN_B2 -to sda[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to sda[0]
-set_location_assignment PIN_W13 -to scl[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to scl[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to scl[1]
-set_location_assignment PIN_R13 -to sda[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sda[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to sda[1]
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

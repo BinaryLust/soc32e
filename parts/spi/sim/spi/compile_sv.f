@@ -4,9 +4,9 @@
 -sv 
 
 ../../../library/memoryBlock/trueDualPortMemory.sv
-../../rtl/spiUnit.sv
+../../rtl/spiController.sv
 ../../rtl/spiClockUnit.sv
-../../rtl/spiRingBuffer.sv
+../../rtl/spiCircularBuffer.sv
 ../../rtl/spiCore.sv
 ../../rtl/spi.sv
 

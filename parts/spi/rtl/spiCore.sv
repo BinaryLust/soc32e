@@ -4,43 +4,53 @@ module spiCore
     #(parameter DATAWIDTH    = 8,
       parameter BUFFERDEPTH  = 1024,
       parameter ADDRESSWIDTH = $clog2(BUFFERDEPTH))(
-    input   logic                   clk,
-    input   logic                   reset,
+    input   logic                    clk,
+    input   logic                    reset,
 
-    input   logic  [DATAWIDTH-1:0]  transmitDataIn,     // data from the master interface
-    input   logic  [15:0]           clocksPerCycleIn,   // data from the master interface
-    input   logic                   clockPolarityIn,    // data from the master interface
-    input   logic                   clockPhaseIn,       // data from the master interface
-    input   logic                   dataDirectionIn,    // data from the master interface
-    input   logic                   ssEnableIn,         // data from the master interface
-    input   logic  [1:0]            ssNumberIn,         // data from the master interface
-    input   logic                   receiveIreIn,       // data from the master interface
-    input   logic                   transmitIreIn,      // data from the master interface
+    input   logic  [DATAWIDTH-1:0]   txDataIn,                 // data from the master interface
+    input   logic  [ADDRESSWIDTH:0]  txAlmostFullCountIn,      // data from the master interface
+    input   logic  [ADDRESSWIDTH:0]  rxAlmostEmptyCountIn,     // data from the master interface
+    input   logic  [15:0]            clocksPerCycleIn,         // data from the master interface
+    input   logic                    clockPolarityIn,          // data from the master interface
+    input   logic                    clockPhaseIn,             // data from the master interface
+    input   logic                    dataDirectionIn,          // data from the master interface
+    input   logic                    ssEnableIn,               // data from the master interface
+    input   logic  [1:0]             ssNumberIn,               // data from the master interface
+    input   logic                    rxIreIn,                  // data from the master interface
+    input   logic                    txIreIn,                  // data from the master interface
 
-    input   logic                   transmitDataLoadEn, // write enable from the master interface
-    input   logic                   configLoadEn,       // write enable from the master interface
-    input   logic                   receiveDataReadReq, // read request from the master interface
+    input   logic                    txDataLoadEn,             // write enable from the master interface
+    input   logic                    txAlmostFullCountLoadEn,  // write enable from the master interface
+    input   logic                    rxAlmostEmptyCountLoadEn, // write enable from the master interface
+    input   logic                    configLoadEn,             // write enable from the master interface
+    input   logic                    rxDataReadReq,            // read request from the master interface
 
-    output  logic  [DATAWIDTH-1:0]  receiveData,        // visible state to the master interface
-    output  logic                   receiveValid,       // visible state to the master interface
-    output  logic                   transmitReady,      // visible state to the master interface
-    output  logic                   idle,               // visible state to the master interface
-    output  logic  [15:0]           clocksPerCycle,     // visible state to the master interface
-    output  logic                   clockPolarity,      // visible state to the master interface
-    output  logic                   clockPhase,         // visible state to the master interface
-    output  logic                   dataDirection,      // visible state to the master interface
-    output  logic                   ssEnable,           // visible state to the master interface
-    output  logic  [1:0]            ssNumber,           // visible state tot he master interface
-    output  logic                   receiveIre,         // visible state to the master interface
-    output  logic                   transmitIre,        // visible state to the master interface
+    output  logic  [DATAWIDTH-1:0]   rxData,                   // visible state to the master interface
+    output  logic  [ADDRESSWIDTH:0]  txAlmostFullCount,        // visible state to the master interface
+    output  logic  [ADDRESSWIDTH:0]  rxAlmostEmptyCount,       // visible state to the master interface
+    output  logic  [ADDRESSWIDTH:0]  txCount,                  // visible state to the master interface
+    output  logic  [ADDRESSWIDTH:0]  rxCount,                  // visible state to the master interface
+    output  logic                    txFull,                   // visible state to the master interface
+    output  logic                    txAlmostFull,             // visible state to the master interface
+    output  logic                    rxEmpty,                  // visible state to the master interface
+    output  logic                    rxAlmostEmpty,            // visible state to the master interface
+    output  logic                    idle,                     // visible state to the master interface
+    output  logic  [15:0]            clocksPerCycle,           // visible state to the master interface
+    output  logic                    clockPolarity,            // visible state to the master interface
+    output  logic                    clockPhase,               // visible state to the master interface
+    output  logic                    dataDirection,            // visible state to the master interface
+    output  logic                    ssEnable,                 // visible state to the master interface
+    output  logic  [1:0]             ssNumber,                 // visible state tot he master interface
+    output  logic                    rxIre,                    // visible state to the master interface
+    output  logic                    txIre,                    // visible state to the master interface
 
-    output  logic                   transmitIrq,        // interrupt request to the master
-    output  logic                   receiveIrq,         // interrupt request to the master
+    output  logic                    txIrq,                    // interrupt request to the master
+    output  logic                    rxIrq,                    // interrupt request to the master
 
-    input   logic                   miso,
-    output  logic                   mosi,
-    output  logic                   sclk,
-    output  logic  [3:0]            ss
+    input   logic                    miso,
+    output  logic                    mosi,
+    output  logic                    sclk,
+    output  logic  [3:0]             ss
     );
 
 
@@ -49,14 +59,14 @@ module spiCore
     logic  [DATAWIDTH-1:0]  coreOut;
     logic                   coreRead;
     logic                   coreWrite;
-    logic                   transmitDataReady;
+    logic                   coreTxEmpty;
     logic                   finalCycle;
     logic  [3:0]            ssNext;
 
 
     // interrupt detection registers
-    //logic                   transmitIrePre;
-    //logic                   transmitDataReadyPre;
+    //logic                   txIrePre;
+    //logic                   coreTxEmptyPre;
 
 
     //------------------------------------------------
@@ -67,17 +77,17 @@ module spiCore
 
 
     // transmit interrupt request logic
-    // if transmitDataReady is not valid and we detect transmitIre changing from disabled to enabled
-    // or if transmitIre is enabled and we detect transmitDataReady changing from valid to not valid
+    // if !coreTxEmpty is not valid and we detect txIre changing from disabled to enabled
+    // or if txIre is enabled and we detect !coreTxEmpty changing from valid to not valid
     /*always_ff @(posedge clk or posedge reset) begin
         if(reset) begin
-            transmitIrq          <= 1'b0;
-            transmitIrePre       <= 1'b0;
-            transmitDataReadyPre <= 1'b0;
+            txIrq          <= 1'b0;
+            txIrePre       <= 1'b0;
+            !coreTxEmptyPre <= 1'b0;
         end else begin
-            transmitIrq          <= (!transmitDataReady && (!transmitIrePre && transmitIre)) | (transmitIre && (transmitDataReadyPre && !transmitDataReady));
-            transmitIrePre       <= transmitIre;
-            transmitDataReadyPre <= transmitDataReady;
+            txIrq          <= (!!coreTxEmpty && (!txIrePre && txIre)) | (txIre && (!coreTxEmptyPre && !!coreTxEmpty));
+            txIrePre       <= txIre;
+            !coreTxEmptyPre <= !coreTxEmpty;
         end
     end
 
@@ -86,15 +96,15 @@ module spiCore
     // if receive interrupt request enable is set and coreWrite is asserted
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            receiveIrq <= 1'b0;
+            rxIrq <= 1'b0;
         else
-            receiveIrq <= receiveIre & coreWrite;
+            rxIrq <= rxIre & coreWrite;
     end*/
 
 
     // use greater than/less than comparator to monitor fifo fill level and trigger interrupt
-    assign transmitIrq = 1'b0;
-    assign receiveIrq  = 1'b0;
+    assign txIrq = 1'b0;
+    assign rxIrq  = 1'b0;
 
 
     // active slave select line decoder logic
@@ -114,6 +124,28 @@ module spiCore
 
     //------------------------------------------------
     // visible registers
+
+
+    // transmit almost full count register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            txAlmostFullCount <= 16;
+        else if(txAlmostFullCountLoadEn)
+            txAlmostFullCount <= txAlmostFullCountIn;
+        else
+            txAlmostFullCount <= txAlmostFullCount;
+    end
+
+
+    // receive almost empty count register
+    always_ff @(posedge clk or posedge reset) begin
+        if(reset)
+            rxAlmostEmptyCount <= 16;
+        else if(rxAlmostEmptyCountLoadEn)
+            rxAlmostEmptyCount <= rxAlmostEmptyCountIn;
+        else
+            rxAlmostEmptyCount <= rxAlmostEmptyCount;
+    end
 
 
     // cycles per clock register
@@ -185,22 +217,22 @@ module spiCore
     // receive interrupt request enable register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            receiveIre <= 1'd0;
+            rxIre <= 1'd0;
         else if(configLoadEn)
-            receiveIre <= receiveIreIn;
+            rxIre <= rxIreIn;
         else
-            receiveIre <= receiveIre;
+            rxIre <= rxIre;
     end
 
 
     // transmit interrupt request enable register
     always_ff @(posedge clk or posedge reset) begin
         if(reset)
-            transmitIre <= 1'd0;
+            txIre <= 1'd0;
         else if(configLoadEn)
-            transmitIre <= transmitIreIn;
+            txIre <= txIreIn;
         else
-            transmitIre <= transmitIre;
+            txIre <= txIre;
     end
 
 
@@ -244,17 +276,17 @@ module spiCore
     );
 
 
-    spiUnit  #(.DATAWIDTH(DATAWIDTH))
-    spiUnit(
+    spiController  #(.DATAWIDTH(DATAWIDTH))
+    spiController(
         .clk,
         .reset,
         .clockPolarity,
         .clockPhase,
         .dataDirection,
         .finalCycle,
-        .dataRegIn         (coreOut),
-        .dataReg           (coreIn),
-        .transmitReady     (transmitDataReady),
+        .dataIn                  (coreOut),
+        .dataOut                 (coreIn),
+        .coreTxEmpty             (coreTxEmpty),
         .coreRead,
         .coreWrite,
         .idle,
@@ -264,23 +296,27 @@ module spiCore
     );
 
 
-    spiRingBuffer #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(BUFFERDEPTH))
-    spiRingBuffer(
+    spiCircularBuffer #(.DATAWIDTH(DATAWIDTH), .DATADEPTH(BUFFERDEPTH))
+    spiCircularBuffer(
         .clk,
         .reset,
-        .dataIn              (transmitDataIn),
-        .dataOut             (receiveData),
-        .dataWrite           (transmitDataLoadEn),
-        .dataRead            (receiveDataReadReq),
-        .dataWordCount       (),
-        .transmitReady,
-        .receiveValid,
+        .dataIn                  (txDataIn),
+        .dataOut                 (rxData),
+        .dataWrite               (txDataLoadEn),
+        .dataRead                (rxDataReadReq),
+        .dataTxAlmostFullCount   (txAlmostFullCount),
+        .dataRxAlmostEmptyCount  (rxAlmostEmptyCount),
+        .dataTxCount             (txCount),
+        .dataRxCount             (rxCount),
+        .dataTxFull              (txFull),
+        .dataTxAlmostFull        (txAlmostFull),
+        .dataRxEmpty             (rxEmpty),
+        .dataRxAlmostEmpty       (rxAlmostEmpty),
         .coreIn,
         .coreOut,
         .coreWrite,
         .coreRead,
-        .coreWordCount    (),
-        .transmitDataReady
+        .coreTxEmpty
     );
 
 

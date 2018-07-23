@@ -145,7 +145,7 @@ module DECA_soc
     // //logic          dacSpiChipEnable;
     // logic          dacSpiRead;
     // logic          dacSpiWrite;
-    // logic  [1:0]   dacSpiAddress;
+    // logic  [2:0]   dacSpiAddress;
     // logic          dacSpiValid;
     // logic  [31:0]  dacSpiData;
 
@@ -159,7 +159,7 @@ module DECA_soc
     //logic          sdCardSpiChipEnable;
     logic          sdCardSpiRead;
     logic          sdCardSpiWrite;
-    logic  [1:0]   sdCardSpiAddress;
+    logic  [2:0]   sdCardSpiAddress;
     logic          sdCardSpiValid;
     logic  [31:0]  sdCardSpiData;
 
@@ -486,8 +486,8 @@ module DECA_soc
         .dataIn                 (dataOut),
         .readValid              (sdCardSpiValid),
         .dataOut                (sdCardSpiData),
-        .transmitIrq            (sdCardSpiTransmitIrq),
-        .receiveIrq             (sdCardSpiReceiveIrq),
+        .txIrq                  (sdCardSpiTransmitIrq),
+        .rxIrq                  (sdCardSpiReceiveIrq),
         .miso                   (sdCardMiso),
         .mosi                   (sdCardMosi),
         .sclk                   (sdCardSclk),
