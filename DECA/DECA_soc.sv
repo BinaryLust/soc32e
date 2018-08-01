@@ -20,6 +20,12 @@ module DECA_soc
     output  logic               sdCardSclk,
     output  logic  [3:0]        sdCardSs,
 
+    input   logic               ethernetIrq,
+    input   logic               ethernetMiso,
+    output  logic               ethernetMosi,
+    output  logic               ethernetSclk,
+    output  logic  [3:0]        ethernetSs,
+
     inout   wire   [LINES-1:0]  scl,
     inout   wire   [LINES-1:0]  sda,
 
@@ -163,6 +169,13 @@ module DECA_soc
     logic          sdCardSpiValid;
     logic  [31:0]  sdCardSpiData;
 
+    //logic          ethernetSpiChipEnable;
+    logic          ethernetSpiRead;
+    logic          ethernetSpiWrite;
+    logic  [2:0]   ethernetSpiAddress;
+    logic          ethernetSpiValid;
+    logic  [31:0]  ethernetSpiData;
+
     //logic          i2cChipEnable;
     logic          i2cRead;
     logic          i2cWrite;
@@ -203,6 +216,8 @@ module DECA_soc
     // logic          soundIrq;
     logic          sdCardSpiReceiveIrq;
     logic          sdCardSpiTransmitIrq;
+    logic          ethernetSpiReceiveIrq;
+    logic          ethernetSpiTransmitIrq;
 
 
     // interrupt mapping
@@ -495,6 +510,25 @@ module DECA_soc
     );
 
 
+    spi #(.DATAWIDTH(8), .BUFFERDEPTH(1024))
+    ethernetSpi(
+        .clk                    (clk100),
+        .reset                  (reset100),
+        .read                   (ethernetSpiRead),
+        .write                  (ethernetSpiWrite),
+        .address                (ethernetSpiAddress),
+        .dataIn                 (dataOut),
+        .readValid              (ethernetSpiValid),
+        .dataOut                (ethernetSpiData),
+        .txIrq                  (ethernetSpiTransmitIrq),
+        .rxIrq                  (ethernetSpiReceiveIrq),
+        .miso                   (ethernetMiso),
+        .mosi                   (ethernetMosi),
+        .sclk                   (ethernetSclk),
+        .ss                     (ethernetSs)
+    );
+
+
     i2c #(.LINES(LINES))
     i2c(
        .clk                     (clk100),
@@ -615,6 +649,11 @@ module DECA_soc
         .sdCardSpiRead,
         .sdCardSpiWrite,
         .sdCardSpiAddress,
+        .ethernetSpiData,
+        .ethernetSpiValid,
+        .ethernetSpiRead,
+        .ethernetSpiWrite,
+        .ethernetSpiAddress,
         .i2cData,
         .i2cValid,
         .i2cRead,

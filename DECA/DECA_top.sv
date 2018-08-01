@@ -162,6 +162,12 @@ module DECA_top(
     output  logic          sdCardMosi,
     output  logic          sdCardSclk,
     output  logic          sdCardSs,
+    input   logic          ethernetIrq,
+    input   logic          ethernetMiso,
+    output  logic          ethernetMosi,
+    output  logic          ethernetSclk,
+    output  logic          ethernetSs,
+
     inout   wire   [4:0]   scl,
     inout   wire   [4:0]   sda,//,
     //output  logic          mdc,
@@ -174,7 +180,8 @@ module DECA_top(
     );
 
 
-    logic  [3:0]  ss;
+    logic  [3:0]  ss1;
+    logic  [3:0]  ss2;
 
 
     // the humidity/tempature sensor and the power meter can't both be connected
@@ -201,7 +208,8 @@ module DECA_top(
     assign sdout = AUDIO_DIN_MFP1;
 
 
-    assign sdCardSs = ss[0];
+    assign sdCardSs   = ss1[0];
+    assign ethernetSs = ss2[0];
 
 
     DECA_soc #(.LINES(5))
@@ -213,7 +221,12 @@ module DECA_top(
         .sdCardMiso,
         .sdCardMosi,
         .sdCardSclk,
-        .sdCardSs      (ss),
+        .sdCardSs      (ss1),
+        .ethernetIrq,
+        .ethernetMiso,
+        .ethernetMosi,
+        .ethernetSclk,
+        .ethernetSs    (ss2),
         .scl,
         .sda,
         .mdc           (NET_MDC),

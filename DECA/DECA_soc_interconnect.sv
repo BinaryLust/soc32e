@@ -15,7 +15,8 @@
 `define I2C_BASE         32'h03004000
 `define OCFLASH_BASE     32'h04000000
 `define ETHERNETSMI_BASE 32'h05000000
-`define I2SMASTER_BASE    32'h05100000
+`define I2SMASTER_BASE   32'h05100000
+`define ETHERNETSPI_BASE 32'h05200000
 
 
 // the device address space size in bytes
@@ -33,7 +34,8 @@
 `define I2C_SIZE         32'h8
 `define OCFLASH_SIZE     32'h10000
 `define ETHERNETSMI_SIZE 32'h8
-`define I2SMASTER_SIZE    32'h16
+`define I2SMASTER_SIZE   32'h16
+`define ETHERNETSPI_SIZE 32'h20
 
 
 module DECA_soc_interconnect(
@@ -136,6 +138,15 @@ module DECA_soc_interconnect(
     output  logic  [2:0]   sdCardSpiAddress,
 
 
+    input   logic  [31:0]  ethernetSpiData,
+    input   logic          ethernetSpiValid,
+    //input   logic          ethernetSpiWaitRequest,
+    //output  logic          ethernetSpiChipEnable,
+    output  logic          ethernetSpiRead,
+    output  logic          ethernetSpiWrite,
+    output  logic  [2:0]   ethernetSpiAddress,
+
+
     input   logic  [31:0]  i2cData,
     input   logic          i2cValid,
     //input   logic          i2cWaitRequest,
@@ -187,10 +198,10 @@ module DECA_soc_interconnect(
     logic         defaultRead;
     logic         defaultReadReg;
     logic         defaultValid;
-    logic  [8:0]  chipEnable;
-    logic  [8:0]  readEnable;
-    logic  [8:0]  writeEnable;
-    logic  [8:0]  validBus;
+    logic  [9:0]  chipEnable;
+    logic  [9:0]  readEnable;
+    logic  [9:0]  writeEnable;
+    logic  [9:0]  validBus;
 
 
     // default read valid register
@@ -209,9 +220,9 @@ module DECA_soc_interconnect(
     always_comb begin
         // default values
         waitRequest = 1'b0;
-        chipEnable  = 9'b0;
-        readEnable  = 9'b0;
-        writeEnable = 9'b0;
+        chipEnable  = 10'b0;
+        readEnable  = 10'b0;
+        writeEnable = 10'b0;
 
         // static ram
         if((address >= `RAM_BASE) && (address <= (`RAM_BASE + (`RAM_SIZE - 1)))) begin
@@ -322,46 +333,56 @@ module DECA_soc_interconnect(
         sdCardSpiWrite   = writeEnable[4];
         sdCardSpiAddress = address[4:2];
 
-        // i2c controller
-        if((address >= `I2C_BASE) && (address <= (`I2C_BASE + (`I2C_SIZE - 1)))) begin
+        // spi for ethernet controller
+        if((address >= `ETHERNETSPI_BASE) && (address <= (`ETHERNETSPI_BASE + (`ETHERNETSPI_SIZE - 1)))) begin
             chipEnable[5]  = 1'b1;
             readEnable[5]  = read;  // chipEnable && read;
             writeEnable[5] = write; // chipEnable && write;
         end
-        i2cRead    = readEnable[5];
-        i2cWrite   = writeEnable[5];
+        ethernetSpiRead    = readEnable[5];
+        ethernetSpiWrite   = writeEnable[5];
+        ethernetSpiAddress = address[4:2];
+
+        // i2c controller
+        if((address >= `I2C_BASE) && (address <= (`I2C_BASE + (`I2C_SIZE - 1)))) begin
+            chipEnable[6]  = 1'b1;
+            readEnable[6]  = read;  // chipEnable && read;
+            writeEnable[6] = write; // chipEnable && write;
+        end
+        i2cRead    = readEnable[6];
+        i2cWrite   = writeEnable[6];
         i2cAddress = address[2];
 
         // on chip flash
         if((address >= `OCFLASH_BASE) && (address <= (`OCFLASH_BASE + (`OCFLASH_SIZE - 1)))) begin
-            chipEnable[6]  = 1'b1;
-            readEnable[6]  = read;  // chipEnable && read;
-            writeEnable[6] = write; // chipEnable && write;
+            chipEnable[7]  = 1'b1;
+            readEnable[7]  = read;  // chipEnable && read;
+            writeEnable[7] = write; // chipEnable && write;
             waitRequest  = ocFlashWaitRequest;
         end
-        ocFlashRead    = readEnable[6];
-        //ocFlashWrite   = writeEnable[6];
+        ocFlashRead    = readEnable[7];
+        //ocFlashWrite   = writeEnable[7];
         ocFlashAddress = address[15:2];
 
         // ethernet smi controller
         if((address >= `ETHERNETSMI_BASE) && (address <= (`ETHERNETSMI_BASE + (`ETHERNETSMI_SIZE - 1)))) begin
-            chipEnable[7]  = 1'b1;
-            readEnable[7]  = read;  // chipEnable && read;
-            writeEnable[7] = write; // chipEnable && write;
+            chipEnable[8]  = 1'b1;
+            readEnable[8]  = read;  // chipEnable && read;
+            writeEnable[8] = write; // chipEnable && write;
         end
-        ethernetSmiRead    = readEnable[7];
-        ethernetSmiWrite   = writeEnable[7];
+        ethernetSmiRead    = readEnable[8];
+        ethernetSmiWrite   = writeEnable[8];
         ethernetSmiAddress = address[2];
 
 
         // i2s master controller
         if((address >= `I2SMASTER_BASE) && (address <= (`I2SMASTER_BASE + (`I2SMASTER_SIZE - 1)))) begin
-            chipEnable[8]  = 1'b1;
-            readEnable[8]  = read;  // chipEnable && read;
-            writeEnable[8] = write; // chipEnable && write;
+            chipEnable[9]  = 1'b1;
+            readEnable[9]  = read;  // chipEnable && read;
+            writeEnable[9] = write; // chipEnable && write;
         end
-        i2sMasterRead    = readEnable[8];
-        i2sMasterWrite   = writeEnable[8];
+        i2sMasterRead    = readEnable[9];
+        i2sMasterWrite   = writeEnable[9];
         i2sMasterAddress = address[3:2];
 
 
@@ -383,28 +404,30 @@ module DECA_soc_interconnect(
                     //dacSpiValid,
                     //soundValid,
                     sdCardSpiValid,
+                    ethernetSpiValid,
                     i2cValid,
                     ocFlashValid,
                     ethernetSmiValid,
                     i2sMasterValid};
 
         case(validBus)
-            9'b100000000: dataIn = ramData;
-            9'b010000000: dataIn = randomData;
-            9'b001000000: dataIn = timerData;
-            9'b000100000: dataIn = uartData;
+            10'b1000000000: dataIn = ramData;
+            10'b0100000000: dataIn = randomData;
+            10'b0010000000: dataIn = timerData;
+            10'b0001000000: dataIn = uartData;
             //12'b000010000000: dataIn = sdramData;
             //12'b000001000000: dataIn = sequencerData;
             //12'b000000100000: dataIn = sampleData;
             //12'b000000010000: dataIn = ioData;
             //12'b000000001000: dataIn = dacSpiData;
             //12'b000000000100: dataIn = soundData;
-            9'b000010000: dataIn = sdCardSpiData;
-            9'b000001000: dataIn = i2cData;
-            9'b000000100: dataIn = ocFlashData;
-            9'b000000010: dataIn = ethernetSmiData;
-            9'b000000001: dataIn = i2sMasterData;
-            default:      dataIn = 32'b0; // default data return value
+            10'b0000100000: dataIn = sdCardSpiData;
+            10'b0000010000: dataIn = ethernetSpiData;
+            10'b0000001000: dataIn = i2cData;
+            10'b0000000100: dataIn = ocFlashData;
+            10'b0000000010: dataIn = ethernetSmiData;
+            10'b0000000001: dataIn = i2sMasterData;
+            default:        dataIn = 32'b0; // default data return value
         endcase
 
         readValid = |validBus | defaultValid;
