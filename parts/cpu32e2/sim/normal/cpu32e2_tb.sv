@@ -1,7 +1,7 @@
 `timescale 1ns / 100ps
 
 
-`include "G:/My Code/on git/systemverilog/soc32e/parts/cpu32e2/rtl/globals.sv"
+`include "G:/My Code/systemverilog/soc32e/parts/cpu32e2/rtl/globals.sv"
 
 
 module cpu32e2_tb();

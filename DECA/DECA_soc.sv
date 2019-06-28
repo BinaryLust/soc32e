@@ -36,26 +36,26 @@ module DECA_soc
     output  logic               wclk,
     output  logic               bclk,
     input   logic               sdin,
-    output  logic               sdout
+    output  logic               sdout,
 
-    // output  logic          pwmOut,
+     //output  logic              pwmOut,
 
-    // output  logic  [11:0]  externalSdramAddress,
-    // output  logic  [1:0]   externalSdramBa,
-    // output  logic          externalSdramCas,
-    // output  logic          externalSdramCke,
-    // output  logic          externalSdramClk,
-    // output  logic          externalSdramCs,
-    // inout   wire   [15:0]  externalSdramDq,
-    // output  logic  [1:0]   externalSdramDqm,
-    // output  logic          externalSdramRas,
-    // output  logic          externalSdramWe,
+    output  logic  [12:0]       externalSdramAddress,
+    output  logic  [1:0]        externalSdramBa,
+    output  logic               externalSdramCas,
+    output  logic               externalSdramCke,
+    output  logic               externalSdramClk,
+    output  logic               externalSdramCs,
+    inout   wire   [15:0]       externalSdramDq,
+    output  logic  [1:0]        externalSdramDqm,
+    output  logic               externalSdramRas,
+    output  logic               externalSdramWe
 
-    // output  logic          horizontalSync,
-    // output  logic          verticalSync,
-    // output  logic  [2:0]   red,
-    // output  logic  [2:0]   green,
-    // output  logic  [1:0]   blue
+    // output  logic               horizontalSync,
+    // output  logic               verticalSync,
+    // output  logic  [2:0]        red,
+    // output  logic  [2:0]        green,
+    // output  logic  [1:0]        blue
     );
 
 
@@ -120,13 +120,13 @@ module DECA_soc
     logic          uartValid;
     logic  [31:0]  uartData;
 
-    // logic          sdramWaitRequest;
-    // //logic          sdramChipEnable;
-    // logic          sdramRead;
-    // logic          sdramWrite;
-    // logic  [20:0]  sdramAddress;
-    // logic          sdramValid;
-    // logic  [31:0]  sdramData;
+    logic          sdramWaitRequest;
+    //logic          sdramChipEnable;
+    logic          sdramRead;
+    logic          sdramWrite;
+    logic  [23:0]  sdramAddress;
+    logic          sdramValid;
+    logic  [31:0]  sdramData;
 
     // //logic          sequencerChipEnable;
     // logic          sequencerRead;
@@ -244,7 +244,7 @@ module DECA_soc
         .areset                 (1'b0),      //(reset),
         .inclk0                 (clk),
         .c0                     (clk100),
-        .c1                     (),//(externalSdramClk),
+        .c1                     (externalSdramClk),
         .c2                     (clk25),
         .c3                     (clk16),
         .locked                 ()
@@ -397,29 +397,29 @@ module DECA_soc
     );
 
 
-    // sdram
-    // sdram(
-    //     .clk                    (clk100),
-    //     .reset                  (reset100),
-    //     .chipEnable             (1'b1),
-    //     .read                   (sdramRead),
-    //     .write                  (sdramWrite),
-    //     .bwe,
-    //     .address                (sdramAddress),
-    //     .dataIn                 (dataOut),
-    //     .waitRequest            (sdramWaitRequest),
-    //     .readValid              (sdramValid),
-    //     .dataOut                (sdramData),
-    //     .externalSdramAddress,
-    //     .externalSdramBa,
-    //     .externalSdramCas,
-    //     .externalSdramCke,
-    //     .externalSdramCs,
-    //     .externalSdramDq,
-    //     .externalSdramDqm,
-    //     .externalSdramRas,
-    //     .externalSdramWe
-    // );
+    sdram2
+    sdram2(
+        .clk                    (clk100),
+        .reset                  (reset100),
+        .chipEnable             (1'b1),
+        .read                   (sdramRead),
+        .write                  (sdramWrite),
+        .bwe,
+        .address                (sdramAddress),
+        .dataIn                 (dataOut),
+        .waitRequest            (sdramWaitRequest),
+        .readValid              (sdramValid),
+        .dataOut                (sdramData),
+        .externalSdramAddress,
+        .externalSdramBa,
+        .externalSdramCas,
+        .externalSdramCke,
+        .externalSdramCs,
+        .externalSdramDq,
+        .externalSdramDqm,
+        .externalSdramRas,
+        .externalSdramWe
+    );
 
 
     // adc
@@ -614,12 +614,12 @@ module DECA_soc
         .uartRead,
         .uartWrite,
         .uartAddress,
-        // .sdramData,
-        // .sdramValid,
-        // .sdramWaitRequest,
-        // .sdramRead,
-        // .sdramWrite,
-        // .sdramAddress,
+        .sdramData,
+        .sdramValid,
+        .sdramWaitRequest,
+        .sdramRead,
+        .sdramWrite,
+        .sdramAddress,
         // .sequencerData,
         // .sequencerValid,
         // .sequencerRead,

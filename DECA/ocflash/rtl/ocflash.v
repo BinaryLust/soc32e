@@ -15,7 +15,7 @@ module ocflash (
 	);
 
 	altera_onchip_flash #(
-		.INIT_FILENAME                       ("G:/My Code/on git/systemverilog/soc32e/DECA/ocFlashContents.mif"),
+		.INIT_FILENAME                       ("G:/My Code/systemverilog/soc32e/DECA/ocFlashContents.mif"),
 		.INIT_FILENAME_SIM                   ("altera_onchip_flash.dat"),
 		.DEVICE_FAMILY                       ("MAX 10"),
 		.PART_NAME                           ("10M50DAF484C6GES"),
