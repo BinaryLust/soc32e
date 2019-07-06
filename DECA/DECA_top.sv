@@ -110,7 +110,7 @@ module DECA_top(
     input  logic  [1:0]    KEY,
 
     //////////// LED //////////
-    // output  logic  [7:0]   LED,
+    output  logic  [7:0]   LED,
 
     //////////// CapSense Button //////////
     inout   wire           CAP_SENSE_I2C_SCL,
@@ -277,7 +277,13 @@ module DECA_top(
     inout   wire   [15:0]  externalSdramDq,
     output  logic  [1:0]   externalSdramDqm,
     output  logic          externalSdramRas,
-    output  logic          externalSdramWe
+    output  logic          externalSdramWe,
+
+    input   logic          keyboardPs2Clk,
+    input   logic          keyboardPs2Data,
+    
+    input   logic          mousePs2Clk,
+    input   logic          mousePs2Data
     );
 
 
@@ -302,6 +308,9 @@ module DECA_top(
     assign bclk             = AUDIO_BCLK;
     assign wclk             = AUDIO_WCLK;
     assign sdout            = AUDIO_DIN_MFP1;
+
+
+    assign LED              = {6'b111111, ~ethernetSclk, ~sdCardSclk};
 
 
     // the humidity/tempature sensor and the power meter can't both be connected
@@ -339,7 +348,11 @@ module DECA_top(
         .externalSdramDq,
         .externalSdramDqm,
         .externalSdramRas,
-        .externalSdramWe
+        .externalSdramWe,
+        .keyboardPs2Clk,
+        .keyboardPs2Data,
+        .mousePs2Clk,
+        .mousePs2Data
     );
 
 

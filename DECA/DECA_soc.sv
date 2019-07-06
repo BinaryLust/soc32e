@@ -49,7 +49,13 @@ module DECA_soc
     inout   wire   [15:0]       externalSdramDq,
     output  logic  [1:0]        externalSdramDqm,
     output  logic               externalSdramRas,
-    output  logic               externalSdramWe
+    output  logic               externalSdramWe,
+
+    input   logic               keyboardPs2Clk,
+    input   logic               keyboardPs2Data,
+
+    input   logic               mousePs2Clk,
+    input   logic               mousePs2Data
 
     // output  logic               horizontalSync,
     // output  logic               verticalSync,
@@ -205,6 +211,21 @@ module DECA_soc
     logic          i2sMasterValid;
     logic  [31:0]  i2sMasterData;
 
+    //logic          ps2KeyboardChipEnable;
+    logic          ps2KeyboardRead;
+    logic          ps2KeyboardWrite;
+    logic  [1:0]   ps2KeyboardAddress;
+    logic          ps2KeyboardValid;
+    logic  [31:0]  ps2KeyboardData;
+
+    //logic          ps2MouseChipEnable;
+    logic          ps2MouseRead;
+    logic          ps2MouseWrite;
+    logic  [1:0]   ps2MouseAddress;
+    logic          ps2MouseValid;
+    logic  [31:0]  ps2MouseData;
+
+
     // interrupt wires
     logic  [15:0]  triggerInterrupt;
     logic          rxIrq;
@@ -218,6 +239,8 @@ module DECA_soc
     logic          sdCardSpiTransmitIrq;
     logic          ethernetSpiReceiveIrq;
     logic          ethernetSpiTransmitIrq;
+    logic          ps2KeyboardIrq;
+    logic          ps2MouseIrq;
 
 
     // interrupt mapping
@@ -235,8 +258,8 @@ module DECA_soc
     assign triggerInterrupt[11] = 1'b0;                 // interrupt 11 // unused
     assign triggerInterrupt[12] = 1'b0;                 // interrupt 12 // unused
     assign triggerInterrupt[13] = 1'b0;                 // interrupt 13 // unused
-    assign triggerInterrupt[14] = 1'b0;                 // interrupt 14 // unused
-    assign triggerInterrupt[15] = 1'b0;                 // interrupt 15 // unused
+    assign triggerInterrupt[14] = ps2MouseIrq;          // interrupt 14 // unused
+    assign triggerInterrupt[15] = ps2KeyboardIrq;       // interrupt 15 // unused
 
 
     pll
@@ -593,6 +616,38 @@ module DECA_soc
     );
 
 
+    ps2
+    ps2Mouse(
+        .clk                     (clk100),
+        .reset                   (reset100),
+        .read                    (ps2MouseRead),
+        .write                   (ps2MouseWrite),
+        .address                 (ps2MouseAddress),
+        .dataIn                  (dataOut),
+        .readValid               (ps2MouseValid),
+        .dataOut                 (ps2MouseData),
+        .irq                     (ps2MouseIrq),
+        .ps2Clk                  (mousePs2Clk),
+        .ps2Data                 (mousePs2Data)
+    );
+
+
+    ps2
+    ps2Keyboard(
+        .clk                     (clk100),
+        .reset                   (reset100),
+        .read                    (ps2KeyboardRead),
+        .write                   (ps2KeyboardWrite),
+        .address                 (ps2KeyboardAddress),
+        .dataIn                  (dataOut),
+        .readValid               (ps2KeyboardValid),
+        .dataOut                 (ps2KeyboardData),
+        .irq                     (ps2KeyboardIrq),
+        .ps2Clk                  (keyboardPs2Clk),
+        .ps2Data                 (keyboardPs2Data)
+    );
+
+
     DECA_soc_interconnect
     DECA_soc_interconnect(
         .ramData,
@@ -674,6 +729,16 @@ module DECA_soc
         .i2sMasterRead,
         .i2sMasterWrite,
         .i2sMasterAddress,
+        .ps2KeyboardData,
+        .ps2KeyboardValid,
+        .ps2KeyboardRead,
+        .ps2KeyboardWrite,
+        .ps2KeyboardAddress,
+        .ps2MouseData,
+        .ps2MouseValid,
+        .ps2MouseRead,
+        .ps2MouseWrite,
+        .ps2MouseAddress,
         .clk                     (clk100),
         .reset                   (reset100),
         .address,

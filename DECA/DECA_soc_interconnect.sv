@@ -16,6 +16,8 @@
 `define ETHERNETSMI_BASE 32'h05000000
 `define I2SMASTER_BASE   32'h05100000
 `define ETHERNETSPI_BASE 32'h05200000
+`define PS2KEYBOARD_BASE 32'h06000000
+`define PS2MOUSE_BASE    32'h07000000
 `define SDRAM_BASE       32'h80000000
 
 
@@ -35,6 +37,8 @@
 `define ETHERNETSMI_SIZE 32'h8
 `define I2SMASTER_SIZE   32'h16
 `define ETHERNETSPI_SIZE 32'h20
+`define PS2KEYBOARD_SIZE 32'h10
+`define PS2MOUSE_SIZE    32'h10
 `define SDRAM_SIZE       32'h400_0000 // 32'h80_0000
 
 
@@ -183,6 +187,24 @@ module DECA_soc_interconnect(
     output  logic  [1:0]   i2sMasterAddress,
 
 
+    input   logic  [31:0]  ps2KeyboardData,
+    input   logic          ps2KeyboardValid,
+    //input   logic          ps2KeyboardWaitRequest,
+    //input   logic          ps2KeyboardChipEnable,
+    output  logic          ps2KeyboardRead,
+    output  logic          ps2KeyboardWrite,
+    output  logic  [1:0]   ps2KeyboardAddress,
+
+
+    input   logic  [31:0]  ps2MouseData,
+    input   logic          ps2MouseValid,
+    //input   logic          ps2MouseWaitRequest,
+    //input   logic          ps2MouseChipEnable,
+    output  logic          ps2MouseRead,
+    output  logic          ps2MouseWrite,
+    output  logic  [1:0]   ps2MouseAddress,
+
+
     input   logic          clk,
     input   logic          reset,
     input   logic  [31:0]  address,
@@ -195,13 +217,13 @@ module DECA_soc_interconnect(
 
 
     // internal wiring
-    logic         defaultRead;
-    logic         defaultReadReg;
-    logic         defaultValid;
-    logic  [10:0]  chipEnable;
-    logic  [10:0]  readEnable;
-    logic  [10:0]  writeEnable;
-    logic  [10:0]  validBus;
+    logic          defaultRead;
+    logic          defaultReadReg;
+    logic          defaultValid;
+    logic  [12:0]  chipEnable;
+    logic  [12:0]  readEnable;
+    logic  [12:0]  writeEnable;
+    logic  [12:0]  validBus;
 
 
     // default read valid register
@@ -219,10 +241,9 @@ module DECA_soc_interconnect(
     // address map logic
     always_comb begin
         // default values
-        waitRequest = 1'b0;
-        chipEnable  = 11'b0;
-        readEnable  = 11'b0;
-        writeEnable = 11'b0;
+        chipEnable  = 13'b0;
+        readEnable  = 13'b0;
+        writeEnable = 13'b0;
 
         // static ram
         if((address >= `RAM_BASE) && (address <= (`RAM_BASE + (`RAM_SIZE - 1)))) begin
@@ -268,7 +289,6 @@ module DECA_soc_interconnect(
             chipEnable[4]  = 1'b1;
             readEnable[4]  = read;  // chipEnable && read;
             writeEnable[4] = write; // chipEnable && write;
-            waitRequest    = sdramWaitRequest;
         end
         sdramRead    = readEnable[4];
         sdramWrite   = writeEnable[4];
@@ -358,7 +378,6 @@ module DECA_soc_interconnect(
             chipEnable[8]  = 1'b1;
             readEnable[8]  = read;  // chipEnable && read;
             writeEnable[8] = write; // chipEnable && write;
-            waitRequest  = ocFlashWaitRequest;
         end
         ocFlashRead    = readEnable[8];
         //ocFlashWrite   = writeEnable[8];
@@ -386,6 +405,28 @@ module DECA_soc_interconnect(
         i2sMasterAddress = address[3:2];
 
 
+        // ps2 keyboard controller
+        if((address >= `PS2KEYBOARD_BASE) && (address <= (`PS2KEYBOARD_BASE + (`PS2KEYBOARD_SIZE - 1)))) begin
+            chipEnable[11]  = 1'b1;
+            readEnable[11]  = read;  // chipEnable && read;
+            writeEnable[11] = write; // chipEnable && write;
+        end
+        ps2KeyboardRead    = readEnable[11];
+        ps2KeyboardWrite   = writeEnable[11];
+        ps2KeyboardAddress = address[3:2];
+
+
+        // ps2 mouse controller
+        if((address >= `PS2MOUSE_BASE) && (address <= (`PS2MOUSE_BASE + (`PS2MOUSE_SIZE - 1)))) begin
+            chipEnable[12]  = 1'b1;
+            readEnable[12]  = read;  // chipEnable && read;
+            writeEnable[12] = write; // chipEnable && write;
+        end
+        ps2MouseRead    = readEnable[12];
+        ps2MouseWrite   = writeEnable[12];
+        ps2MouseAddress = address[3:2];
+
+
         // default signal
         defaultRead = read & ~|chipEnable;
     end
@@ -408,30 +449,38 @@ module DECA_soc_interconnect(
                     i2cValid,
                     ocFlashValid,
                     ethernetSmiValid,
-                    i2sMasterValid};
+                    i2sMasterValid,
+                    ps2KeyboardValid,
+                    ps2MouseValid};
 
         case(validBus)
-            11'b10000000000: dataIn = ramData;
-            11'b01000000000: dataIn = randomData;
-            11'b00100000000: dataIn = timerData;
-            11'b00010000000: dataIn = uartData;
-            11'b00001000000: dataIn = sdramData;
+            13'b1000000000000: dataIn = ramData;
+            13'b0100000000000: dataIn = randomData;
+            13'b0010000000000: dataIn = timerData;
+            13'b0001000000000: dataIn = uartData;
+            13'b0000100000000: dataIn = sdramData;
             //12'b000001000000: dataIn = sequencerData;
             //12'b000000100000: dataIn = sampleData;
             //12'b000000010000: dataIn = ioData;
             //12'b000000001000: dataIn = dacSpiData;
             //12'b000000000100: dataIn = soundData;
-            11'b00000100000: dataIn = sdCardSpiData;
-            11'b00000010000: dataIn = ethernetSpiData;
-            11'b00000001000: dataIn = i2cData;
-            11'b00000000100: dataIn = ocFlashData;
-            11'b00000000010: dataIn = ethernetSmiData;
-            11'b00000000001: dataIn = i2sMasterData;
-            default:        dataIn = 32'b0; // default data return value
+            13'b0000010000000: dataIn = sdCardSpiData;
+            13'b0000001000000: dataIn = ethernetSpiData;
+            13'b0000000100000: dataIn = i2cData;
+            13'b0000000010000: dataIn = ocFlashData;
+            13'b0000000001000: dataIn = ethernetSmiData;
+            13'b0000000000100: dataIn = i2sMasterData;
+            13'b0000000000010: dataIn = ps2KeyboardData;
+            13'b0000000000001: dataIn = ps2MouseData;
+            default:           dataIn = 32'b0; // default data return value
         endcase
 
         readValid = |validBus | defaultValid;
     end
+
+
+    // wait request logic
+    assign waitRequest = sdramWaitRequest | ocFlashWaitRequest;
 
 
 endmodule

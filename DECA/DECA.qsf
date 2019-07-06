@@ -521,9 +521,6 @@ set_instance_assignment -name IO_STANDARD "1.8 V" -to USB_STP
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to BBB_PWR_BUT
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rx
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to tx
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_location_assignment PIN_AB19 -to mclk
 set_location_assignment PIN_V16 -to wclk
 set_location_assignment PIN_V15 -to bclk
@@ -565,6 +562,161 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to sdout
 set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to rx
 set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to mclk
 set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to bclk
+set_location_assignment PIN_P20 -to AUDIO_SCL_SS_n
+set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SCL_SS_n
+set_location_assignment PIN_P21 -to AUDIO_SDA_MOSI
+set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SDA_MOSI
+set_location_assignment PIN_AB2 -to CAP_SENSE_I2C_SCL
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to CAP_SENSE_I2C_SCL
+set_location_assignment PIN_AB3 -to CAP_SENSE_I2C_SDA
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to CAP_SENSE_I2C_SDA
+set_location_assignment PIN_Y8 -to LIGHT_I2C_SCL
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LIGHT_I2C_SCL
+set_location_assignment PIN_AA8 -to LIGHT_I2C_SDA
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LIGHT_I2C_SDA
+set_location_assignment PIN_Y3 -to PMONITOR_I2C_SCL
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to PMONITOR_I2C_SCL
+set_location_assignment PIN_Y1 -to PMONITOR_I2C_SDA
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to PMONITOR_I2C_SDA
+set_location_assignment PIN_W11 -to externalSdramDq[0]
+set_location_assignment PIN_W12 -to externalSdramDq[1]
+set_location_assignment PIN_W13 -to externalSdramDq[2]
+set_location_assignment PIN_Y11 -to externalSdramDq[3]
+set_location_assignment PIN_Y13 -to externalSdramDq[4]
+set_location_assignment PIN_AB10 -to externalSdramDq[5]
+set_location_assignment PIN_AA11 -to externalSdramDq[6]
+set_location_assignment PIN_AB11 -to externalSdramDq[7]
+set_location_assignment PIN_U7 -to externalSdramDq[8]
+set_location_assignment PIN_V10 -to externalSdramDq[9]
+set_location_assignment PIN_W5 -to externalSdramDq[10]
+set_location_assignment PIN_W9 -to externalSdramDq[11]
+set_location_assignment PIN_W4 -to externalSdramDq[12]
+set_location_assignment PIN_R9 -to externalSdramDq[13]
+set_location_assignment PIN_P9 -to externalSdramDq[14]
+set_location_assignment PIN_W3 -to externalSdramDq[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[13]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[14]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[15]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[5]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[8]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[9]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[10]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[11]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[12]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[13]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[14]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[15]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq
+set_location_assignment PIN_AA6 -to externalSdramDqm[1]
+set_location_assignment PIN_AB12 -to externalSdramWe
+set_location_assignment PIN_AA13 -to externalSdramCas
+set_location_assignment PIN_AB14 -to externalSdramBa[0]
+set_location_assignment PIN_AA15 -to externalSdramBa[1]
+set_location_assignment PIN_Y14 -to externalSdramAddress[10]
+set_location_assignment PIN_W15 -to externalSdramAddress[0]
+set_location_assignment PIN_AB15 -to externalSdramAddress[1]
+set_location_assignment PIN_W16 -to externalSdramAddress[2]
+set_location_assignment PIN_AB16 -to externalSdramAddress[3]
+set_location_assignment PIN_AA12 -to externalSdramDqm[0]
+set_location_assignment PIN_V17 -to externalSdramClk
+set_location_assignment PIN_Y7 -to externalSdramCke
+set_location_assignment PIN_AB6 -to externalSdramAddress[12]
+set_location_assignment PIN_AA7 -to externalSdramAddress[11]
+set_location_assignment PIN_R11 -to externalSdramAddress[9]
+set_location_assignment PIN_AB7 -to externalSdramAddress[8]
+set_location_assignment PIN_AB8 -to externalSdramAddress[7]
+set_location_assignment PIN_V7 -to externalSdramAddress[6]
+set_location_assignment PIN_W8 -to externalSdramAddress[5]
+set_location_assignment PIN_V8 -to externalSdramAddress[4]
+set_location_assignment PIN_AA14 -to externalSdramCs
+set_location_assignment PIN_AB13 -to externalSdramRas
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDqm[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDqm[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramRas
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramWe
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramBa[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramBa[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCas
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCke
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramClk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCs
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[5]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[8]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[9]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[10]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[11]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[12]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to externalSdramCas
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramCke
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to externalSdramClk
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramCs
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramRas
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramWe
+set_location_assignment PIN_Y10 -to RH_TEMP_I2C_SCL
+set_location_assignment PIN_AA10 -to RH_TEMP_I2C_SDA
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to RH_TEMP_I2C_SCL
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to RH_TEMP_I2C_SDA
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramAddress[*]
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramBa[*]
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramCas
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramCke
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramCs
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramDq[*]
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramDqm[*]
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramRas
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to externalSdramWe
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to externalSdramDq[*]
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to externalSdramDq[*]
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/ps2/rtl/ps2Core.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/ps2/rtl/ps2Controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../parts/ps2/rtl/ps2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/sdram2/rtl/sdram2.sv
 set_global_assignment -name VERILOG_FILE ../parts/sdram2/rtl/sdram_controller_32Mx16_test_component.v
 set_global_assignment -name VERILOG_FILE ../parts/sdram2/rtl/sdram_controller_32Mx16.v
@@ -710,146 +862,88 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../parts/library/memoryBlock/sing
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sMaster/rtl/i2sMasterUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sMaster/rtl/i2sMasterCore.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../parts/i2sMaster/rtl/i2sMaster.sv
-set_location_assignment PIN_P20 -to AUDIO_SCL_SS_n
-set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SCL_SS_n
-set_location_assignment PIN_P21 -to AUDIO_SDA_MOSI
-set_instance_assignment -name IO_STANDARD "1.5 V" -to AUDIO_SDA_MOSI
-set_location_assignment PIN_AB2 -to CAP_SENSE_I2C_SCL
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to CAP_SENSE_I2C_SCL
-set_location_assignment PIN_AB3 -to CAP_SENSE_I2C_SDA
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to CAP_SENSE_I2C_SDA
-set_location_assignment PIN_Y8 -to LIGHT_I2C_SCL
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LIGHT_I2C_SCL
-set_location_assignment PIN_AA8 -to LIGHT_I2C_SDA
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LIGHT_I2C_SDA
-set_location_assignment PIN_Y3 -to PMONITOR_I2C_SCL
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to PMONITOR_I2C_SCL
-set_location_assignment PIN_Y1 -to PMONITOR_I2C_SDA
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to PMONITOR_I2C_SDA
-set_location_assignment PIN_W11 -to externalSdramDq[0]
-set_location_assignment PIN_W12 -to externalSdramDq[1]
-set_location_assignment PIN_W13 -to externalSdramDq[2]
-set_location_assignment PIN_Y11 -to externalSdramDq[3]
-set_location_assignment PIN_Y13 -to externalSdramDq[4]
-set_location_assignment PIN_AB10 -to externalSdramDq[5]
-set_location_assignment PIN_AA11 -to externalSdramDq[6]
-set_location_assignment PIN_AB11 -to externalSdramDq[7]
-set_location_assignment PIN_U7 -to externalSdramDq[8]
-set_location_assignment PIN_V10 -to externalSdramDq[9]
-set_location_assignment PIN_W5 -to externalSdramDq[10]
-set_location_assignment PIN_W9 -to externalSdramDq[11]
-set_location_assignment PIN_W4 -to externalSdramDq[12]
-set_location_assignment PIN_R9 -to externalSdramDq[13]
-set_location_assignment PIN_P9 -to externalSdramDq[14]
-set_location_assignment PIN_W3 -to externalSdramDq[15]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[2]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[3]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[4]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[5]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[6]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[7]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[8]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[9]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[10]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[11]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[12]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[13]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[14]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDq[15]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[2]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[3]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[4]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[5]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[6]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[7]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[8]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[9]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[10]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[11]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[12]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[13]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[14]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq[15]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDq
-set_location_assignment PIN_AA6 -to externalSdramDqm[1]
-set_location_assignment PIN_AB12 -to externalSdramWe
-set_location_assignment PIN_AA13 -to externalSdramCas
-set_location_assignment PIN_AB14 -to externalSdramBa[0]
-set_location_assignment PIN_AA15 -to externalSdramBa[1]
-set_location_assignment PIN_Y14 -to externalSdramAddress[10]
-set_location_assignment PIN_W15 -to externalSdramAddress[0]
-set_location_assignment PIN_AB15 -to externalSdramAddress[1]
-set_location_assignment PIN_W16 -to externalSdramAddress[2]
-set_location_assignment PIN_AB16 -to externalSdramAddress[3]
-set_location_assignment PIN_AA12 -to externalSdramDqm[0]
-set_location_assignment PIN_V17 -to externalSdramClk
-set_location_assignment PIN_Y7 -to externalSdramCke
-set_location_assignment PIN_AB6 -to externalSdramAddress[12]
-set_location_assignment PIN_AA7 -to externalSdramAddress[11]
-set_location_assignment PIN_R11 -to externalSdramAddress[9]
-set_location_assignment PIN_AB7 -to externalSdramAddress[8]
-set_location_assignment PIN_AB8 -to externalSdramAddress[7]
-set_location_assignment PIN_V7 -to externalSdramAddress[6]
-set_location_assignment PIN_W8 -to externalSdramAddress[5]
-set_location_assignment PIN_V8 -to externalSdramAddress[4]
-set_location_assignment PIN_AA14 -to externalSdramCs
-set_location_assignment PIN_AB13 -to externalSdramRas
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDqm[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramDqm[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramRas
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramWe
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[2]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[3]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[4]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[5]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[6]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[7]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[8]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[9]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[10]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[11]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramAddress[12]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramBa[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramBa[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCas
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCke
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramClk
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to externalSdramCs
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[2]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[3]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[4]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[5]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[6]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[7]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[8]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[9]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[10]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[11]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress[12]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramAddress
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramBa
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramCas
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramCke
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramClk
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramCs
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramDqm
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramRas
-set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to externalSdramWe
-set_location_assignment PIN_Y10 -to RH_TEMP_I2C_SCL
-set_location_assignment PIN_AA10 -to RH_TEMP_I2C_SDA
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to RH_TEMP_I2C_SCL
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to RH_TEMP_I2C_SDA
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id ps2_debug
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to ps2_debug|vcc -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=1" -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to ps2_debug|gnd -section_id ps2_debug
+set_location_assignment PIN_Y18 -to mousePs2Clk
+set_location_assignment PIN_W18 -to mousePs2Data
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mousePs2Clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to mousePs2Data
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to mousePs2Clk
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to mousePs2Data
+set_location_assignment PIN_Y19 -to keyboardPs2Data
+set_location_assignment PIN_AA17 -to keyboardPs2Clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to keyboardPs2Clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to keyboardPs2Data
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to keyboardPs2Clk
+set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to keyboardPs2Data
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "DECA_soc:DECA_soc|ps2:ps2Keyboard|clk" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "DECA_soc:DECA_soc|ps2:ps2Keyboard|ps2Clk" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "DECA_soc:DECA_soc|ps2:ps2Keyboard|ps2Data" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "DECA_soc:DECA_soc|ps2:ps2Mouse|ps2Clk" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "DECA_soc:DECA_soc|ps2:ps2Mouse|ps2Data" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "DECA_soc:DECA_soc|ps2:ps2Keyboard|ps2Clk" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "DECA_soc:DECA_soc|ps2:ps2Keyboard|ps2Data" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "DECA_soc:DECA_soc|ps2:ps2Mouse|ps2Clk" -section_id ps2_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "DECA_soc:DECA_soc|ps2:ps2Mouse|ps2Data" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=4" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=4" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=4" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334534" -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to ps2_debug|gnd -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to ps2_debug|vcc -section_id ps2_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to ps2_debug|gnd -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=1" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=sld_reserved_DECA_ps2_debug_1_14a3," -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=31" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=131072" -section_id ps2_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=131072" -section_id ps2_debug
 set_global_assignment -name SLD_FILE db/debug_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
