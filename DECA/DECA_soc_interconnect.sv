@@ -12,7 +12,7 @@
 //`define SOUND_BASE       32'h03002000
 `define SDCARDSPI_BASE   32'h03003000
 `define I2C_BASE         32'h03004000
-`define OCFLASH_BASE     32'h04000000
+//`define OCFLASH_BASE     32'h04000000
 `define ETHERNETSMI_BASE 32'h05000000
 `define I2SMASTER_BASE   32'h05100000
 `define ETHERNETSPI_BASE 32'h05200000
@@ -33,7 +33,7 @@
 //`define SOUND_SIZE       32'h10
 `define SDCARDSPI_SIZE   32'h20
 `define I2C_SIZE         32'h8
-`define OCFLASH_SIZE     32'h10000
+//`define OCFLASH_SIZE     32'h10000
 `define ETHERNETSMI_SIZE 32'h8
 `define I2SMASTER_SIZE   32'h16
 `define ETHERNETSPI_SIZE 32'h20
@@ -160,13 +160,13 @@ module DECA_soc_interconnect(
     output  logic          i2cAddress,
 
 
-    input   logic  [31:0]  ocFlashData,
-    input   logic          ocFlashValid,
-    input   logic          ocFlashWaitRequest,
-    //output  logic          ocFlashChipEnable,
-    output  logic          ocFlashRead,
-    //output  logic          ocFlashWrite,
-    output  logic  [13:0]  ocFlashAddress,
+    // input   logic  [31:0]  ocFlashData,
+    // input   logic          ocFlashValid,
+    // input   logic          ocFlashWaitRequest,
+    // //output  logic          ocFlashChipEnable,
+    // output  logic          ocFlashRead,
+    // //output  logic          ocFlashWrite,
+    // output  logic  [13:0]  ocFlashAddress,
 
 
     input   logic  [31:0]  ethernetSmiData,
@@ -374,14 +374,14 @@ module DECA_soc_interconnect(
         i2cAddress = address[2];
 
         // on chip flash
-        if((address >= `OCFLASH_BASE) && (address <= (`OCFLASH_BASE + (`OCFLASH_SIZE - 1)))) begin
-            chipEnable[8]  = 1'b1;
-            readEnable[8]  = read;  // chipEnable && read;
-            writeEnable[8] = write; // chipEnable && write;
-        end
-        ocFlashRead    = readEnable[8];
-        //ocFlashWrite   = writeEnable[8];
-        ocFlashAddress = address[15:2];
+        // if((address >= `OCFLASH_BASE) && (address <= (`OCFLASH_BASE + (`OCFLASH_SIZE - 1)))) begin
+        //     chipEnable[8]  = 1'b1;
+        //     readEnable[8]  = read;  // chipEnable && read;
+        //     writeEnable[8] = write; // chipEnable && write;
+        // end
+        // ocFlashRead    = readEnable[8];
+        // //ocFlashWrite   = writeEnable[8];
+        // ocFlashAddress = address[15:2];
 
         // ethernet smi controller
         if((address >= `ETHERNETSMI_BASE) && (address <= (`ETHERNETSMI_BASE + (`ETHERNETSMI_SIZE - 1)))) begin
@@ -447,32 +447,32 @@ module DECA_soc_interconnect(
                     sdCardSpiValid,
                     ethernetSpiValid,
                     i2cValid,
-                    ocFlashValid,
+                    //ocFlashValid,
                     ethernetSmiValid,
                     i2sMasterValid,
                     ps2KeyboardValid,
                     ps2MouseValid};
 
         case(validBus)
-            13'b1000000000000: dataIn = ramData;
-            13'b0100000000000: dataIn = randomData;
-            13'b0010000000000: dataIn = timerData;
-            13'b0001000000000: dataIn = uartData;
-            13'b0000100000000: dataIn = sdramData;
+            13'b100000000000: dataIn = ramData;
+            13'b010000000000: dataIn = randomData;
+            13'b001000000000: dataIn = timerData;
+            13'b000100000000: dataIn = uartData;
+            13'b000010000000: dataIn = sdramData;
             //12'b000001000000: dataIn = sequencerData;
             //12'b000000100000: dataIn = sampleData;
             //12'b000000010000: dataIn = ioData;
             //12'b000000001000: dataIn = dacSpiData;
             //12'b000000000100: dataIn = soundData;
-            13'b0000010000000: dataIn = sdCardSpiData;
-            13'b0000001000000: dataIn = ethernetSpiData;
-            13'b0000000100000: dataIn = i2cData;
-            13'b0000000010000: dataIn = ocFlashData;
-            13'b0000000001000: dataIn = ethernetSmiData;
-            13'b0000000000100: dataIn = i2sMasterData;
-            13'b0000000000010: dataIn = ps2KeyboardData;
-            13'b0000000000001: dataIn = ps2MouseData;
-            default:           dataIn = 32'b0; // default data return value
+            13'b000001000000: dataIn = sdCardSpiData;
+            13'b000000100000: dataIn = ethernetSpiData;
+            13'b000000010000: dataIn = i2cData;
+            //13'b0000000010000: dataIn = ocFlashData;
+            13'b000000001000: dataIn = ethernetSmiData;
+            13'b000000000100: dataIn = i2sMasterData;
+            13'b000000000010: dataIn = ps2KeyboardData;
+            13'b000000000001: dataIn = ps2MouseData;
+            default:          dataIn = 32'b0; // default data return value
         endcase
 
         readValid = |validBus | defaultValid;
@@ -480,7 +480,7 @@ module DECA_soc_interconnect(
 
 
     // wait request logic
-    assign waitRequest = sdramWaitRequest | ocFlashWaitRequest;
+    assign waitRequest = sdramWaitRequest;// | ocFlashWaitRequest;
 
 
 endmodule
